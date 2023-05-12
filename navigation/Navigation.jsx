@@ -11,6 +11,8 @@ import ices_list from '../screens/lists/ice_spots_list';
 import mountain_routes_list from '../screens/lists/mountain_routes_list';
 import other_activities_list from '../screens/lists/other_activities_list';
 
+import workouts_list from '../screens/lists/workouts_list';
+
 const Stack = createNativeStackNavigator();
 
 export const Navigation = () => {
@@ -27,6 +29,7 @@ export const Navigation = () => {
                 <Stack.Screen name="mountain_routes_list" component={mountain_routes_list} options={{ title: 'mountain_routes_list' }}/>
                 <Stack.Screen name="other_activities_list" component={other_activities_list} options={{ title: 'other_activities_list' }}/>
 
+                <Stack.Screen name="workouts_list" component={workouts_list} options={{ title: 'workouts_list' }}/>
                 {/* <Stack.Screen name="workout" component={workout} options={{ title: 'workout' }}/> */}
             </Stack.Navigator>
         </NavigationContainer>
