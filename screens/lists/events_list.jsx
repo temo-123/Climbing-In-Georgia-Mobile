@@ -1,20 +1,26 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+// import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View, ScrollView} from 'react-native';
+
+import { EventCard } from "../../components/cards/event_card_component";
+import  Article_list_header_text  from "../../components/article_list_header_text_component"
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>events!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <Article_list_header_text 
+        title="Events" 
+        description="Events description 1"
+      />
+      <View style={styles.container}>
+        <EventCard />
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 16,
   },
 });

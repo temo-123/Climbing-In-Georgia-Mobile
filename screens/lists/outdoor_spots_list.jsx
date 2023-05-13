@@ -1,9 +1,11 @@
-import { StatusBar } from 'expo-status-bar';
 import { Image, StyleSheet, Text, View, Alert, ScrollView, TouchableOpacity } from 'react-native';
 
 import axios from 'axios'
 
-import { OutdoorCard, Post } from "../../components/outdoor_card_component";
+import { OutdoorCard } from "../../components/cards/outdoor_card_component";
+import  Article_list_header_text  from "../../components/article_list_header_text_component"
+import  Route_quantntyti  from "../../components/roures_quantyti_text_component"
+
 import React from 'react';
 
 export default function App() {
@@ -23,7 +25,12 @@ export default function App() {
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <View style={styles.feed}>
+      <Article_list_header_text 
+        title="Outdoor Climbing In Georgia" 
+        description="description 1"
+      />
+      <Route_quantntyti />
+      <View style={styles.container}>
         <OutdoorCard />
       </View>
     </ScrollView>
@@ -31,11 +38,8 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  feed: {
+  container: {
     flex: 1,
-    margin: 1,
-    flexDirection: 'column',
-    flexWrap: 'wrap',
     padding: 16,
   },
 })

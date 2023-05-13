@@ -1,34 +1,18 @@
 import * as React from 'react';
 import { Image, ScrollView, Button, View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 
-import SvgUri from 'react-native-svg'
-// import Svg, { Path } from "react-native-svg";;
-
-
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-
+// import SvgUri from 'react-native-svg'
 
 // import { NavigationContainer } from '@react-navigation/native';
-// import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+// import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 
 import 'react-native-gesture-handler';
 const Tab = createBottomTabNavigator();
 
-// export default function App() {
-//   return (
-//     <NavigationContainer>
-//       <Tab.Navigator>
-//         {/* <Tab.Screen name="Home" component={HomeScreen} />
-//         <Tab.Screen name="Settings" component={SettingsScreen} /> */}
-//       </Tab.Navigator>
-//     </NavigationContainer>
-//   );
-// }
-
 export default function HomeScreen({ navigation }) {
+
   return (
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 

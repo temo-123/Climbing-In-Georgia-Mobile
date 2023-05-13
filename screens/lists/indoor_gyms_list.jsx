@@ -1,19 +1,26 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View, Alert, ScrollView, TouchableOpacity } from 'react-native';
+import axios from 'axios'
+
+import { IndoorCard } from "../../components/cards/indoor_card_component";
+import  Article_list_header_text  from "../../components/article_list_header_text_component"
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <StatusBar style="auto" />
-    </View>
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <Article_list_header_text 
+        title="Indoor Climbing In Georgia" 
+        description="description 1"
+      />
+      <View style={styles.container}>
+        <IndoorCard />
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 16,
   },
 });
