@@ -4,17 +4,15 @@ import React from 'react';
 
 import { useNavigation } from '@react-navigation/native';
 
-// export default function OutdoorCard({ navigation }) {
-export function IndoorCard() {
+export default function IndoorCard({ cardData }) {
   const navigation = useNavigation();
-// export const OutdoorCard = ({ navigation }) => {
   return (
     <TouchableOpacity style={styles.outdoor_article_card} onPress={() => navigation.navigate('indoor_page')}>
       <View style={styles.outdoor_article_card_image_view}>
-        <Image style={styles.outdoor_article_card_image} source={{uri: "https://climbing.ge/images/outdoor_img/2022-06-10-19-06-22.jpg" }} />
+        <Image style={styles.outdoor_article_card_image} source={{uri: "https://climbing.ge/images/indoor_img/"  + cardData.image }} />
       </View>
       <View style={styles.outdoor_article_card_text}>
-        <Text style={styles.outdoor_article_card_title} onPress={() => navigation.navigate('indoor_page')}>Climbing In "Tbilisi Botanical Garden"</Text>
+        <Text style={styles.outdoor_article_card_title} onPress={() => navigation.navigate('indoor_page')}>{cardData[0][0].title}</Text>
         {/* <Text style={styles.outdoor_article_card_description}>article description</Text> */}
         <View>
           <View style={styles.outdoor_article_card_routes}>

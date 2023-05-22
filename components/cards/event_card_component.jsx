@@ -5,29 +5,29 @@ import React from 'react';
 
 import { useNavigation } from '@react-navigation/native';
 
-// export default function OutdoorCard({ navigation }) {
-export function EventCard() {
+export default function outdoorCard({cardData}) {
   const navigation = useNavigation();
-// export const OutdoorCard = ({ navigation }) => {
   return (
     <TouchableOpacity style={styles.article_card} onPress={() => navigation.navigate('event_page')}>
       <View style={styles.article_card_image_view}>
-        <Image style={styles.article_card_image} source={{uri: "https://climbing.ge/images/outdoor_img/2022-06-10-19-06-22.jpg" }} />
+        <Image style={styles.article_card_image} source={{uri: "https://climbing.ge/images/event_img/" + cardData.global_event.image }} />
       </View>
       <View style={styles.article_card_text}>
         <View style={styles.event_datas}>
           <View style={styles.event_calendar_start}>
             <Text style={styles.event_start_calendar_head}>Start</Text>
-            <Text style={styles.event_start_calendar_day}>May 4 (10:00)</Text>
+            {/* <Text style={styles.event_start_calendar_day}> May 4 (10:00)</Text> */}
+            <Text style={styles.event_start_calendar_day}>{cardData.global_event.start_data}</Text>
             {/* <Text style={styles.event_start_calendar_time}>10:00</Text> */}
           </View>
           <View style={styles.event_calendar_end}>
             <Text style={styles.event_end_calendar_head}>And</Text>
-            <Text style={styles.event_end_calendar_day}>May 4 (18:00)</Text>
+            {/* <Text style={styles.event_end_calendar_day}>May 4 (18:00)</Text> */}
+            <Text style={styles.event_start_calendar_day}>{cardData.global_event.end_data}</Text>
             {/* <Text style={styles.event_end_calendar_tile}>18:00</Text> */}
           </View>
         </View>
-        <Text style={styles.article_card_title} onPress={() => navigation.navigate('event_page')}>Climbing In "Tbilisi Botanical Garden"</Text>
+        <Text style={styles.article_card_title} onPress={() => navigation.navigate('event_page')}>{cardData.locale_event.title}</Text>
         {/* <Text style={styles.article_card_description}>article description</Text> */}
         
       </View>

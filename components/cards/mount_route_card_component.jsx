@@ -4,15 +4,15 @@ import React from 'react';
 
 import { useNavigation } from '@react-navigation/native';
 
-export function MountCard() {
+export default function outdoorCard({cardData}) {
   const navigation = useNavigation();
   return (
     <TouchableOpacity style={styles.outdoor_article_card} onPress={() => navigation.navigate('mountain_route_page')}>
       <View style={styles.outdoor_article_card_image_view}>
-        <Image style={styles.outdoor_article_card_image} source={{uri: "https://climbing.ge/images/outdoor_img/2022-06-10-19-06-22.jpg" }} />
+        <Image style={styles.outdoor_article_card_image} source={{uri: "https://climbing.ge/images/mount_route_img/" + cardData.image  }} />
       </View>
       <View style={styles.outdoor_article_card_text}>
-        <Text style={styles.outdoor_article_card_title} onPress={() => navigation.navigate('mountain_route_page')}>Climbing In "Tbilisi Botanical Garden"</Text>
+        <Text style={styles.outdoor_article_card_title} onPress={() => navigation.navigate('mountain_route_page')}>{cardData[0][0].title}</Text>
         {/* <Text style={styles.outdoor_article_card_description}>article description</Text> */}
       </View>
     </TouchableOpacity>

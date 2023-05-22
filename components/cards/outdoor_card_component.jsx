@@ -5,25 +5,22 @@ import React from 'react';
 
 import { useNavigation } from '@react-navigation/native';
 
-// export default function OutdoorCard({ navigation }) {
-export function OutdoorCard() {
+export default function outdoorCard({cardData}) {
   const navigation = useNavigation();
-// export const OutdoorCard = ({ navigation }) => {
   return (
     <TouchableOpacity style={styles.outdoor_article_card} onPress={() => navigation.navigate('outdoor_page')}>
       <View style={styles.outdoor_article_card_image_view}>
-        <Image style={styles.outdoor_article_card_image} source={{uri: "https://climbing.ge/images/outdoor_img/2022-06-10-19-06-22.jpg" }} />
+        <Image style={styles.outdoor_article_card_image} source={{uri: "https://climbing.ge/images/outdoor_img/" + cardData.area.image}} />
       </View>
       <View style={styles.outdoor_article_card_text}>
-        <Text style={styles.outdoor_article_card_title} onPress={() => navigation.navigate('outdoor_page')}>Climbing In "Tbilisi Botanical Garden"</Text>
-        {/* <Text style={styles.outdoor_article_card_description}>article description</Text> */}
+        <Text style={styles.outdoor_article_card_title} onPress={() => navigation.navigate('outdoor_page')}>{cardData.area[0][0].title}</Text>
         <View>
           <View style={styles.outdoor_article_card_routes}>
-            <Text style={styles.outdoor_article_card_routes_text}>Sectors - 666</Text>
+            <Text style={styles.outdoor_article_card_routes_text}>Sectors - {cardData.route_quantyty.sectors}</Text>
           </View>
           <View style={styles.outdoor_article_card_routes}>
-            <Text style={styles.outdoor_article_card_routes_text}>Routes - 666 </Text>
-            <Text style={styles.outdoor_article_card_routes_text}>Multy pitchs - 666</Text>
+            <Text style={styles.outdoor_article_card_routes_text}>Routes - {cardData.route_quantyty.routes} </Text>
+            <Text style={styles.outdoor_article_card_routes_text}>Multy pitchs - {cardData.route_quantyty.mtps}</Text>
           </View>
         </View>
       </View>

@@ -1,9 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 
-// import { DrawerNavigation } from '@react-navigation/drawer'
-
-
 import index from '../screens/index';
 import about_us from '../screens/about_us';
 
@@ -29,39 +26,36 @@ import workouts_list from '../screens/lists/workouts_list';
 import training from '../screens/training';
 
 const Stack = createNativeStackNavigator();
-// const Drawer = DrawerNavigation();
 
 export const Navigation = () => {
     return (
-        // <Drawer.Navigator>
         <NavigationContainer>
             <Stack.Navigator>
                 <Stack.Screen name="index" component={index} options={{ title: 'Climbing In Geourgia' }}/>
                 <Stack.Screen name="about_us" component={about_us} options={{ title: 'About Us' }}/>
 
-                <Stack.Screen name="indoors_list" component={indoors_list} options={{ title: 'indoors_list' }}/>
-                <Stack.Screen name="indoor_page" component={indoor_page} options={{ title: 'indoor_page' }}/>
+                <Stack.Screen name="indoors_list" component={indoors_list} options={{ title: 'Indoors gyms In Georgia' }}/>
+                <Stack.Screen name="indoor_page" component={indoor_page} options={{ title: 'Indoors gym' }}/>
 
-                <Stack.Screen name="outdoors_list" component={outdoors_list} options={{ title: 'outdoors_list' }}/>
-                <Stack.Screen name="outdoor_page" component={outdoor_page} options={{ title: 'outdoor_page' }}/>
+                <Stack.Screen name="outdoors_list" component={outdoors_list} options={{ title: 'Outdoor Spots In Geprgia' }}/>
+                <Stack.Screen name="outdoor_page" component={outdoor_page} options={{ title: 'Outdoor Spot' }}/>
 
-                <Stack.Screen name="events_list" component={events_list} options={{ title: 'events_list' }}/>
-                <Stack.Screen name="event_page" component={event_page} options={{ title: 'event_page' }}/>
+                <Stack.Screen name="events_list" component={events_list} options={{ title: 'Events & Competition' }}/>
+                <Stack.Screen name="event_page" component={event_page} options={{ title: 'Event' }}/>
 
-                <Stack.Screen name="ices_list" component={ices_list} options={{ title: 'ices_list' }}/>
-                <Stack.Screen name="ice_page" component={ice_page} options={{ title: 'ice_page' }}/>
+                <Stack.Screen name="ices_list" component={ices_list} options={{ title: 'Ice & Mix Climbing In Georgia' }}/>
+                <Stack.Screen name="ice_page" component={ice_page} options={{ title: 'Ice Climbing Spot' }}/>
 
-                <Stack.Screen name="mountain_routes_list" component={mountain_routes_list} options={{ title: 'mountain_routes_list' }}/>
-                <Stack.Screen name="mountain_route_page" component={mountain_route_page} options={{ title: 'mountain_route_page' }}/>
+                <Stack.Screen name="mountain_routes_list" component={mountain_routes_list} options={{ title: 'Mountainering Routes In Georgia' }}/>
+                <Stack.Screen name="mountain_route_page" component={mountain_route_page} options={{ title: 'Mountaineering Route' }}/>
 
-                <Stack.Screen name="other_activities_list" component={other_activities_list} options={{ title: 'other_activities_list' }}/>
-                <Stack.Screen name="other_activity_page" component={other_activity_page} options={{ title: 'other_activity_page' }}/>
+                <Stack.Screen name="other_activities_list" component={other_activities_list} options={{ title: 'Other Activity In Georgia' }}/>
+                <Stack.Screen name="other_activity_page" component={other_activity_page} options={{ title: 'Sport Activity' }}/>
 
-                <Stack.Screen name="workouts_list" component={workouts_list} options={{ title: 'Workouts list' }}/>
+                <Stack.Screen name="workouts_list" component={workouts_list} options={{ title: 'Workouts' }}/>
                 <Stack.Screen name="training" component={training} options={{ title: 'Training', category: 'easy' }}/>
             </Stack.Navigator>
         </NavigationContainer>
-        // </Drawer.Navigator>
     );
 }
 
