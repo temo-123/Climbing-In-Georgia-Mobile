@@ -1,18 +1,43 @@
-import { Image, StyleSheet, Text, View, Alert, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  Image,
+  StyleSheet,
+  Text,
+  View,
+  Alert,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 
-import React from 'react';
+import React from "react";
 
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from "@react-navigation/native";
 
-export default function outdoorCard({cardData}) {
+export default function outdoorCard({ cardData }) {
   const navigation = useNavigation();
   return (
-    <TouchableOpacity style={styles.outdoor_article_card} onPress={() => navigation.navigate('other_activity_page')}>
+    <TouchableOpacity
+      style={styles.outdoor_article_card}
+      onPress={() =>
+        navigation.navigate("other_activity_page", cardData.url_title)
+      }
+    >
       <View style={styles.outdoor_article_card_image_view}>
-        <Image style={styles.outdoor_article_card_image} source={{uri: "https://climbing.ge/images/other_img/" + cardData.image  }} />
+        <Image
+          style={styles.outdoor_article_card_image}
+          source={{
+            uri: "https://climbing.ge/images/other_img/" + cardData.image,
+          }}
+        />
       </View>
       <View style={styles.outdoor_article_card_text}>
-        <Text style={styles.outdoor_article_card_title} onPress={() => navigation.navigate('other_activity_page')}>{cardData[0][0].title}</Text>
+        <Text
+          style={styles.outdoor_article_card_title}
+          onPress={() =>
+            navigation.navigate("other_activity_page", cardData.url_title)
+          }
+        >
+          {cardData[0][0].title}
+        </Text>
         {/* <Text style={styles.outdoor_article_card_description}>article description</Text> */}
       </View>
     </TouchableOpacity>
@@ -21,39 +46,39 @@ export default function outdoorCard({cardData}) {
 
 const styles = StyleSheet.create({
   outdoor_article_card: {
-    backgroundColor: 'white',
-    width: '100%',
+    backgroundColor: "white",
+    width: "100%",
     height: 100,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 16,
 
     borderWidth: 1.5,
     borderRadius: 10,
     borderColor: "#279fbb",
 
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   outdoor_article_card_image_view: {
-    width: '45%', 
+    width: "45%",
   },
   outdoor_article_card_image: {
-    height: '100%',
+    height: "100%",
     borderRadius: 10,
-    resizeMode: 'contain',
+    resizeMode: "contain",
   },
   outdoor_article_card_text: {
     flex: 1,
-    padding: 4
+    padding: 4,
   },
   outdoor_article_card_title: {
     fontSize: 20,
-    float: 'top'
+    float: "top",
   },
   outdoor_article_card_routes: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginTop: 3,
   },
   outdoor_article_card_routes_text: {
     fontSize: 14,
   },
-})
+});

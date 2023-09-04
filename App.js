@@ -9,37 +9,21 @@ import { fab } from '@fortawesome/free-brands-svg-icons'
 import { faSquareCheck } from '@fortawesome/free-solid-svg-icons/faSquareCheck'
 // import { faMugEmpty } from '@fortawesome/free-solid-svg-icons/faMugEmpty'
 // import { registerRootComponent } from 'expo';
+
+// import GStyle from './assets/styles/styles.js'
+
 // import { GoogleAnalyticsTracker } from "react-native-google-analytics-bridge";
-// let tracker = new GoogleAnalyticsTracker("1:791740222419:android:3c905a7f3272ef68d63d26");
-// tracker.trackScreenView("Home");
-
-
 
 library.add(fab, faSquareCheck)
 
 export default function App() {
+// let tracker = new GoogleAnalyticsTracker("5206567952");
+// tracker.trackScreenView("Home");
+  // const GStyle = GStyle
   if(1==1){
     return (
-      // <View style={styles.container}>
-        <Navigation />
-      // </View>
+      <Navigation />
     )
-    
-    // const Drawer = DrawerNavigation();
-
-    // return  (
-    //   <Navigation>
-    //     <Drawer.Navigator
-    //           drawerType="front"
-    //           initialRouteName="Profile"
-    //           drawerContentOptions={{
-    //             activeTintColor: '#e91e63',
-    //             itemStyle: { marginVertical: 10 },
-    //           }}
-    //     >
-    //     </Drawer.Navigator>
-    //   </Navigation>
-    // )
   }
   else{
     return (

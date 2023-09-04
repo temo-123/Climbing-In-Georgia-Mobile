@@ -8,12 +8,12 @@ import { useNavigation } from '@react-navigation/native';
 export default function outdoorCard({cardData}) {
   const navigation = useNavigation();
   return (
-    <TouchableOpacity style={styles.outdoor_article_card} onPress={() => navigation.navigate('outdoor_page')}>
+    <TouchableOpacity style={styles.outdoor_article_card} onPress={() => navigation.navigate('outdoor_page', cardData.area.url_title)}>
       <View style={styles.outdoor_article_card_image_view}>
         <Image style={styles.outdoor_article_card_image} source={{uri: "https://climbing.ge/images/outdoor_img/" + cardData.area.image}} />
       </View>
       <View style={styles.outdoor_article_card_text}>
-        <Text style={styles.outdoor_article_card_title} onPress={() => navigation.navigate('outdoor_page')}>{cardData.area[0][0].title}</Text>
+        <Text style={styles.outdoor_article_card_title} onPress={() => navigation.navigate('outdoor_page', cardData.area.url_title)}>{cardData.area[0][0].title}</Text>
         <View>
           <View style={styles.outdoor_article_card_routes}>
             <Text style={styles.outdoor_article_card_routes_text}>Sectors - {cardData.route_quantyty.sectors}</Text>
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   },
   outdoor_article_card_title: {
     fontSize: 20,
-    float: 'top'
+    // float: 'top'
   },
   outdoor_article_card_routes: {
     flexDirection: 'row',

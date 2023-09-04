@@ -1,15 +1,23 @@
 import * as React from 'react';
 import { Image, ScrollView, Button, View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 
-// import SvgUri from 'react-native-svg'
-
-// import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-
-// import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 
 import 'react-native-gesture-handler';
 const Tab = createBottomTabNavigator();
+
+// import { GoogleAnalyticsTracker } from "react-native-google-analytics-bridge";
+// let tracker = new GoogleAnalyticsTracker("5206567952");
+ 
+// tracker.trackScreenView("Home");
+
+// import { GoogleAnalyticsTracker } from 'react-native-google-analytics-bridge';
+// import GoogleAnalytics from '@redux-beacon/react-native-google-analytics';
+
+// const trackingId = 'UA-12345678-1' // replace with your own
+// const ga = GoogleAnalytics(trackingId, GoogleAnalyticsTracker);
+
+// const gaMiddleware = createMiddleware(eventsMap, ga);
 
 export default function HomeScreen({ navigation }) {
 
@@ -18,20 +26,12 @@ export default function HomeScreen({ navigation }) {
 
         <View style={styles.feed}>
           <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('outdoors_list')}>
-            {/* <View style={styles.container}>
-              <SvgUri
-                width="50%"
-                height="50%"
-                uri="http://thenewcode.com/assets/images/thumbnails/homer-simpson.svg"
-              />
-            </View> */}
             <Image style={styles.card_img} source={require('../assets/images/indoor.png/')} />
             <Text style={styles.card_text}>Outdoor Spots</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('indoors_list')}>
             <Image style={styles.card_img} source={require('../assets/images/outdoor.png/')} />
             <Text style={styles.card_text}>Indoor Gyms</Text>
-            {/* <FontAwesomeIcon icon="square-check" style={{ width: '88%', }}/> */}
           </TouchableOpacity>
           <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('ices_list')}>
             <Image style={styles.card_img} source={require('../assets/images/ice.png/')} />
@@ -52,15 +52,6 @@ export default function HomeScreen({ navigation }) {
         </View>
 
         <View style={styles.bottom_feed}>
-          <TouchableOpacity style={styles.long_card} onPress={() => navigation.navigate('workouts_list')}>
-            <View style={styles.long_card_image_view}>
-              <Image style={styles.long_card_image} source={require('../assets/images/workout.png/')} />
-            </View>
-            <View style={styles.long_card_text_view}>
-              <Text style={styles.long_card_text}>Workouts</Text>
-            </View>
-          </TouchableOpacity>
-          
           <TouchableOpacity style={styles.long_card} onPress={() => navigation.navigate('about_us')}>
             <View style={styles.long_card_image_view}>
               <Image style={styles.long_card_image} source={require('../assets/images/about_us.png/')} />
@@ -69,6 +60,15 @@ export default function HomeScreen({ navigation }) {
               <Text style={styles.long_card_text}>About us</Text>
             </View>
           </TouchableOpacity>
+
+          {/* <TouchableOpacity style={styles.long_card} onPress={() => navigation.navigate('workouts_list')}>
+            <View style={styles.long_card_image_view}>
+              <Image style={styles.long_card_image} source={require('../assets/images/workout.png/')} />
+            </View>
+            <View style={styles.long_card_text_view}>
+              <Text style={styles.long_card_text}>Workouts</Text>
+            </View>
+          </TouchableOpacity> */}
         </View>
 
       </ScrollView>
@@ -119,7 +119,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     width: '100%',
     height: 100,
-    // aspectRatio: 1,
     alignItems: 'center',
     marginBottom: 16,
 
@@ -131,8 +130,6 @@ const styles = StyleSheet.create({
   },
   long_card_image_view: {
     width: '50%', 
-    // height: '50%',
-    // resizeMode: 'contain',
   },
   long_card_image: {
     width: '50%', 

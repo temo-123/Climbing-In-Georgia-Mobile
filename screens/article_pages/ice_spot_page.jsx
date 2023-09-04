@@ -1,12 +1,50 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StatusBar } from "expo-status-bar";
+import {
+  StyleSheet,
+  Text,
+  View,
+  WebView,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+} from "react-native";
+import React, { useState, useEffect } from "react";
 
-export default function App() {
+import IceSectors from "../../components/Routes_and_sectors/Ice_sectors/Ice_sectors";
+
+import axios from "axios";
+
+export default function App({ route }) {
+  const [outdoor_data, setOutdoorData] = useState([]);
+
+  useEffect(() => {
+    // const getData = () => {
+    axios
+      .get("https://climbing.ge/api/article/ice/en/" + route.params)
+      .then(function (data) {
+        setOutdoorData(data);
+        console.log("====================================");
+        console.log(outdoor_data);
+        console.log("====================================");
+      })
+      .catch((error) => {
+        console.log(error);
+        Alert.alert("ERROR!", "Axios request is fale");
+      })
+      .finally(function () {
+        alert("Finally called");
+      });
+    // };
+
+    // getData()
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Text>ice page!</Text>
+    <ScrollView style={styles.container}>
+      <IceSectors article_id={route.params} />
+
       <StatusBar style="auto" />
-    </View>
+    </ScrollView>
   );
 }
 
@@ -15,4 +53,10 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  // h1: {
+  //   fontSize: 26
+  // },
+  // h2: {
+  //   fontSize: 20
+  // }
 });

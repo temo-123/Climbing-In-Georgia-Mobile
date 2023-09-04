@@ -42,7 +42,6 @@ export default class ExampleOne extends Component {
     return (
       <View style={styles.container}>
         <Table borderStyle={{borderWidth: 2, borderColor: '#c8e1ff'}}>
-          {/* <Row data={state.tableHead} style={styles.head} textStyle={styles.text}/> */}
           <Rows data={rowData} textStyle={styles.text}/>
         </Table>
       </View>
@@ -51,7 +50,17 @@ export default class ExampleOne extends Component {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 30 },
-  head: { height: 40, backgroundColor: '#F6D27E' },
-  text: { margin: 6 }
+  container: { 
+    flex: 1, 
+    // paddingTop: 30,
+    // padding: (30, 0),
+    // paddinBottom: 300,
+  },
+  head: { 
+    height: 40, 
+    backgroundColor: '#F6D27E' 
+  },
+  text: { 
+    margin: 6 
+  }
 });

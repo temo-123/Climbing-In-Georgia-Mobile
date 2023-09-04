@@ -20,6 +20,9 @@ export default function App() {
     .catch(error => {
       Alert.alert('ERROR!', 'Axios request is fale')
     })
+    .finally(function() {
+      // always executes at the last of any API call
+    });
   }, []);
 
   return (

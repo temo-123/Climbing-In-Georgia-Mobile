@@ -1,17 +1,50 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StatusBar } from "expo-status-bar";
+import {
+  StyleSheet,
+  Text,
+  View,
+  WebView,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+} from "react-native";
+import React, { useState, useEffect } from "react";
 
-import RoutesTable from "../../components/Routes_and_sectors/routes_tab";
+import SpotSectors from "../../components/Routes_and_sectors/Sport_sector/spot_sectors";
+import ArticleBlock from "../../components/articl_block";
 
-export default function App() {
+import axios from "axios";
+
+export default function App({ route }) {
+  const [globalOutdoorData, setGlobalOutdoorData] = useState([]);
+  const [localeOutdoorData, setLocaleOutdoorData] = useState([]);
+  // let outdoorData = []
+
+  useEffect(() => {
+    const baseUrl =
+      "https://climbing.ge/api/article/indoor/en/" + route.params;
+    axios
+      .get(baseUrl)
+      .then(({ data }) => {
+        setGlobalOutdoorData(data);
+        setLocaleOutdoorData(data[0]);
+      })
+      .catch((error) => {
+        Alert.alert("ERROR!", "Axios request is fale");
+      })
+      .finally(function () {
+        // always executes at the last of any API call
+      });
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.h1}>outdoor spot!</Text>
-      <Text style={styles.h2}>outdoor spot!</Text>
-      <Text>outdoor spot!</Text>
-      <RoutesTable />
+    <ScrollView style={styles.container}>
+      <ArticleBlock local_data={localeOutdoorData} global_data={globalOutdoorData} />
+
+      <SpotSectors article_id={globalOutdoorData.id} />
+
       <StatusBar style="auto" />
-    </View>
+    </ScrollView>
   );
 }
 
@@ -20,10 +53,4 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  h1: {
-    fontSize: 26
-  },
-  h2: {
-    fontSize: 20
-  }
 });
