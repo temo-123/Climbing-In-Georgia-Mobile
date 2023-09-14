@@ -46,19 +46,6 @@ function DrawerNavigation () {
                     }}
                 />
 
-                <Drawer.Screen name="indoors_list" component={indoors_list} 
-                    options={{ 
-                        title: 'Indoors gyms',
-                        headerStyle: {
-                            backgroundColor: '#279fbb',
-                        },
-                        headerTintColor: '#fff',
-                        headerTitleStyle: {
-                            fontWeight: 'bold',
-                        },
-                    }}
-                />
-
                 <Drawer.Screen name="outdoors_list" component={outdoors_list} 
                     options={{ 
                         title: 'Outdoor Spots' ,
@@ -72,9 +59,9 @@ function DrawerNavigation () {
                     }}
                 />
 
-                <Drawer.Screen name="events_list" component={events_list} 
+                <Drawer.Screen name="indoors_list" component={indoors_list} 
                     options={{ 
-                        title: 'Events & Competition',
+                        title: 'Indoors gyms',
                         headerStyle: {
                             backgroundColor: '#279fbb',
                         },
@@ -114,6 +101,19 @@ function DrawerNavigation () {
                 <Drawer.Screen name="other_activities_list" component={other_activities_list} 
                     options={{ 
                         title: 'Other Activity',
+                        headerStyle: {
+                            backgroundColor: '#279fbb',
+                        },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: {
+                            fontWeight: 'bold',
+                        },
+                    }}
+                />
+
+                <Drawer.Screen name="events_list" component={events_list} 
+                    options={{ 
+                        title: 'Events & Competition',
                         headerStyle: {
                             backgroundColor: '#279fbb',
                         },

@@ -15,17 +15,17 @@ import IceSectors from "../../components/Routes_and_sectors/Ice_sectors/Ice_sect
 import axios from "axios";
 
 export default function App({ route }) {
-  const [outdoor_data, setOutdoorData] = useState([]);
+  const [ice_data, setIceData] = useState([]);
 
   useEffect(() => {
     // const getData = () => {
     axios
       .get("https://climbing.ge/api/article/ice/en/" + route.params)
       .then(function (data) {
-        setOutdoorData(data);
-        console.log("====================================");
-        console.log(outdoor_data);
-        console.log("====================================");
+        setIceData(data);
+        // console.log("====================================");
+        // console.log(ice_data);
+        // console.log("====================================");
       })
       .catch((error) => {
         console.log(error);

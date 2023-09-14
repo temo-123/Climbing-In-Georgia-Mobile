@@ -1,18 +1,22 @@
 import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import RenderHtml from 'react-native-render-html';
-import { gStyle } from '../assets/styles/styles';
+import { gStyle } from '../../assets/styles/styles';
 
-export default function articleBlock({local_data, global_data}) {
+import GlobalInfoBlock from "./article_general_info";
+
+export default function articleBlock({local_data, global_data, global_info_data = []}) {
   const { width } = useWindowDimensions();
+// console.log('====================================');
+// // console.log(global_info_data);
+// console.log("🚀 ~ file: articl_block.jsx:11 ~ articleBlock ~ global_info_data:", global_info_data)
+// console.log('====================================');
   return (
     <View style={styles.container}>
 
       <Text style={gStyle.h1}>{local_data.title}</Text>
 
-
-
       {(() => {
-        if (local_data.text != '' || local_data.text != null){
+        if (local_data.text != '' && local_data.text != null){
             return (
               <View>
                 
@@ -29,18 +33,22 @@ export default function articleBlock({local_data, global_data}) {
       })()}
       
       {(() => {
-        if (local_data.how_get_there != '' || local_data.how_get_there != null){
+        if (local_data.how_get != '' && local_data.how_get != null){
             return (
               <View>
-                
                 <Text style={gStyle.h2}>How to get there</Text>
 
                 <RenderHtml
                   contentWidth={width}
-                  source={{ html: local_data.how_get_there }}
+                  source={{ html: local_data.how_get }}
                 />
 
-                <Text>Map</Text>
+                <Text>{ global_data.map }</Text>
+
+                <RenderHtml
+                  contentWidth={width}
+                  source={{ html: global_data.map }}
+                />
 
               </View>
             )
@@ -49,37 +57,15 @@ export default function articleBlock({local_data, global_data}) {
         return null;
       })()}
 
-      
       {(() => {
-        if (local_data.best_time != '' || local_data.best_time != null){
+        if ((local_data.best_time != '' && local_data.best_time != null) || typeof global_info_data.best_time  !== 'undefined'){
             return (
               <View>
-                
                 <Text style={gStyle.h2}>Best time to climb</Text>
 
-                <RenderHtml
-                  contentWidth={width}
-                  source={{ html: local_data.best_time }}
-                />
-
-              </View>
-            )
-        }
-        
-        return null;
-      })()}
-
-
-      {(() => {
-        if (local_data.what_need != '' || local_data.what_need != null){
-            return (
-              <View>
-                
-                <Text style={gStyle.h2}>What you need</Text>
-
-                <RenderHtml
-                  contentWidth={width}
-                  source={{ html: local_data.what_need }}
+                <GlobalInfoBlock 
+                  global_info_data={global_info_data.best_time}
+                  actyve_block_data={local_data.best_time}
                 />
 
                 <Text>Wethet</Text>
@@ -93,15 +79,15 @@ export default function articleBlock({local_data, global_data}) {
 
 
       {(() => {
-        if (local_data.info != '' || local_data.info != null){
+        if ((local_data.what_need != '' && local_data.what_need != null) || typeof global_info_data.what_need_info  !== 'undefined'){
             return (
               <View>
                 
-                <Text style={gStyle.h2}>Info / Contacts</Text>
+                <Text style={gStyle.h2}>What you need</Text>
 
-                <RenderHtml
-                  contentWidth={width}
-                  source={{ html: local_data.info }}
+                <GlobalInfoBlock 
+                  global_info_data={global_info_data.what_need_info}
+                  actyve_block_data={local_data.what_need}
                 />
 
               </View>
@@ -113,14 +99,34 @@ export default function articleBlock({local_data, global_data}) {
 
 
       {(() => {
-        if (local_data.routes != '' || local_data.routes != null){
+        if ((local_data.info != '' && local_data.info != null) || typeof global_info_data.info_block  !== 'undefined'){
+            return (
+              <View>
+                
+                <Text style={gStyle.h2}>Info / Contacts</Text>
+
+                <GlobalInfoBlock 
+                  global_info_data={global_info_data.info_block}
+                  actyve_block_data={local_data.info}
+                />
+
+              </View>
+            )
+        }
+        
+        return null;
+      })()}
+
+
+      {(() => {
+        if ((local_data.routes != '' && local_data.routes != null) || typeof global_info_data.routes_info  !== 'undefined'){
             return (
               <View>
                 <Text style={gStyle.h2}>Routes</Text>
 
-                <RenderHtml
-                  contentWidth={width}
-                  source={{ html: local_data.routes }}
+                <GlobalInfoBlock 
+                  global_info_data={global_info_data.routes_info}
+                  actyve_block_data={local_data.routes}
                 />
 
               </View>

@@ -19,11 +19,8 @@ export default function App() {
   return (
     <View style={styles.container}>
         <Text style={styles.route_quantyti_text}>
-            In Georgia are  
-                {quantity_data.sectors} outdoor climbing sectors, 
-                {quantity_data.sport_routes} sport climbing routes, 
-                {quantity_data.boulder_routes} boulder routes, 
-                {quantity_data.mtps} multy pitch. You can see all outdoor climbing arias info on this page.
+            In Georgia are {quantity_data.sectors} outdoor climbing sectors, {quantity_data.sport_routes} sport climbing routes, {quantity_data.boulder_routes} boulder routes, {quantity_data.mtps} multy pitch. 
+            You can see all outdoor climbing arias info on this page.
         </Text>
     </View>
   );

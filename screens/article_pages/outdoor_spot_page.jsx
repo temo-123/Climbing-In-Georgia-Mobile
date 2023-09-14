@@ -11,13 +11,14 @@ import {
 import React, { useState, useEffect } from "react";
 
 import SpotSectors from "../../components/Routes_and_sectors/Sport_sector/spot_sectors";
-import ArticleBlock from "../../components/articl_block";
+import ArticleBlock from "../../components/article/articl_block";
 
 import axios from "axios";
 
 export default function App({ route }) {
   const [globalOutdoorData, setGlobalOutdoorData] = useState([]);
   const [localeOutdoorData, setLocaleOutdoorData] = useState([]);
+  const [globalOutdoorInfoData, setGlobalOutdoorInfoData] = useState([]);
   // let outdoorData = []
 
   useEffect(() => {
@@ -28,6 +29,7 @@ export default function App({ route }) {
       .then(({ data }) => {
         setGlobalOutdoorData(data);
         setLocaleOutdoorData(data[0]);
+        setGlobalOutdoorInfoData(data.global_info);
       })
       .catch((error) => {
         Alert.alert("ERROR!", "Axios request is fale");
@@ -39,7 +41,11 @@ export default function App({ route }) {
 
   return (
     <ScrollView style={styles.container}>
-      <ArticleBlock local_data={localeOutdoorData} global_data={globalOutdoorData} />
+      <ArticleBlock 
+        local_data={localeOutdoorData} 
+        global_data={globalOutdoorData} 
+        global_info_data={globalOutdoorInfoData}
+      />
 
       <SpotSectors article_id={globalOutdoorData.id} />
 

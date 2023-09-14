@@ -11,7 +11,7 @@ import {
 import React, { useState, useEffect } from "react";
 
 import SpotSectors from "../../components/Routes_and_sectors/Sport_sector/spot_sectors";
-import ArticleBlock from "../../components/articl_block";
+import ArticleBlock from "../../components/article/articl_block";
 
 import axios from "axios";
 

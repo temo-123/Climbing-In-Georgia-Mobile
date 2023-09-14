@@ -11,7 +11,7 @@ import {
 import React, { useState, useEffect } from "react";
 
 import SpotSectors from "../../components/Routes_and_sectors/Sport_sector/spot_sectors";
-import ArticleBlock from "../../components/articl_block";
+import ArticleBlock from "../../components/article/articl_block";
 
 import axios from "axios";
 
@@ -21,9 +21,9 @@ export default function App({ route }) {
   // let IndoorData = []
 
   useEffect(() => {
-    console.log('====================================');
-    console.log(route.params);
-    console.log('====================================');
+    // console.log('====================================');
+    // console.log(route.params);
+    // console.log('====================================');
     const baseUrl =
       "https://climbing.ge/api/article/indoor/us/" + route.params;
     axios
