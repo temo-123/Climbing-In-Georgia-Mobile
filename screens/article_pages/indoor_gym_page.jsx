@@ -18,12 +18,10 @@ import axios from "axios";
 export default function App({ route }) {
   const [globalIndoorData, setGlobalIndoorData] = useState([]);
   const [localeIndoorData, setLocaleIndoorData] = useState([]);
+  const [globalIndoorInfoData, setGlobalIndoorInfoData] = useState([]);
   // let IndoorData = []
 
   useEffect(() => {
-    // console.log('====================================');
-    // console.log(route.params);
-    // console.log('====================================');
     const baseUrl =
       "https://climbing.ge/api/article/indoor/us/" + route.params;
     axios
@@ -31,6 +29,7 @@ export default function App({ route }) {
       .then(({ data }) => {
         setGlobalIndoorData(data);
         setLocaleIndoorData(data[0]);
+        setGlobalIndoorInfoData(data.global_info);
       })
       .catch((error) => {
         Alert.alert("ERROR!", "Axios request is fale");
@@ -45,6 +44,7 @@ export default function App({ route }) {
       <ArticleBlock
         local_data={localeIndoorData}
         global_data={globalIndoorData}
+        global_info_data={globalIndoorInfoData}
       />
 
       <StatusBar style="auto" />

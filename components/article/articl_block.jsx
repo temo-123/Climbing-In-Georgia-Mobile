@@ -7,7 +7,6 @@ import GlobalInfoBlock from "./article_general_info";
 export default function articleBlock({local_data, global_data, global_info_data = []}) {
   const { width } = useWindowDimensions();
 // console.log('====================================');
-// // console.log(global_info_data);
 // console.log("🚀 ~ file: articl_block.jsx:11 ~ articleBlock ~ global_info_data:", global_info_data)
 // console.log('====================================');
   return (

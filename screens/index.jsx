@@ -45,10 +45,10 @@ export default function HomeScreen({ navigation }) {
             <Image style={styles.card_img} source={require('../assets/images/other.png/')} />
             <Text style={styles.card_text}>Other Activity</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('events_list')}>
+          {/* <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('events_list')}>
             <Image style={styles.card_img} source={require('../assets/images/event.png/')} />
             <Text style={styles.card_text}>Events</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         <View style={styles.bottom_feed}>

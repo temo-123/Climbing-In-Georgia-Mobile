@@ -111,7 +111,7 @@ function DrawerNavigation () {
                     }}
                 />
 
-                <Drawer.Screen name="events_list" component={events_list} 
+                {/* <Drawer.Screen name="events_list" component={events_list} 
                     options={{ 
                         title: 'Events & Competition',
                         headerStyle: {
@@ -122,7 +122,7 @@ function DrawerNavigation () {
                             fontWeight: 'bold',
                         },
                     }}
-                />
+                /> */}
 
                 <Drawer.Screen name="about_us" component={about_us} 
                     options={{ title: 'About Us',

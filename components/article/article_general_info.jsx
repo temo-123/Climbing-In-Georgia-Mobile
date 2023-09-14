@@ -5,16 +5,8 @@ import { gStyle } from '../../assets/styles/styles';
 export default function articleGeneralInfo({global_info_data, actyve_block_data}) {
   const { width } = useWindowDimensions();
 
-// console.log('====================================');
-// // console.log(global_info_data);
-// console.log("🚀 ~ file: article_general_info.jsx:10 ~ articleGeneralInfo ~ global_info_data:", global_info_data)
-// console.log("🚀 ~ file: article_general_info.jsx:10 ~ articleGeneralInfo ~ actyve_block_data:", actyve_block_data)
-// console.log('====================================');
-
   return (
     <View style={styles.container}>
-    {/* <Text> 0 </Text> */}
-
       {(() => {
         if (
           (
@@ -23,10 +15,8 @@ export default function articleGeneralInfo({global_info_data, actyve_block_data}
           && 
           (
             actyve_block_data  == null || actyve_block_data  == []
-          ) ) {
-          <View>
-          {/* <Text> 1 </Text> */}
-          </View>
+          ) ) 
+        {
           if (global_info_data.block_action != 'instead' ){
               return (
                 <View>
@@ -89,19 +79,15 @@ export default function articleGeneralInfo({global_info_data, actyve_block_data}
         else  {
           return (
             <View>
-            {/* <Text> 2 </Text> */}
-            <RenderHtml
-              contentWidth={width}
-              source={{ html: actyve_block_data }}
-            />
+              <RenderHtml
+                contentWidth={width}
+                source={{ html: actyve_block_data }}
+              />
             </View>
-        )
+          )
         }
         
-        // return null;
       })()}
-
-
     </View>
   );
 }
