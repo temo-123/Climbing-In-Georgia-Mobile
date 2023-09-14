@@ -4,8 +4,20 @@ import { gStyle } from '../../assets/styles/styles';
 
 import GlobalInfoBlock from "./article_general_info";
 
+import IframeRenderer, { iframeModel } from '@native-html/iframe-plugin';
+// import RenderHTML from 'react-native-render-html';
+import WebView from 'react-native-webview';
+
 export default function articleBlock({local_data, global_data, global_info_data = []}) {
   const { width } = useWindowDimensions();
+  const renderers = {
+    iframe: IframeRenderer
+  };
+  
+  const customHTMLElementModels = {
+    iframe: iframeModel
+  };
+  
 // console.log('====================================');
 // console.log("🚀 ~ file: articl_block.jsx:11 ~ articleBlock ~ global_info_data:", global_info_data)
 // console.log('====================================');
@@ -42,11 +54,36 @@ export default function articleBlock({local_data, global_data, global_info_data 
                   source={{ html: local_data.how_get }}
                 />
 
-                <Text>{ global_data.map }</Text>
+              </View>
+            )
+        }
+        
+        return null;
+      })()}
 
+      {(() => {
+        if (global_data.map != '' && global_data.map != null){
+            return (
+              <View>
+                {/* https://www.npmjs.com/package/@native-html/iframe-plugin */}
                 <RenderHtml
-                  contentWidth={width}
+                  renderers={renderers}
+                  WebView={WebView}
                   source={{ html: global_data.map }}
+                  customHTMLElementModels={customHTMLElementModels}
+                  defaultWebViewProps={
+                    {
+                      /* Any prop you want to pass to all WebViews */
+                    }
+                  }
+                  renderersProps={{
+                    iframe: {
+                      scalesPageToFit: true,
+                      webViewProps: {
+                        /* Any prop you want to pass to iframe WebViews */
+                      }
+                    }
+                  }}
                 />
 
               </View>
@@ -67,7 +104,37 @@ export default function articleBlock({local_data, global_data, global_info_data 
                   actyve_block_data={local_data.best_time}
                 />
 
-                <Text>Wethet</Text>
+              </View>
+            )
+        }
+        
+        return null;
+      })()}
+ 
+      {(() => {
+        if (global_data.weather != '' && global_data.weather != null){
+            return (
+              <View>
+                {/* https://www.npmjs.com/package/@native-html/iframe-plugin */}
+                <RenderHtml
+                  renderers={renderers}
+                  WebView={WebView}
+                  source={{ html: global_data.weather }}
+                  customHTMLElementModels={customHTMLElementModels}
+                  defaultWebViewProps={
+                    {
+                      /* Any prop you want to pass to all WebViews */
+                    }
+                  }
+                  renderersProps={{
+                    iframe: {
+                      scalesPageToFit: true,
+                      webViewProps: {
+                        /* Any prop you want to pass to iframe WebViews */
+                      }
+                    }
+                  }}
+                />
 
               </View>
             )
