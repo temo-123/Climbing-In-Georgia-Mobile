@@ -1,24 +1,25 @@
 // https://github.com/dohooo/react-native-reanimated-table
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Text, Image, FlatList } from "react-native";
+import { StyleSheet, View, Text, Image, FlatList, Alert } from "react-native";
 import { Table, Row, Rows } from "react-native-reanimated-table";
+
+import AutoHeightImage from 'react-native-auto-height-image';
 
 import RoutesTable from "./items/routes_tab";
 import { gStyle } from "../../../assets/styles/styles";
 import axios from "axios";
 
-// export default function articleBlock({local_data, global_data}) {
-export default function SpotSectors({ article_id }) {
-  const [sectors, setSector] = useState([]);
+export default function spotSectors({article_id}) {
+  const [sectors, setSector] = useState([])
+  const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
-    const baseUrl =
-      "https://climbing.ge/api/sector/get_sector_and_routes/" + article_id;
+    const baseUrl = "https://climbing.ge/api/sector/get_sector_and_routes/" + article_id;
     axios
       .get(baseUrl)
       .then(({ data }) => {
         setSector(data);
-        console.log("🚀 ~ file: spot_sectors.jsx:21 ~ .then ~ data:", data)
+        setLoading(false);
       })
       .catch((error) => {
         Alert.alert("ERROR!", "Axios request is fale");
@@ -27,59 +28,66 @@ export default function SpotSectors({ article_id }) {
         // always executes at the last of any API call
       });
   }, []);
-  // console.log("====================================");
-  // // console.log(sectors);
-  // console.log("🚀 ~ file: spot_sectors.jsx:31 ~ SpotSectors ~ sectors:", sectors)
-  // console.log("====================================");
-  return (
-    <View style={styles.container}>
-      {/* <Text>{item.sector.name}</Text> */}
-          {/* <Text>sususu</Text> */}
-      <FlatList
-        data={sectors}
-        renderItem={({ item }) => {
-          <Text>sususu</Text>
-          if (1==1) {
-            <Text>images</Text>;
-            // render area_sectors.jsx
-          } else {
-            <Text>{item.sector.name}</Text>;
-            // render sectors.jsx
-          }
-        }}
-      />
-    </View>
+
+  if(sectors == [] && !isLoading){
+    return(
+      <View style={styles.container}>
+        <Text>Loading sectors</Text>
+      </View>
+    )
+  }
+  
+  return(
+      <View style={styles.container}>
+        <Text style={gStyle.h2}>Sectors</Text>
+        {sectors.map((sector) => {
+          return (
+            <View>
+              <Text style={gStyle.h3}>{sector.sector.name}</Text>
+              {sector.sector_imgs.map((sector_img) => {
+                let act_img = "https://climbing.ge/public/images/sector_img/"+sector_img.image
+                
+                return (
+                  <AutoHeightImage
+                    source={{
+                      uri: act_img,
+                      method: 'POST',
+                      headers: {
+                        Pragma: 'no-cache',
+                      },
+                      body: sector.sector.name,
+                    }}
+                    style={styles.sector_image}
+
+                    resizeMode="contain"
+                  />
+                  // <AutoHeightImage
+                  //   width={100}
+                  //   source={{uri: 'http://placehold.it/350x150'}}
+                  // />
+                )
+              })}
+
+              <Table borderStyle={{ borderWidth: 2, borderColor: "#c8e1ff" }}>
+                <RoutesTable routes={sector.sport_routes} />
+              </Table>
+            </View>
+          )
+        })}
+      </View>
   );
 }
-// <View style={styles.container}>
-//     <View style={styles.sector_image_container}>
-//       <Text style={gStyle.h2}>sector name</Text>
-//       <Image
-//         style={styles.sector_image}
-//         source={require("../../../assets/images/ice.png/")}
-//       />
-//     </View>
-//     <Table borderStyle={{ borderWidth: 2, borderColor: "#c8e1ff" }}>
-//       <RoutesTable sector_id={333} />
-//     </Table>
-// </View>
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
-    // flexDirection: 'row',
-    // flexWrap: 'wrap',
     paddingBottom: 50,
-    // marginBottoma: 160,
-    // justifyContent: 'space-around'
   },
   sector_title: {
     fontSize: 24,
-    // margin: 6,
   },
   sector_image: {
-    width: "100%",
-    borderRadius: 10,
-    resizeMode: "contain",
+    height: 300,
+    flex: 1,
+    width: null
   },
 });

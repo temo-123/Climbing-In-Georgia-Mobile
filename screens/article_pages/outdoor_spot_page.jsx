@@ -19,7 +19,7 @@ export default function App({ route }) {
   const [globalOutdoorData, setGlobalOutdoorData] = useState([]);
   const [localeOutdoorData, setLocaleOutdoorData] = useState([]);
   const [globalOutdoorInfoData, setGlobalOutdoorInfoData] = useState([]);
-  // let outdoorData = []
+  const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
     const baseUrl =
@@ -30,6 +30,8 @@ export default function App({ route }) {
         setGlobalOutdoorData(data);
         setLocaleOutdoorData(data[0]);
         setGlobalOutdoorInfoData(data.global_info);
+
+        setLoading(false);
       })
       .catch((error) => {
         Alert.alert("ERROR!", "Axios request is fale");
@@ -39,13 +41,20 @@ export default function App({ route }) {
       });
   }, []);
 
+  if (isLoading) {
+    return <View><Text>loading</Text></View>;
+  }
+
+  // return <View><Text>loaded {globalOutdoorData.id}</Text></View>;
+
+
   return (
     <ScrollView style={styles.container}>
-      <ArticleBlock 
+      {/* <ArticleBlock 
         local_data={localeOutdoorData} 
         global_data={globalOutdoorData} 
         global_info_data={globalOutdoorInfoData}
-      />
+      /> */}
 
       <SpotSectors article_id={globalOutdoorData.id} />
 

@@ -26,18 +26,23 @@ export default function App() {
   }, []);
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <Article_list_header_text 
-        title="Outdoor Climbing In Georgia" 
-        description="description 1"
-      />
-      <Route_quantntyti />
-      <View style={styles.container}>
-        <FlatList data={outdoor_data} renderItem={({item}) => (
-          <OutdoorCard cardData={item} />
-        )} />
-      </View>
-    </ScrollView>
+    <FlatList
+      data={outdoor_data}
+      keyExtractor={(item) => item.area.id}
+      ListHeaderComponent={
+        <View>
+          <Article_list_header_text
+            title="Outdoor Climbing In Georgia"
+            description="description 1"
+          />
+          <Route_quantntyti />
+        </View>
+      }
+      renderItem={({item}) => (
+        <OutdoorCard cardData={item} />
+      )}
+      contentContainerStyle={styles.container}
+    />
   );
 }
 

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, LogBox } from 'react-native';
 
 import { Navigation } from './navigation/Navigation.jsx';
 
@@ -7,10 +7,12 @@ import { fab } from '@fortawesome/free-brands-svg-icons'
 import { faSquareCheck } from '@fortawesome/free-solid-svg-icons/faSquareCheck'
 library.add(fab, faSquareCheck)
 
-import { GoogleAnalyticsTracker } from 'react-native-google-analytics-bridge';
+LogBox.ignoreLogs(['Unable to activate keep awake']);
+
+// import { GoogleAnalyticsTracker } from 'react-native-google-analytics-bridge';
 
 export default function App() {
-let tracker = new GoogleAnalyticsTracker('5206567952');
+// let tracker = new GoogleAnalyticsTracker('5206567952');
 // tracker.trackScreenView('Home')
 
   // const GStyle = GStyle

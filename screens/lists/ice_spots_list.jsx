@@ -20,18 +20,20 @@ export default function App() {
   }, []);
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <Article_list_header_text 
-        title="Ice Climbing In Georgia" 
-        description="description 1"
-      />
-      <View style={styles.container}>
-        {/* <IceCard /> */}
-        <FlatList data={ice_data} renderItem={({item}) => (
-          <IceCard cardData={item} />
-        )} />
-      </View>
-    </ScrollView>
+    <FlatList
+      data={ice_data}
+      keyExtractor={(item) => item[0][0].id}
+      ListHeaderComponent={
+        <Article_list_header_text
+          title="Ice Climbing In Georgia"
+          description="description 1"
+        />
+      }
+      renderItem={({item}) => (
+        <IceCard cardData={item} />
+      )}
+      contentContainerStyle={styles.container}
+    />
   );
 }
 

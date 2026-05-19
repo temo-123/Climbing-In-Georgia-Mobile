@@ -33,9 +33,9 @@ function DrawerNavigation () {
     return (
         // <NavigationContainer>
             <Drawer.Navigator>
-                <Drawer.Screen name="index" component={index} 
-                    options={{ 
-                        title: 'Climbing In Georgia', 
+                <Drawer.Screen name="home" component={index}
+                    options={{
+                        title: 'Climbing In Georgia',
                         headerStyle: {
                             backgroundColor: '#279fbb',
                         },

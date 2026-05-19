@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios'
-import { StyleSheet, Text, View, ScrollView, FlatList } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, FlatList, Alert } from 'react-native';
 
 import  MountCard  from "../../components/cards/mount_route_card_component";
 import  Article_list_header_text  from "../../components/article_list_header_text_component"
- 
+
 export default function App() {
   const [mount_data, useData] = useState([])
 
@@ -20,18 +20,20 @@ export default function App() {
   }, []);
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <Article_list_header_text 
-        title="Mounain Climbing In Georgia" 
-        description="description 1"
-      />
-      <View style={styles.container}>
-        {/* <MountCard /> */}
-        <FlatList data={mount_data} renderItem={({item}) => (
-          <MountCard cardData={item} />
-        )} />
-      </View>
-    </ScrollView>
+    <FlatList
+      data={mount_data}
+      keyExtractor={(item) => item[0][0].id}
+      ListHeaderComponent={
+        <Article_list_header_text
+          title="Mounain Climbing In Georgia"
+          description="description 1"
+        />
+      }
+      renderItem={({item}) => (
+        <MountCard cardData={item} />
+      )}
+      contentContainerStyle={styles.container}
+    />
   );
 }
 

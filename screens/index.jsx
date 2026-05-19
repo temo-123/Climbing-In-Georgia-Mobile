@@ -19,36 +19,21 @@ const Tab = createBottomTabNavigator();
 
 // const gaMiddleware = createMiddleware(eventsMap, ga);
 
+import IndexCard from '../components/cards/index_card_component'
+
 export default function HomeScreen({ navigation }) {
 
   return (
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 
         <View style={styles.feed}>
-          <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('outdoors_list')}>
-            <Image style={styles.card_img} source={require('../assets/images/indoor.png/')} />
-            <Text style={styles.card_text}>Outdoor Spots</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('indoors_list')}>
-            <Image style={styles.card_img} source={require('../assets/images/outdoor.png/')} />
-            <Text style={styles.card_text}>Indoor Gyms</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('ices_list')}>
-            <Image style={styles.card_img} source={require('../assets/images/ice.png/')} />
-            <Text style={styles.card_text}>Ice & Mix</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('mountain_routes_list')}>
-            <Image style={styles.card_img} source={require('../assets/images/mount.png/')} />
-            <Text style={styles.card_text}>Mountain routes</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('other_activities_list')}>
-            <Image style={styles.card_img} source={require('../assets/images/other.png/')} />
-            <Text style={styles.card_text}>Other Activity</Text>
-          </TouchableOpacity>
-          {/* <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('events_list')}>
-            <Image style={styles.card_img} source={require('../assets/images/event.png/')} />
-            <Text style={styles.card_text}>Events</Text>
-          </TouchableOpacity> */}
+          <IndexCard url='outdoors_list' image={require('../assets/images/outdoor.png/')} title='Outdoor Spots'/>
+          <IndexCard url='indoors_list' image={require('../assets/images/indoor.png/')} title='Indoor Gyms'/>
+          <IndexCard url='ices_list' image={require('../assets/images/ice.png/')} title='Ice & Mix'/>
+          <IndexCard url='mountain_routes_list' image={require('../assets/images/mount.png/')} title='Mountain routes'/>
+          <IndexCard url='other_activities_list' image={require('../assets/images/other.png/')} title='Other Activity'/>
+
+          {/* <IndexCard url='events_list' image={require('../assets/images/event.png/')} title='Events'/> */}
         </View>
 
         <View style={styles.bottom_feed}>
@@ -60,15 +45,6 @@ export default function HomeScreen({ navigation }) {
               <Text style={styles.long_card_text}>About us</Text>
             </View>
           </TouchableOpacity>
-
-          {/* <TouchableOpacity style={styles.long_card} onPress={() => navigation.navigate('workouts_list')}>
-            <View style={styles.long_card_image_view}>
-              <Image style={styles.long_card_image} source={require('../assets/images/workout.png/')} />
-            </View>
-            <View style={styles.long_card_text_view}>
-              <Text style={styles.long_card_text}>Workouts</Text>
-            </View>
-          </TouchableOpacity> */}
         </View>
 
       </ScrollView>

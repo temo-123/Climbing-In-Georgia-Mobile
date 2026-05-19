@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios'
-import { StyleSheet, Text, View, ScrollView, FlatList} from 'react-native';
+import { StyleSheet, Text, View, ScrollView, FlatList, Alert} from 'react-native';
 
 import  EventCard  from "../../components/cards/event_card_component";
 import  Article_list_header_text  from "../../components/article_list_header_text_component"
@@ -20,18 +20,20 @@ export default function App() {
   }, []);
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <Article_list_header_text 
-        title="Events" 
-        description="Events description 1"
-      />
-      <View style={styles.container}>
-        {/* <EventCard /> */}
-        <FlatList data={event_data} renderItem={({item}) => (
-          <EventCard cardData={item} />
-        )} />
-      </View>
-    </ScrollView>
+    <FlatList
+      data={event_data}
+      keyExtractor={(item) => item.global_event.id}
+      ListHeaderComponent={
+        <Article_list_header_text
+          title="Events"
+          description="Events description 1"
+        />
+      }
+      renderItem={({item}) => (
+        <EventCard cardData={item} />
+      )}
+      contentContainerStyle={styles.container}
+    />
   );
 }
 

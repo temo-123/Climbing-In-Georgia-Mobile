@@ -29,18 +29,20 @@ export default function App() {
   }, []);
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <Article_list_header_text
-        title="Indoor Climbing In Georgia"
-        description="description 1"
-      />
-      <View style={styles.container}>
-        <FlatList
-          data={indoor_data}
-          renderItem={({ item }) => <IndoorCard cardData={item} />}
+    <FlatList
+      data={indoor_data}
+      keyExtractor={(item) => item[0][0].id}
+      ListHeaderComponent={
+        <Article_list_header_text
+          title="Indoor Climbing In Georgia"
+          description="description 1"
         />
-      </View>
-    </ScrollView>
+      }
+      renderItem={({ item }) =>
+        <IndoorCard cardData={item} />
+      }
+      contentContainerStyle={styles.container}
+    />
   );
 }
 

@@ -31,9 +31,29 @@ export default function articleBlock({local_data, global_data, global_info_data 
             return (
               <View>
                 
-                <RenderHtml
+                {/* <RenderHtml
                   contentWidth={width}
                   source={{ html: local_data.text }}
+                /> */}
+                <RenderHtml
+                  contentWidth={width}
+                  renderers={renderers}
+                  WebView={WebView}
+                  source={{ html: local_data.text }}
+                  customHTMLElementModels={customHTMLElementModels}
+                  defaultWebViewProps={
+                    {
+                      /* Any prop you want to pass to all WebViews */
+                    }
+                  }
+                  renderersProps={{
+                    iframe: {
+                      scalesPageToFit: true,
+                      webViewProps: {
+                        /* Any prop you want to pass to iframe WebViews */
+                      }
+                    }
+                  }}
                 />
 
               </View>
@@ -49,9 +69,29 @@ export default function articleBlock({local_data, global_data, global_info_data 
               <View>
                 <Text style={gStyle.h2}>How to get there</Text>
 
-                <RenderHtml
+                {/* <RenderHtml
                   contentWidth={width}
                   source={{ html: local_data.how_get }}
+                /> */}
+                <RenderHtml
+                  contentWidth={width}
+                  renderers={renderers}
+                  WebView={WebView}
+                  source={{ html: local_data.how_get }}
+                  customHTMLElementModels={customHTMLElementModels}
+                  defaultWebViewProps={
+                    {
+                      /* Any prop you want to pass to all WebViews */
+                    }
+                  }
+                  renderersProps={{
+                    iframe: {
+                      scalesPageToFit: true,
+                      webViewProps: {
+                        /* Any prop you want to pass to iframe WebViews */
+                      }
+                    }
+                  }}
                 />
 
               </View>
@@ -67,6 +107,7 @@ export default function articleBlock({local_data, global_data, global_info_data 
               <View>
                 {/* https://www.npmjs.com/package/@native-html/iframe-plugin */}
                 <RenderHtml
+                  contentWidth={width}
                   renderers={renderers}
                   WebView={WebView}
                   source={{ html: global_data.map }}
@@ -117,6 +158,7 @@ export default function articleBlock({local_data, global_data, global_info_data 
               <View>
                 {/* https://www.npmjs.com/package/@native-html/iframe-plugin */}
                 <RenderHtml
+                  contentWidth={width}
                   renderers={renderers}
                   WebView={WebView}
                   source={{ html: global_data.weather }}
