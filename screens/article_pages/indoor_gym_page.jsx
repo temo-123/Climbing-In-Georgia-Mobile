@@ -10,6 +10,7 @@ import React, { useState, useEffect } from "react";
 
 import SpotSectors from "../../components/Routes_and_sectors/Sport_sector/spot_sectors";
 import ArticleBlock from "../../components/article/articl_block";
+import Preloader from "../../components/Preloader";
 
 import api, { corsUrl } from "../../utils/api";
 
@@ -17,7 +18,7 @@ export default function App({ route }) {
   const [globalIndoorData, setGlobalIndoorData] = useState([]);
   const [localeIndoorData, setLocaleIndoorData] = useState([]);
   const [globalIndoorInfoData, setGlobalIndoorInfoData] = useState([]);
-  // let IndoorData = []
+  const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
     const baseUrl =
@@ -28,14 +29,15 @@ export default function App({ route }) {
         setGlobalIndoorData(data);
         setLocaleIndoorData(data.locale_data);
         setGlobalIndoorInfoData(data.general_info);
+        setLoading(false);
       })
       .catch((error) => {
         Alert.alert("ERROR!", "Axios request is fale");
-      })
-      .finally(function () {
-        // always executes at the last of any API call
+        setLoading(false);
       });
   }, []);
+
+  if (isLoading) return <Preloader />;
 
   return (
     <ScrollView style={styles.container}>

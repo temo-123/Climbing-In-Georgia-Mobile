@@ -2,59 +2,45 @@ import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
-  Text,
-  View,
   Alert,
   ScrollView,
 } from "react-native";
 
 import IceSectors from "../../components/Routes_and_sectors/Ice_sectors/ice_sectors";
 import ArticleBlock from "../../components/article/articl_block";
+import Preloader from "../../components/Preloader";
 
 import api, { corsUrl } from "../../utils/api";
 
 export default function App({ route }) {
   // console.log("🚀 ~ file: ice_spot_page.jsx:28 ~ //getData ~ route.params:", route.params)
-  const [globalIceData, setGlobalIceData] = useState([]);
-  const [localeIceData, setLocaleIceData] = useState([]);
-  const [globalIceInfoData, setGlobalIceInfoData] = useState([]);
+  const [globalIceData, setGlobalIceData] = useState({});
+  const [localeIceData, setLocaleIceData] = useState({});
+  const [globalIceInfoData, setGlobalIceInfoData] = useState({});
   const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
-    // const getData = () => {
     api.get(corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/ice/en/" + route.params))
-      .then(function (data) {
-        setGlobalIceData(data.data);
-        setLocaleIceData(data.data.locale_data);
-        setGlobalIceInfoData(data.data.general_info);
+      .then(({ data }) => {
+        setGlobalIceData(data);
+        setLocaleIceData(data.locale_data || {});
+        setGlobalIceInfoData(data.general_info || {});
         setLoading(false);
       })
-      .catch((error) => {
-        Alert.alert("ERROR!", "Axios request is fale");
-      })
-      .finally(function () {
-        // alert("Finally called");
+      .catch(() => {
+        Alert.alert("ERROR!", "Failed to load article");
       });
-    // };
-
-    // getData()
   }, []);
 
-  if(isLoading){
-    return(
-      <View style={styles.container}>
-        <Text>Loading</Text>
-      </View>
-    )
-  }
+  if (isLoading) return <Preloader />;
 
   return (
     <ScrollView style={styles.container}>
-      {/* <ArticleBlock
+      <ArticleBlock
         local_data={localeIceData}
-        global_data={globalIceData}
+        global_data={globalIceData.global_data || {}}
         global_info_data={globalIceInfoData}
-      /> */}
+      />
 
       <IceSectors article_id={globalIceData.global_data?.id} />
 

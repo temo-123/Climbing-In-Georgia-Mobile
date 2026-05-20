@@ -4,13 +4,14 @@ import { Image, StyleSheet, Text, View, Alert, ScrollView, TouchableOpacity } fr
 import React from 'react';
 
 import { useNavigation } from '@react-navigation/native';
+import { imgUri } from '../../utils/api';
 
 export default function outdoorCard({cardData}) {
   const navigation = useNavigation();
   return (
     <TouchableOpacity style={styles.article_card} onPress={() => navigation.navigate('event_page', cardData.global_event.id)}>
       <View style={styles.article_card_image_view}>
-        <Image style={styles.article_card_image} source={{uri: "https://climbing.ge/images/event_img/" + cardData.global_event.image }} />
+        <Image style={styles.article_card_image} source={{uri: imgUri("https://climbing.ge/images/event_img/", cardData.global_event.image)}} />
       </View>
       <View style={styles.article_card_text}>
         <View style={styles.event_datas}>

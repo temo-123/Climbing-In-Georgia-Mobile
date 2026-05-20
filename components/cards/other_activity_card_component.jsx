@@ -11,6 +11,7 @@ import {
 import React from "react";
 
 import { useNavigation } from "@react-navigation/native";
+import { imgUri } from "../../utils/api";
 
 export default function outdoorCard({ cardData }) {
   const navigation = useNavigation();
@@ -25,7 +26,7 @@ export default function outdoorCard({ cardData }) {
         <Image
           style={styles.outdoor_article_card_image}
           source={{
-            uri: "https://climbing.ge/images/other_img/" + cardData.global_data.image,
+            uri: imgUri("https://climbing.ge/images/other_img/", cardData.global_data.image),
           }}
         />
       </View>

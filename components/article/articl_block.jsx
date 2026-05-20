@@ -224,20 +224,21 @@ export default function articleBlock({local_data, global_data, global_info_data 
 
 
       {(() => {
-        if ((local_data.routes != '' && local_data.routes != null) || typeof global_info_data.routes_info  !== 'undefined'){
+        const routeText = local_data.route || local_data.routes;
+        if ((routeText != '' && routeText != null) || typeof global_info_data.routes_info !== 'undefined'){
             return (
               <View>
                 <Text style={gStyle.h2}>Routes</Text>
 
-                <GlobalInfoBlock 
+                <GlobalInfoBlock
                   global_info_data={global_info_data.routes_info}
-                  actyve_block_data={local_data.routes}
+                  actyve_block_data={routeText}
                 />
 
               </View>
             )
         }
-        
+
         return null;
       })()}
 

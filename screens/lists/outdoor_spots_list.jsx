@@ -5,26 +5,29 @@ import api, { corsUrl } from '../../utils/api';
 import  OutdoorCard  from "../../components/cards/outdoor_card_component";
 import  Article_list_header_text  from "../../components/article_list_header_text_component"
 import  Route_quantntyti  from "../../components/roures_quantyti_text_component"
+import Preloader from "../../components/Preloader";
 
 import React, { useState, useEffect } from 'react';
 
 export default function App() {
   const [outdoor_data, useData] = useState([])
+  const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
     api
     .get(corsUrl('https://climbing.ge/api/get_article/get_locale_articles/outdoor/en'))
     .then(({ data }) => {
       useData(data);
+      setLoading(false);
     })
     .catch(error => {
       console.log('Outdoor API error:', error.message, error.response?.status, error.config?.url);
       Alert.alert('ERROR!', error.message)
-    })
-    .finally(function() {
-      // always executes at the last of any API call
+      setLoading(false);
     });
   }, []);
+
+  if (isLoading) return <Preloader />;
 
   return (
     <FlatList

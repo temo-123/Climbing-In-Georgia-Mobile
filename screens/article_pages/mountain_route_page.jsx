@@ -6,11 +6,13 @@ import api, { corsUrl } from "../../utils/api";
 import IceSectors from "../../components/Routes_and_sectors/Ice_sectors/ice_sectors";
 import ArticleBlock from "../../components/article/articl_block";
 import MasiveDescription from "../../components/article/mount_masive/mount_masive_description_for_article_page_component";
+import Preloader from "../../components/Preloader";
 
 export default function App({ route }) {
   const [globalIceData, setGlobalIceData] = useState([]);
   const [localeIceData, setLocaleIceData] = useState([]);
   const [globalIceInfoData, setGlobalIceInfoData] = useState([]);
+  const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
     api.get(corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/mount_route/en/" + route.params))
@@ -18,18 +20,16 @@ export default function App({ route }) {
         setGlobalIceData(data.data);
         setLocaleIceData(data.data.locale_data);
         setGlobalIceInfoData(data.data.general_info);
+        setLoading(false);
       })
       .catch((error) => {
         console.log(error);
         Alert.alert("ERROR!", "Axios request is fale");
-      })
-      .finally(function () {
-        // alert("Finally called");
+        setLoading(false);
       });
-    // };
-
-    // getData()
   }, []);
+
+  if (isLoading) return <Preloader />;
 
   return (
     <ScrollView style={styles.container}>

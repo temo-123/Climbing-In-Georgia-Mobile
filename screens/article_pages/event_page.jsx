@@ -4,11 +4,13 @@ import { StyleSheet, Text, ScrollView, Alert } from "react-native";
 import api, { corsUrl } from "../../utils/api";
 
 import ArticleBlock from "../../components/article/articl_block";
+import Preloader from "../../components/Preloader";
 
 export default function App({ route }) {
   const [globalEventData, setGlobalEventData] = useState([]);
   const [localeEventData, setLocaleEventData] = useState([]);
   const [globalEventInfoData, setGlobalEventInfoData] = useState([]);
+  const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
     api.get(corsUrl("https://climbing.ge/api/get_event/get_event_on_site_page/en/" + route.params))
@@ -16,15 +18,16 @@ export default function App({ route }) {
         setGlobalEventData(data.data);
         setLocaleEventData(data.data.locale_data);
         setGlobalEventInfoData(data.data.general_info);
+        setLoading(false);
       })
       .catch((error) => {
         console.log(error);
         Alert.alert("ERROR!", "Axios request is fale");
-      })
-      .finally(function () {
-        // alert("Finally called");
+        setLoading(false);
       });
   }, []);
+
+  if (isLoading) return <Preloader />;
 
   return (
     <ScrollView style={styles.container}>

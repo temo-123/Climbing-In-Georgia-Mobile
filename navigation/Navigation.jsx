@@ -1,7 +1,9 @@
 import { StyleSheet } from "react-native";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
+import { useRef } from 'react';
+import { logScreenView } from '../utils/analytics';
 
 // import index from '../screens/index';
 // import about_us from '../screens/about_us';
@@ -41,8 +43,24 @@ const st = {
 
 export const Navigation = () => {
 // export default function Navigation() {
+    const navigationRef = useNavigationContainerRef();
+    const routeNameRef = useRef();
+
     return (
-        <NavigationContainer styles={styles.navbar}>
+        <NavigationContainer
+            styles={styles.navbar}
+            ref={navigationRef}
+            onReady={() => {
+                routeNameRef.current = navigationRef.getCurrentRoute()?.name;
+            }}
+            onStateChange={() => {
+                const current = navigationRef.getCurrentRoute()?.name;
+                if (current && current !== routeNameRef.current) {
+                    logScreenView(current);
+                    routeNameRef.current = current;
+                }
+            }}
+        >
             <Stack.Navigator>
                 <Stack.Screen name="HomeDrawer" component={DrawerNavigator} options={{ title: 'Climbing In Georgia', headerShown: false,}} />
                 <Stack.Screen name="indoor_page" component={indoor_page}
