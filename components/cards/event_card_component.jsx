@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 export default function outdoorCard({cardData}) {
   const navigation = useNavigation();
   return (
-    <TouchableOpacity style={styles.article_card} onPress={() => navigation.navigate('event_page')}>
+    <TouchableOpacity style={styles.article_card} onPress={() => navigation.navigate('event_page', cardData.global_event.id)}>
       <View style={styles.article_card_image_view}>
         <Image style={styles.article_card_image} source={{uri: "https://climbing.ge/images/event_img/" + cardData.global_event.image }} />
       </View>
@@ -53,6 +53,7 @@ const styles = StyleSheet.create({
     width: '45%', 
   },
   article_card_image: {
+    width: '100%',
     height: '100%',
     borderRadius: 10,
     resizeMode: 'contain',

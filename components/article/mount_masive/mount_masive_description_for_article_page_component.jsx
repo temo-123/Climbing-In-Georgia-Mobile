@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions, Alert } from "react-native";
 import RenderHtml from "react-native-render-html";
 import { gStyle } from "../../../assets/styles/styles";
-import axios from "axios";
+import api, { corsUrl } from "../../../utils/api";
 
 export default function MasiveDescription({ article_id }) {
   const [mountMasive, setMountMasive] = useState([]);
@@ -10,8 +10,8 @@ export default function MasiveDescription({ article_id }) {
   useEffect(() => {
     // console.log("🚀 ~ file: mount_masive_description_for_article_page_component.jsx:17 ~ .then ~ article_id:", article_id)
     const baseUrl =
-      "https://climbing.ge/api/mount/on_page/en/" + article_id;
-    axios
+      corsUrl("https://climbing.ge/api/mount/on_page/en/" + article_id);
+    api
       .get(baseUrl)
       .then(({ data }) => {
         setMountMasive(data);

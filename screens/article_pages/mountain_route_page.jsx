@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, ScrollView } from "react-native";
-import axios from "axios";
+import { StyleSheet, Text, ScrollView, Alert } from "react-native";
+import api, { corsUrl } from "../../utils/api";
 
 import IceSectors from "../../components/Routes_and_sectors/Ice_sectors/ice_sectors";
 import ArticleBlock from "../../components/article/articl_block";
@@ -13,12 +13,11 @@ export default function App({ route }) {
   const [globalIceInfoData, setGlobalIceInfoData] = useState([]);
 
   useEffect(() => {
-    axios
-      .get("https://climbing.ge/api/article/mount_route/en/" + route.params)
+    api.get(corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/mount_route/en/" + route.params))
       .then(function (data) {
         setGlobalIceData(data.data);
-        setLocaleIceData(data.data[0]);
-        setGlobalIceInfoData(data.data.global_info);
+        setLocaleIceData(data.data.locale_data);
+        setGlobalIceInfoData(data.data.general_info);
       })
       .catch((error) => {
         console.log(error);

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios'
+import api, { corsUrl } from '../utils/api';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Alert } from 'react-native';
 import { gStyle } from '../assets/styles/styles';
 
 // import { GoogleAnalyticsTracker } from "react-native-google-analytics-bridge";
@@ -11,13 +11,13 @@ import { gStyle } from '../assets/styles/styles';
 // tracker.trackEvent("testcategory", "testaction");
 
 export default function App() {
-  const [aboutUsData, setAboutUsData] = useState({'global_data': [], 'locale_data': []})
+  const [aboutUsData, setAboutUsData] = useState([])
 
   // let about_us_info =[]
 
   React.useEffect(() => {
-    axios
-    .get('https://climbing.ge/api/siteData/get_site_locale_data/en')
+    api
+    .get(corsUrl('https://climbing.ge/api/get_site_data/get_site_locale_data/en'))
     .then(({ data }) => {
       setAboutUsData(data);
 
@@ -30,11 +30,8 @@ export default function App() {
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <Text style={gStyle.h1}>About us</Text>
-      
-      <Text>{aboutUsData.locale_data.guid_description}</Text>
 
-      <Text>{aboutUsData.global_data.email}</Text>
-      <Text>{aboutUsData.global_data.number}</Text>
+      <Text>{aboutUsData.find(item => item.slug === 'guid_description')?.us_data}</Text>
 
       <StatusBar style="auto" />
     </ScrollView>

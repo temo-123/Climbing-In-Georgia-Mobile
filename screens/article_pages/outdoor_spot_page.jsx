@@ -3,9 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
-  WebView,
   Alert,
-  ActivityIndicator,
   ScrollView,
 } from "react-native";
 import React, { useState, useEffect } from "react";
@@ -13,7 +11,7 @@ import React, { useState, useEffect } from "react";
 import SpotSectors from "../../components/Routes_and_sectors/Sport_sector/spot_sectors";
 import ArticleBlock from "../../components/article/articl_block";
 
-import axios from "axios";
+import api, { corsUrl } from "../../utils/api";
 
 export default function App({ route }) {
   const [globalOutdoorData, setGlobalOutdoorData] = useState([]);
@@ -23,13 +21,13 @@ export default function App({ route }) {
 
   useEffect(() => {
     const baseUrl =
-      "https://climbing.ge/api/article/indoor/en/" + route.params;
-    axios
+      corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/outdoor/en/" + route.params);
+    api
       .get(baseUrl)
       .then(({ data }) => {
         setGlobalOutdoorData(data);
-        setLocaleOutdoorData(data[0]);
-        setGlobalOutdoorInfoData(data.global_info);
+        setLocaleOutdoorData(data.locale_data);
+        setGlobalOutdoorInfoData(data.general_info);
 
         setLoading(false);
       })
@@ -56,7 +54,7 @@ export default function App({ route }) {
         global_info_data={globalOutdoorInfoData}
       /> */}
 
-      <SpotSectors article_id={globalOutdoorData.id} />
+      <SpotSectors article_id={globalOutdoorData.global_data?.id} />
 
       <StatusBar style="auto" />
     </ScrollView>

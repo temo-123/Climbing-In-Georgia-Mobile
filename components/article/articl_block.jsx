@@ -18,9 +18,6 @@ export default function articleBlock({local_data, global_data, global_info_data 
     iframe: iframeModel
   };
   
-// console.log('====================================');
-// console.log("🚀 ~ file: articl_block.jsx:11 ~ articleBlock ~ global_info_data:", global_info_data)
-// console.log('====================================');
   return (
     <View style={styles.container}>
 

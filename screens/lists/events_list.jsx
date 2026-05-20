@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import axios from 'axios'
+import React, { useState, useEffect } from 'react';
+import api, { corsUrl } from '../../utils/api';
 import { StyleSheet, Text, View, ScrollView, FlatList, Alert} from 'react-native';
 
 import  EventCard  from "../../components/cards/event_card_component";
@@ -8,9 +8,8 @@ import  Article_list_header_text  from "../../components/article_list_header_tex
 export default function App() {
   const [event_data, useData] = useState([])
 
-  React.useEffect(() => {
-    axios
-    .get('https://climbing.ge/api/event/get_event_on_site_list/en')
+  useEffect(() => {
+    api.get(corsUrl('https://climbing.ge/api/get_event/get_event_on_site_list/en'))
     .then(({ data }) => {
       useData(data);
     })

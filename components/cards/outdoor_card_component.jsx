@@ -8,21 +8,12 @@ import { useNavigation } from '@react-navigation/native';
 export default function outdoorCard({cardData}) {
   const navigation = useNavigation();
   return (
-    <TouchableOpacity style={styles.outdoor_article_card} onPress={() => navigation.navigate('outdoor_page', cardData.area.url_title)}>
+    <TouchableOpacity style={styles.outdoor_article_card} onPress={() => navigation.navigate('outdoor_page', cardData.global_data.url_title)}>
       <View style={styles.outdoor_article_card_image_view}>
-        <Image style={styles.outdoor_article_card_image} source={{uri: "https://climbing.ge/images/outdoor_img/" + cardData.area.image}} />
+        <Image style={styles.outdoor_article_card_image} source={{uri: "https://climbing.ge/images/outdoor_img/" + cardData.global_data.image}} />
       </View>
       <View style={styles.outdoor_article_card_text}>
-        <Text style={styles.outdoor_article_card_title} onPress={() => navigation.navigate('outdoor_page', cardData.area.url_title)}>{cardData.area[0][0].title}</Text>
-        <View>
-          <View style={styles.outdoor_article_card_routes}>
-            <Text style={styles.outdoor_article_card_routes_text}>Sectors - {cardData.route_quantyty.sectors}</Text>
-          </View>
-          <View style={styles.outdoor_article_card_routes}>
-            <Text style={styles.outdoor_article_card_routes_text}>Routes - {cardData.route_quantyty.routes} </Text>
-            <Text style={styles.outdoor_article_card_routes_text}>Multy pitchs - {cardData.route_quantyty.mtps}</Text>
-          </View>
-        </View>
+        <Text style={styles.outdoor_article_card_title} onPress={() => navigation.navigate('outdoor_page', cardData.global_data.url_title)}>{cardData.locale_data.title}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -46,6 +37,7 @@ const styles = StyleSheet.create({
     width: '45%', 
   },
   outdoor_article_card_image: {
+    width: '100%',
     height: '100%',
     borderRadius: 10,
     resizeMode: 'contain',

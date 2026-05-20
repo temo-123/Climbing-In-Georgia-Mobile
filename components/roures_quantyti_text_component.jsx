@@ -1,13 +1,13 @@
 import { StyleSheet, Text, View, Alert } from 'react-native';
-import axios from 'axios'
+import api, { corsUrl } from '../utils/api';
 import React, { useState } from 'react';
 
 export default function App() {
   const [quantity_data, useData] = useState([])
 
   React.useEffect(() => {
-    axios
-    .get('https://climbing.ge/api/sectors_and_routes_quantity')
+    api
+    .get(corsUrl('https://climbing.ge/api/sectors_and_routes_quantity'))
     .then(({ data }) => {
       useData(data);
     })

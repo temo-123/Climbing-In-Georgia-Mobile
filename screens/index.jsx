@@ -7,7 +7,6 @@ import 'react-native-gesture-handler';
 const Tab = createBottomTabNavigator();
 
 // import { GoogleAnalyticsTracker } from "react-native-google-analytics-bridge";
-// let tracker = new GoogleAnalyticsTracker("5206567952");
  
 // tracker.trackScreenView("Home");
 
@@ -27,19 +26,19 @@ export default function HomeScreen({ navigation }) {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 
         <View style={styles.feed}>
-          <IndexCard url='outdoors_list' image={require('../assets/images/outdoor.png/')} title='Outdoor Spots'/>
-          <IndexCard url='indoors_list' image={require('../assets/images/indoor.png/')} title='Indoor Gyms'/>
-          <IndexCard url='ices_list' image={require('../assets/images/ice.png/')} title='Ice & Mix'/>
-          <IndexCard url='mountain_routes_list' image={require('../assets/images/mount.png/')} title='Mountain routes'/>
-          <IndexCard url='other_activities_list' image={require('../assets/images/other.png/')} title='Other Activity'/>
+          <IndexCard url='outdoors_list' image={require('../assets/images/outdoor.png')} title='Outdoor Spots'/>
+          <IndexCard url='indoors_list' image={require('../assets/images/indoor.png')} title='Indoor Gyms'/>
+          <IndexCard url='ices_list' image={require('../assets/images/ice.png')} title='Ice & Mix'/>
+          <IndexCard url='mountain_routes_list' image={require('../assets/images/mount.png')} title='Mountain routes'/>
+          <IndexCard url='other_activities_list' image={require('../assets/images/other.png')} title='Other Activity'/>
 
-          {/* <IndexCard url='events_list' image={require('../assets/images/event.png/')} title='Events'/> */}
+          {/* <IndexCard url='events_list' image={require('../assets/images/event.png')} title='Events'/> */}
         </View>
 
         <View style={styles.bottom_feed}>
           <TouchableOpacity style={styles.long_card} onPress={() => navigation.navigate('about_us')}>
             <View style={styles.long_card_image_view}>
-              <Image style={styles.long_card_image} source={require('../assets/images/about_us.png/')} />
+              <Image style={styles.long_card_image} source={require('../assets/images/about_us.png')} />
             </View>
             <View style={styles.long_card_text_view}>
               <Text style={styles.long_card_text}>About us</Text>
@@ -66,7 +65,6 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
 
-
   card: {
     backgroundColor: 'white',
     width: '45%',
@@ -89,7 +87,6 @@ const styles = StyleSheet.create({
   card_text: {
     fontSize: 20
   },
-
 
   long_card: {
     backgroundColor: 'white',

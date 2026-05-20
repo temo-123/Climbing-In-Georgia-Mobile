@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import axios from 'axios'
+import React, { useState, useEffect } from 'react';
+import api, { corsUrl } from '../../utils/api';
 import { StyleSheet, Text, View, ScrollView, FlatList, Alert } from 'react-native';
 
 import  MountCard  from "../../components/cards/mount_route_card_component";
@@ -8,9 +8,8 @@ import  Article_list_header_text  from "../../components/article_list_header_tex
 export default function App() {
   const [mount_data, useData] = useState([])
 
-  React.useEffect(() => {
-    axios
-    .get('https://climbing.ge/api/articles/mount_route/en')
+  useEffect(() => {
+    api.get(corsUrl('https://climbing.ge/api/get_article/get_locale_articles/mount_route/en'))
     .then(({ data }) => {
       useData(data);
     })
@@ -22,7 +21,7 @@ export default function App() {
   return (
     <FlatList
       data={mount_data}
-      keyExtractor={(item) => item[0][0].id}
+      keyExtractor={(item) => item.global_data.id.toString()}
       ListHeaderComponent={
         <Article_list_header_text
           title="Mounain Climbing In Georgia"

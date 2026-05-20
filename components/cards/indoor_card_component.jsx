@@ -7,12 +7,12 @@ import { useNavigation } from '@react-navigation/native';
 export default function IndoorCard({ cardData }) {
   const navigation = useNavigation();
   return (
-    <TouchableOpacity style={styles.outdoor_article_card} onPress={() => navigation.navigate('indoor_page',  cardData.url_title)}>
+    <TouchableOpacity style={styles.outdoor_article_card} onPress={() => navigation.navigate('indoor_page', cardData.global_data.url_title)}>
       <View style={styles.outdoor_article_card_image_view}>
-        <Image style={styles.outdoor_article_card_image} source={{uri: "https://climbing.ge/images/indoor_img/"  + cardData.image }} />
+        <Image style={styles.outdoor_article_card_image} source={{uri: "https://climbing.ge/images/indoor_img/" + cardData.global_data.image}} />
       </View>
       <View style={styles.outdoor_article_card_text}>
-        <Text style={styles.outdoor_article_card_title} onPress={() => navigation.navigate('indoor_page',  cardData.url_title)}>{cardData[0][0].title}</Text>
+        <Text style={styles.outdoor_article_card_title} onPress={() => navigation.navigate('indoor_page', cardData.global_data.url_title)}>{cardData.locale_data.title}</Text>
         {/* <Text style={styles.outdoor_article_card_description}>article description</Text> */}
         <View>
           <View style={styles.outdoor_article_card_routes}>
@@ -43,6 +43,7 @@ const styles = StyleSheet.create({
     width: '45%', 
   },
   outdoor_article_card_image: {
+    width: '100%',
     height: '100%',
     borderRadius: 10,
     resizeMode: 'contain',

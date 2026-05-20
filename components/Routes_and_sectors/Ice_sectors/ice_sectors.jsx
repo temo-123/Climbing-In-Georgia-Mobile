@@ -3,21 +3,19 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Text, Image, FlatList, Alert } from "react-native";
 import { Table, Row, Rows } from "react-native-reanimated-table";
 
-import AutoHeightImage from 'react-native-auto-height-image';
-
 import RoutesTable from "./items/ice_routes_tab";
 import { gStyle } from "../../../assets/styles/styles";
-import axios from "axios";
+import api, { corsUrl } from "../../../utils/api";
 
 export default function iceSectors({article_id}) {
-  const [iceSectors, setIceSectors] = useState({})
+  const [iceSectors, setIceSectors] = useState([])
   const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
     const baseUrl =
-      "https://climbing.ge/api/ice_sectors/get_article_sectors/" + article_id;
+      corsUrl("https://climbing.ge/api/ice_sectors/get_article_sectors/" + article_id);
     // console.log("🚀 ~ file: ice_sectors.jsx:18 ~ useEffect ~ baseUrl:", baseUrl)
-    axios
+    api
       .get(baseUrl)
       .then(({ data }) => {
         // console.log("🚀 ~ file: spot_sectors.jsx:21 ~ .then ~ data:", data)
@@ -32,15 +30,13 @@ export default function iceSectors({article_id}) {
       });
   }, []);
 
-  if(iceSectors == [] && !isLoading){
+  if(iceSectors.length === 0 && !isLoading){
     return(
       <View style={styles.container}>
         <Text>Loading sectors</Text>
       </View>
     )
   }
-
-  console.log("🚀 ~ file: ice_sectors.jsx:43 ~ iceSectors ~ iceSectors:", iceSectors)
 
   return(
       <View style={styles.container}>
@@ -53,17 +49,11 @@ export default function iceSectors({article_id}) {
                 let act_img = "https://climbing.ge/public/images/ice_sector_img/"+sector_img.image
                 
                 return (
-                  <AutoHeightImage
+                  <Image
                     source={{
-                      uri: act_img,
-                      method: 'POST',
-                      headers: {
-                        Pragma: 'no-cache',
-                      },
-                      body: sector.name,
+                      uri: act_img
                     }}
                     style={styles.sector_image}
-
                     resizeMode="contain"
                   />
                 )

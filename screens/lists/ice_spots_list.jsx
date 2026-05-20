@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image, StyleSheet, Text, View, Alert, ScrollView, TouchableOpacity, FlatList } from 'react-native';
-import axios from 'axios'
+import api, { corsUrl } from '../../utils/api';
 
 import  IceCard  from "../../components/cards/ice_card_component";
 import  Article_list_header_text  from "../../components/article_list_header_text_component"
@@ -8,9 +8,8 @@ import  Article_list_header_text  from "../../components/article_list_header_tex
 export default function App() {
   const [ice_data, useData] = useState([])
 
-  React.useEffect(() => {
-    axios
-    .get('https://climbing.ge/api/articles/ice/en')
+  useEffect(() => {
+    api.get(corsUrl('https://climbing.ge/api/get_article/get_locale_articles/ice/en'))
     .then(({ data }) => {
       useData(data);
     })
@@ -22,7 +21,7 @@ export default function App() {
   return (
     <FlatList
       data={ice_data}
-      keyExtractor={(item) => item[0][0].id}
+      keyExtractor={(item) => item.global_data.id.toString()}
       ListHeaderComponent={
         <Article_list_header_text
           title="Ice Climbing In Georgia"

@@ -3,9 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
-  WebView,
   Alert,
-  ActivityIndicator,
   ScrollView,
 } from "react-native";
 import React, { useState, useEffect } from "react";
@@ -13,7 +11,7 @@ import React, { useState, useEffect } from "react";
 import SpotSectors from "../../components/Routes_and_sectors/Sport_sector/spot_sectors";
 import ArticleBlock from "../../components/article/articl_block";
 
-import axios from "axios";
+import api, { corsUrl } from "../../utils/api";
 
 export default function App({ route }) {
   const [globalOtherData, setGlobalOtherData] = useState([]);
@@ -22,12 +20,12 @@ export default function App({ route }) {
 
   useEffect(() => {
     const baseUrl =
-      "https://climbing.ge/api/article/other/us/" + route.params;
-    axios
+      corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/other/en/" + route.params);
+    api
       .get(baseUrl)
       .then(({ data }) => {
         setGlobalOtherData(data);
-        setLocaleOtherData(data[0]);
+        setLocaleOtherData(data.locale_data);
       })
       .catch((error) => {
         Alert.alert("ERROR!", "Axios request is fale");

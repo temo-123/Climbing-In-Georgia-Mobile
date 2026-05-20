@@ -4,16 +4,14 @@ import {
   StyleSheet,
   Text,
   View,
-  WebView,
   Alert,
-  ActivityIndicator,
   ScrollView,
 } from "react-native";
 
 import IceSectors from "../../components/Routes_and_sectors/Ice_sectors/ice_sectors";
 import ArticleBlock from "../../components/article/articl_block";
 
-import axios from "axios";
+import api, { corsUrl } from "../../utils/api";
 
 export default function App({ route }) {
   // console.log("🚀 ~ file: ice_spot_page.jsx:28 ~ //getData ~ route.params:", route.params)
@@ -24,12 +22,11 @@ export default function App({ route }) {
 
   useEffect(() => {
     // const getData = () => {
-    axios
-      .get("https://climbing.ge/api/article/ice/en/" + route.params)
+    api.get(corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/ice/en/" + route.params))
       .then(function (data) {
         setGlobalIceData(data.data);
-        setLocaleIceData(data.data[0]);
-        setGlobalIceInfoData(data.data.global_info);
+        setLocaleIceData(data.data.locale_data);
+        setGlobalIceInfoData(data.data.general_info);
         setLoading(false);
       })
       .catch((error) => {
@@ -59,7 +56,7 @@ export default function App({ route }) {
         global_info_data={globalIceInfoData}
       /> */}
 
-      <IceSectors article_id={globalIceData.id} />
+      <IceSectors article_id={globalIceData.global_data?.id} />
 
       <StatusBar style="auto" />
     </ScrollView>

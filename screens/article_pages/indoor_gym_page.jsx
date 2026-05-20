@@ -3,9 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
-  WebView,
   Alert,
-  ActivityIndicator,
   ScrollView,
 } from "react-native";
 import React, { useState, useEffect } from "react";
@@ -13,7 +11,7 @@ import React, { useState, useEffect } from "react";
 import SpotSectors from "../../components/Routes_and_sectors/Sport_sector/spot_sectors";
 import ArticleBlock from "../../components/article/articl_block";
 
-import axios from "axios";
+import api, { corsUrl } from "../../utils/api";
 
 export default function App({ route }) {
   const [globalIndoorData, setGlobalIndoorData] = useState([]);
@@ -23,13 +21,13 @@ export default function App({ route }) {
 
   useEffect(() => {
     const baseUrl =
-      "https://climbing.ge/api/article/indoor/us/" + route.params;
-    axios
+      corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/indoor/en/" + route.params);
+    api
       .get(baseUrl)
       .then(({ data }) => {
         setGlobalIndoorData(data);
-        setLocaleIndoorData(data[0]);
-        setGlobalIndoorInfoData(data.global_info);
+        setLocaleIndoorData(data.locale_data);
+        setGlobalIndoorInfoData(data.general_info);
       })
       .catch((error) => {
         Alert.alert("ERROR!", "Axios request is fale");
