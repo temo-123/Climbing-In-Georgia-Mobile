@@ -11,7 +11,7 @@ export default function outdoorCard({cardData}) {
   return (
     <TouchableOpacity style={styles.outdoor_article_card} onPress={() => navigation.navigate('outdoor_page', cardData.global_data.url_title)}>
       <View style={styles.outdoor_article_card_image_view}>
-        <Image style={styles.outdoor_article_card_image} source={{uri: imgUri("https://climbing.ge/images/outdoor_img/", cardData.global_data.image)}} />
+        <Image style={styles.outdoor_article_card_image} source={{uri: imgUri("https://climbing.ge/public/images/outdoor_img/", cardData.global_data.image)}} />
       </View>
       <View style={styles.outdoor_article_card_text}>
         <Text style={styles.outdoor_article_card_title} onPress={() => navigation.navigate('outdoor_page', cardData.global_data.url_title)}>{cardData.locale_data.title}</Text>

@@ -57,7 +57,7 @@ export default function App({ route }) {
             <Image
               key={img.id}
               source={{
-                uri: imgUri("https://climbing.ge/images/outdoor_img/", img.image),
+                uri: imgUri("https://climbing.ge/images/article_gallery_img/", img.image),
               }}
               style={styles.galleryImage}
               resizeMode="cover"

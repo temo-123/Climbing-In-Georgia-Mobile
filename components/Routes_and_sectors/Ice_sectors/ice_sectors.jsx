@@ -5,7 +5,7 @@ import IceRoutesTable from "./items/ice_routes_tab";
 import { gStyle } from "../../../assets/styles/styles";
 import api, { corsUrl, imgUri } from "../../../utils/api";
 
-const ICE_IMG_BASE = "https://climbing.ge/public/images/ice_sector_img/";
+const ICE_IMG_BASE = "https://climbing.ge/public/images/sector_img/";
 
 export default function IceSectors({ article_id }) {
   const [iceSectors, setIceSectors] = useState([]);
@@ -13,7 +13,7 @@ export default function IceSectors({ article_id }) {
 
   useEffect(() => {
     const baseUrl = corsUrl(
-      "https://climbing.ge/api/ice_sectors/get_article_sectors/" + article_id
+      "https://climbing.ge/api/get_sector/get_sector_and_routes/" + article_id
     );
     api
       .get(baseUrl)
@@ -41,13 +41,14 @@ export default function IceSectors({ article_id }) {
     <View style={styles.container}>
       <Text style={gStyle.h2}>Sectors</Text>
 
-      {iceSectors.map((sector, index) => {
-        const images = sector.images || sector.sector_imgs || [];
-        const routes = sector.routes || sector.sport_routes || [];
+      {iceSectors.map((item, index) => {
+        const sector = item.sector;
+        const images = item.sector_imgs || [];
+        const routes = item.sport_routes || [];
 
         return (
-          <View key={sector.id || index} style={styles.sectorBlock}>
-            {sector.name ? <Text style={gStyle.h3}>{sector.name}</Text> : null}
+          <View key={sector?.id || index} style={styles.sectorBlock}>
+            {sector?.name ? <Text style={gStyle.h3}>{sector.name}</Text> : null}
 
             {images.map((img, imgIdx) => (
               <Image

@@ -8,6 +8,7 @@ import { gStyle } from "../../../assets/styles/styles";
 import api, { corsUrl, imgUri } from "../../../utils/api";
 
 const SECTOR_IMG_BASE = "https://climbing.ge/public/images/sector_img/";
+const LOCAL_IMG_BASE  = "https://climbing.ge/public/images/sector_local_img/";
 
 // Renders one sector block: images + sport routes + multi-pitch routes
 function SectorItem({ item }) {
@@ -83,7 +84,7 @@ export default function SpotSectors({ article_id }) {
                     <Text style={gStyle.h3}>{localImg.title}</Text>
                   ) : null}
                   <Image
-                    source={{ uri: imgUri(SECTOR_IMG_BASE, localImg.image) }}
+                    source={{ uri: imgUri(LOCAL_IMG_BASE, localImg.image) }}
                     style={styles.sectorImage}
                     resizeMode="contain"
                   />

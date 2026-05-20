@@ -22,6 +22,10 @@ export default function articleBlock({local_data, global_data, global_info_data 
     <View style={styles.container}>
 
       <Text style={gStyle.h1}>{local_data.title}</Text>
+      
+      <Text style={gStyle.h1}>https://climbing.ge/public/images/outdoor_img/{global_data.image}</Text>
+      {/* <Image style={{width: '100%', height: 200, resizeMode: 'contain'}} source={{uri: "https://climbing.ge/public/images/outdoor_img/" + global_data.image}} /> */}
+
 
       {(() => {
         if (local_data.text != '' && local_data.text != null){

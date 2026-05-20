@@ -26,7 +26,7 @@ export default function outdoorCard({ cardData }) {
         <Image
           style={styles.outdoor_article_card_image}
           source={{
-            uri: imgUri("https://climbing.ge/images/other_img/", cardData.global_data.image),
+            uri: imgUri("https://climbing.ge/public/images/other_img/", cardData.global_data.image),
           }}
         />
       </View>

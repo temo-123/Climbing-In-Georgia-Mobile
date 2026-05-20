@@ -33,7 +33,8 @@ export default function App({ route }) {
 
   return (
     <ScrollView style={styles.container}>
-      <MasiveDescription article_id={route.params} />
+      {/* <MasiveDescription article_id={route.params} /> */}
+
 
       <ArticleBlock
         local_data={localeIceData}
