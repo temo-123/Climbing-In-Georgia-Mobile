@@ -26,7 +26,7 @@
     "production": {
       "autoIncrement": true,
       "android": {
-        "buildType": "preview"
+        "buildType": "apk"
       },
       "ios": {
         "simulator": false
