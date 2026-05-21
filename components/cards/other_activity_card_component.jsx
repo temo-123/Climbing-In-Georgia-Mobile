@@ -1,12 +1,10 @@
 import {
-  Image,
   StyleSheet,
   Text,
   View,
-  Alert,
-  ScrollView,
   TouchableOpacity,
 } from "react-native";
+import { Image } from "expo-image";
 
 import React from "react";
 
@@ -28,6 +26,7 @@ export default function outdoorCard({ cardData }) {
           source={{
             uri: imgUri("https://climbing.ge/public/images/other_img/", cardData.global_data.image),
           }}
+          contentFit="contain"
         />
       </View>
       <View style={styles.outdoor_article_card_text}>

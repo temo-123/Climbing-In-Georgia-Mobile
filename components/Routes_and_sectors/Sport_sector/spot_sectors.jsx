@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Text, Image, Alert } from "react-native";
+import { StyleSheet, View, Text, Alert, TouchableOpacity } from "react-native";
+import { Image } from "expo-image";
 
 import RoutesTable from "./items/routes_tab";
 import MultiPitchTab from "./items/multi_pitch_tab";
 import SectorInfoBar from "./items/sector_info_bar";
+import ImageViewerModal from "../../ImageViewerModal";
 import { gStyle } from "../../../assets/styles/styles";
 import api, { corsUrl, imgUri } from "../../../utils/api";
 
 const SECTOR_IMG_BASE = "https://climbing.ge/public/images/sector_img/";
 const LOCAL_IMG_BASE  = "https://climbing.ge/public/images/sector_local_img/";
 
-// Renders one sector block: images + sport routes + multi-pitch routes
-function SectorItem({ item }) {
+function SectorItem({ item, onImagePress }) {
   const sector = item.sector;
   const images = item.sector_imgs || [];
   const sportRoutes = item.sport_routes || [];
@@ -23,14 +24,19 @@ function SectorItem({ item }) {
 
       <SectorInfoBar sector={sector} />
 
-      {images.map((img) => (
-        <Image
-          key={img.id}
-          source={{ uri: imgUri(SECTOR_IMG_BASE, img.image) }}
-          style={styles.sectorImage}
-          resizeMode="contain"
-        />
-      ))}
+      {images.map((img) => {
+        const uri = imgUri(SECTOR_IMG_BASE, img.image);
+        if (!uri) return null;
+        return (
+          <TouchableOpacity key={img.id} onPress={() => onImagePress(uri)}>
+            <Image
+              source={{ uri }}
+              style={styles.sectorImage}
+              contentFit="contain"
+            />
+          </TouchableOpacity>
+        );
+      })}
 
       {sportRoutes.length > 0 && <RoutesTable routes={sportRoutes} />}
       {mtps.length > 0 && <MultiPitchTab mtps={mtps} />}
@@ -38,9 +44,18 @@ function SectorItem({ item }) {
   );
 }
 
-export default function SpotSectors({ article_id }) {
+export default function SpotSectors({ article_id, onImagePress }) {
   const [sectors, setSectors] = useState([]);
   const [isLoading, setLoading] = useState(true);
+  const [viewerUri, setViewerUri] = useState(null);
+
+  const handleImagePress = (uri) => {
+    if (onImagePress) {
+      onImagePress(uri);
+    } else {
+      setViewerUri(uri);
+    }
+  };
 
   useEffect(() => {
     const baseUrl = corsUrl(
@@ -73,38 +88,57 @@ export default function SpotSectors({ article_id }) {
       <Text style={gStyle.h2}>Sectors</Text>
 
       {sectors.map((item, index) => {
-        // Type B: sub-area with overview local_images grouping multiple sectors
         if (item.local_images) {
           return (
             <View key={index}>
-              {/* Sub-area overview images */}
-              {item.local_images.map((localImg) => (
-                <View key={localImg.id}>
-                  {localImg.title ? (
-                    <Text style={gStyle.h3}>{localImg.title}</Text>
-                  ) : null}
-                  <Image
-                    source={{ uri: imgUri(LOCAL_IMG_BASE, localImg.image) }}
-                    style={styles.sectorImage}
-                    resizeMode="contain"
-                  />
-                </View>
-              ))}
+              {item.local_images.map((localImg) => {
+                const uri = imgUri(LOCAL_IMG_BASE, localImg.image);
+                return (
+                  <View key={localImg.id}>
+                    {localImg.title ? (
+                      <Text style={gStyle.h3}>{localImg.title}</Text>
+                    ) : null}
+                    {uri ? (
+                      <TouchableOpacity onPress={() => handleImagePress(uri)}>
+                        <Image
+                          source={{ uri }}
+                          style={styles.sectorImage}
+                          contentFit="contain"
+                        />
+                      </TouchableOpacity>
+                    ) : null}
+                  </View>
+                );
+              })}
 
-              {/* Sectors belonging to this sub-area */}
               {(item.sectors || []).map((subItem, subIdx) => (
                 <SectorItem
                   key={subItem.sector?.id || subIdx}
                   item={subItem}
+                  onImagePress={handleImagePress}
                 />
               ))}
             </View>
           );
         }
 
-        // Type A: direct sector item
-        return <SectorItem key={item.sector?.id || index} item={item} />;
+        return (
+          <SectorItem
+            key={item.sector?.id || index}
+            item={item}
+            onImagePress={handleImagePress}
+          />
+        );
       })}
+
+      {/* Standalone modal for when no parent viewer is provided */}
+      {!onImagePress && (
+        <ImageViewerModal
+          uri={viewerUri}
+          visible={viewerUri != null}
+          onClose={() => setViewerUri(null)}
+        />
+      )}
     </View>
   );
 }

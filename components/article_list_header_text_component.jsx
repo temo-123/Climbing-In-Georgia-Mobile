@@ -1,39 +1,37 @@
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function App(props) {
+export default function ArticleListHeaderText({ title, description }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.page_header_title}>{props.title}</Text>
-      <View style={styles.horizontal}>
-        <View style={styles.horizontal_line} />
-      </View>
-      <Text style={styles.page_heheader_text}>{props.description}</Text>
+      <Text style={styles.title}>{title}</Text>
+      <View style={styles.divider} />
+      {!!description && (
+        <Text style={styles.description}>{description}</Text>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: '2%',
+    paddingVertical: 12,
     alignItems: 'center',
   },
-  page_header_title: {
+  title: {
     fontSize: 20,
+    fontWeight: '600',
   },
-  page_heheader_text: {
-    fontSize: 12,
-    paddingTop: '2%',
+  divider: {
+    height: 1,
+    width: '80%',
+    backgroundColor: '#ccc',
+    marginVertical: 8,
   },
-  horizontal: {
-    flexDirection: 'row', 
-    alignItems: 'center',
-    paddingLeft: 26,
-    paddingRight: 26
+  description: {
+    fontSize: 13,
+    color: '#555',
+    textAlign: 'center',
+    paddingHorizontal: 16,
+    lineHeight: 20,
   },
-  horizontal_line: {
-    flex: 1, 
-    height: 1, 
-    backgroundColor: '#000'
-  }
 });

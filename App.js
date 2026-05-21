@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View, LogBox } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { Navigation } from './navigation/Navigation.jsx';
 
@@ -18,7 +19,9 @@ export default function App() {
   // const GStyle = GStyle
   if(1==1){
     return (
-      <Navigation />
+      <SafeAreaProvider>
+        <Navigation />
+      </SafeAreaProvider>
     )
   }
   else{

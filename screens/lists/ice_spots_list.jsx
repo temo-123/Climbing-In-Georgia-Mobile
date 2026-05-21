@@ -1,25 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Image, StyleSheet, Text, View, Alert, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import { StyleSheet, View, Alert, FlatList } from 'react-native';
 import api, { corsUrl } from '../../utils/api';
+import { useSiteDescription } from '../../utils/useSiteData';
 
-import  IceCard  from "../../components/cards/ice_card_component";
-import  Article_list_header_text  from "../../components/article_list_header_text_component"
+import IceCard from "../../components/cards/ice_card_component";
+import Article_list_header_text from "../../components/article_list_header_text_component";
+import IceRoutesQuantityText from "../../components/ice_routes_quantyti_text_component";
+import EmptyState from "../../components/EmptyState";
 import Preloader from "../../components/Preloader";
 
 export default function App() {
-  const [ice_data, useData] = useState([])
+  const [ice_data, setData] = useState([]);
   const [isLoading, setLoading] = useState(true);
+  const description = useSiteDescription('ice');
 
   useEffect(() => {
     api.get(corsUrl('https://climbing.ge/api/get_article/get_locale_articles/ice/en'))
-    .then(({ data }) => {
-      useData(data);
-      setLoading(false);
-    })
-    .catch(error => {
-      Alert.alert('ERROR!', 'Axios request is fale')
-      setLoading(false);
-    })
+      .then(({ data }) => {
+        setData(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        Alert.alert('ERROR!', 'Failed to load ice data');
+        setLoading(false);
+      });
   }, []);
 
   if (isLoading) return <Preloader />;
@@ -29,14 +33,16 @@ export default function App() {
       data={ice_data}
       keyExtractor={(item) => item.global_data.id.toString()}
       ListHeaderComponent={
-        <Article_list_header_text
-          title="Ice Climbing In Georgia"
-          description="description 1"
-        />
+        <View>
+          <Article_list_header_text
+            title="Ice Climbing In Georgia"
+            description={description}
+          />
+          <IceRoutesQuantityText />
+        </View>
       }
-      renderItem={({item}) => (
-        <IceCard cardData={item} />
-      )}
+      renderItem={({ item }) => <IceCard cardData={item} />}
+      ListEmptyComponent={<EmptyState message={"No ice climbing spots found.\nCheck back soon!"} />}
       contentContainerStyle={styles.container}
     />
   );

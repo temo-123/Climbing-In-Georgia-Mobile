@@ -1,15 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Text, Image, Alert } from "react-native";
+import { StyleSheet, View, Text, Alert, TouchableOpacity } from "react-native";
+import { Image } from "expo-image";
 
 import IceRoutesTable from "./items/ice_routes_tab";
+import ImageViewerModal from "../../ImageViewerModal";
 import { gStyle } from "../../../assets/styles/styles";
 import api, { corsUrl, imgUri } from "../../../utils/api";
 
 const ICE_IMG_BASE = "https://climbing.ge/public/images/sector_img/";
 
-export default function IceSectors({ article_id }) {
+export default function IceSectors({ article_id, onImagePress }) {
   const [iceSectors, setIceSectors] = useState([]);
   const [isLoading, setLoading] = useState(true);
+  const [viewerUri, setViewerUri] = useState(null);
+
+  const handleImagePress = (uri) => {
+    if (onImagePress) {
+      onImagePress(uri);
+    } else {
+      setViewerUri(uri);
+    }
+  };
 
   useEffect(() => {
     const baseUrl = corsUrl(
@@ -50,19 +61,32 @@ export default function IceSectors({ article_id }) {
           <View key={sector?.id || index} style={styles.sectorBlock}>
             {sector?.name ? <Text style={gStyle.h3}>{sector.name}</Text> : null}
 
-            {images.map((img, imgIdx) => (
-              <Image
-                key={img.id || imgIdx}
-                source={{ uri: imgUri(ICE_IMG_BASE, img.image) }}
-                style={styles.sectorImage}
-                resizeMode="contain"
-              />
-            ))}
+            {images.map((img, imgIdx) => {
+              const uri = imgUri(ICE_IMG_BASE, img.image);
+              if (!uri) return null;
+              return (
+                <TouchableOpacity key={img.id || imgIdx} onPress={() => handleImagePress(uri)}>
+                  <Image
+                    source={{ uri }}
+                    style={styles.sectorImage}
+                    contentFit="contain"
+                  />
+                </TouchableOpacity>
+              );
+            })}
 
             <IceRoutesTable routes={routes} />
           </View>
         );
       })}
+
+      {!onImagePress && (
+        <ImageViewerModal
+          uri={viewerUri}
+          visible={viewerUri != null}
+          onClose={() => setViewerUri(null)}
+        />
+      )}
     </View>
   );
 }

@@ -6,10 +6,12 @@ import api, { corsUrl } from "../../utils/api";
 import ArticleBlock from "../../components/article/articl_block";
 import Preloader from "../../components/Preloader";
 
+const IMG_BASE = "https://climbing.ge/public/images/event_img/";
+
 export default function App({ route }) {
-  const [globalEventData, setGlobalEventData] = useState([]);
-  const [localeEventData, setLocaleEventData] = useState([]);
-  const [globalEventInfoData, setGlobalEventInfoData] = useState([]);
+  const [globalEventData, setGlobalEventData] = useState({});
+  const [localeEventData, setLocaleEventData] = useState({});
+  const [globalEventInfoData, setGlobalEventInfoData] = useState({});
   const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,8 +35,9 @@ export default function App({ route }) {
     <ScrollView style={styles.container}>
       <ArticleBlock
         local_data={localeEventData}
-        global_data={globalEventData}
+        global_data={globalEventData.global_data || {}}
         global_info_data={globalEventInfoData}
+        imgBase={IMG_BASE}
       />
 
       <StatusBar style="auto" />

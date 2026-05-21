@@ -1,14 +1,15 @@
 import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Image } from 'expo-image';
 import RenderHtml from 'react-native-render-html';
 import { gStyle } from '../../assets/styles/styles';
 
 import GlobalInfoBlock from "./article_general_info";
 
 import IframeRenderer, { iframeModel } from '@native-html/iframe-plugin';
-// import RenderHTML from 'react-native-render-html';
 import WebView from 'react-native-webview';
+import { imgUri } from '../../utils/api';
 
-export default function articleBlock({local_data, global_data, global_info_data = []}) {
+export default function articleBlock({ local_data, global_data, global_info_data = [], imgBase = null }) {
   const { width } = useWindowDimensions();
   const renderers = {
     iframe: IframeRenderer
@@ -22,9 +23,14 @@ export default function articleBlock({local_data, global_data, global_info_data 
     <View style={styles.container}>
 
       <Text style={gStyle.h1}>{local_data.title}</Text>
-      
-      <Text style={gStyle.h1}>https://climbing.ge/public/images/outdoor_img/{global_data.image}</Text>
-      {/* <Image style={{width: '100%', height: 200, resizeMode: 'contain'}} source={{uri: "https://climbing.ge/public/images/outdoor_img/" + global_data.image}} /> */}
+
+      {imgBase != null && global_data.image ? (
+        <Image
+          source={{ uri: imgUri(imgBase, global_data.image) }}
+          style={styles.headerImage}
+          contentFit="cover"
+        />
+      ) : null}
 
 
       {(() => {
@@ -252,8 +258,12 @@ export default function articleBlock({local_data, global_data, global_info_data 
 
 const styles = StyleSheet.create({
   container: {
-    // padding: '2%',
-    // alignItems: 'center',
+  },
+  headerImage: {
+    width: '100%',
+    height: 220,
+    borderRadius: 8,
+    marginVertical: 12,
   },
   page_header_title: {
     fontSize: 20,

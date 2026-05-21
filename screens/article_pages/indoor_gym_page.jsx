@@ -14,10 +14,12 @@ import Preloader from "../../components/Preloader";
 
 import api, { corsUrl } from "../../utils/api";
 
+const IMG_BASE = "https://climbing.ge/public/images/indoor_img/";
+
 export default function App({ route }) {
-  const [globalIndoorData, setGlobalIndoorData] = useState([]);
-  const [localeIndoorData, setLocaleIndoorData] = useState([]);
-  const [globalIndoorInfoData, setGlobalIndoorInfoData] = useState([]);
+  const [globalIndoorData, setGlobalIndoorData] = useState({});
+  const [localeIndoorData, setLocaleIndoorData] = useState({});
+  const [globalIndoorInfoData, setGlobalIndoorInfoData] = useState({});
   const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -43,8 +45,9 @@ export default function App({ route }) {
     <ScrollView style={styles.container}>
       <ArticleBlock
         local_data={localeIndoorData}
-        global_data={globalIndoorData}
+        global_data={globalIndoorData.global_data || {}}
         global_info_data={globalIndoorInfoData}
+        imgBase={IMG_BASE}
       />
 
       <StatusBar style="auto" />

@@ -14,9 +14,11 @@ import Preloader from "../../components/Preloader";
 
 import api, { corsUrl } from "../../utils/api";
 
+const IMG_BASE = "https://climbing.ge/public/images/other_img/";
+
 export default function App({ route }) {
-  const [globalOtherData, setGlobalOtherData] = useState([]);
-  const [localeOtherData, setLocaleOtherData] = useState([]);
+  const [globalOtherData, setGlobalOtherData] = useState({});
+  const [localeOtherData, setLocaleOtherData] = useState({});
   const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,7 +43,8 @@ export default function App({ route }) {
     <ScrollView style={styles.container}>
       <ArticleBlock
         local_data={localeOtherData}
-        global_data={globalOtherData}
+        global_data={globalOtherData.global_data || {}}
+        imgBase={IMG_BASE}
       />
 
       <StatusBar style="auto" />
