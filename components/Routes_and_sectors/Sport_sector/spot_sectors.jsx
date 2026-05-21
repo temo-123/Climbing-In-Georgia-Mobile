@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Text, Alert, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
 
 import RoutesTable from "./items/routes_tab";
@@ -8,6 +8,7 @@ import SectorInfoBar from "./items/sector_info_bar";
 import ImageViewerModal from "../../ImageViewerModal";
 import { gStyle } from "../../../assets/styles/styles";
 import api, { corsUrl, imgUri } from "../../../utils/api";
+import { loadSectorsData, saveSectorsData } from "../../../utils/offlineStorage";
 
 const SECTOR_IMG_BASE = "https://climbing.ge/public/images/sector_img/";
 const LOCAL_IMG_BASE  = "https://climbing.ge/public/images/sector_local_img/";
@@ -58,17 +59,16 @@ export default function SpotSectors({ article_id, onImagePress }) {
   };
 
   useEffect(() => {
-    const baseUrl = corsUrl(
-      "https://climbing.ge/api/get_sector/get_sector_and_routes/" + article_id
-    );
-    api
-      .get(baseUrl)
+    if (!article_id) { setLoading(false); return; }
+    api.get(corsUrl("https://climbing.ge/api/get_sector/get_sector_and_routes/" + article_id))
       .then(({ data }) => {
         setSectors(data);
+        saveSectorsData(article_id, data);
         setLoading(false);
       })
-      .catch(() => {
-        Alert.alert("ERROR!", "Failed to load sectors");
+      .catch(async () => {
+        const cached = await loadSectorsData(article_id);
+        if (cached) setSectors(cached);
         setLoading(false);
       });
   }, [article_id]);

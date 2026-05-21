@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import api, { corsUrl, imgUri } from '../../utils/api';
 import { countSectorsAndRoutes } from '../../utils/sectorCount';
+import { loadSectorsData, saveSectorsData } from '../../utils/offlineStorage';
 
 export default function OutdoorCard({ cardData }) {
   const navigation = useNavigation();
@@ -13,8 +14,14 @@ export default function OutdoorCard({ cardData }) {
   useEffect(() => {
     if (!gd.id) return;
     api.get(corsUrl(`https://climbing.ge/api/get_sector/get_sector_and_routes/${gd.id}`))
-      .then(({ data }) => setCounts(countSectorsAndRoutes(data)))
-      .catch(() => {});
+      .then(({ data }) => {
+        saveSectorsData(gd.id, data);
+        setCounts(countSectorsAndRoutes(data));
+      })
+      .catch(async () => {
+        const cached = await loadSectorsData(gd.id);
+        if (cached) setCounts(countSectorsAndRoutes(cached));
+      });
   }, [gd.id]);
 
   const hasCounts = counts && (counts.sectors > 0 || counts.routes > 0 || counts.mtps > 0);

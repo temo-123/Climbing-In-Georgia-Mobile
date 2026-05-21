@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 
 import index from '../screens/index';
 import about_us from '../screens/about_us';
+import offline_download from '../screens/offline_download_screen';
 
 import indoors_list from '../screens/lists/indoor_gyms_list';
 // import indoor_page from '../screens/article_pages/indoor_gym_page';
@@ -124,8 +125,21 @@ function DrawerNavigation () {
                     }}
                 />
 
-                <Drawer.Screen name="about_us" component={about_us} 
+                <Drawer.Screen name="about_us" component={about_us}
                     options={{ title: 'About Us',
+                        headerStyle: {
+                            backgroundColor: '#279fbb',
+                        },
+                        headerTintColor: '#fff',
+                        headerTitleStyle: {
+                            fontWeight: 'bold',
+                        },
+                    }}
+                />
+
+                <Drawer.Screen name="offline_mode" component={offline_download}
+                    options={{
+                        title: 'Offline Mode',
                         headerStyle: {
                             backgroundColor: '#279fbb',
                         },

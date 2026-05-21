@@ -1,18 +1,13 @@
 import { StatusBar } from "expo-status-bar";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Alert,
-  ScrollView,
-} from "react-native";
+import { StyleSheet, ScrollView } from "react-native";
 import React, { useState, useEffect } from "react";
 
-import SpotSectors from "../../components/Routes_and_sectors/Sport_sector/spot_sectors";
 import ArticleBlock from "../../components/article/articl_block";
 import Preloader from "../../components/Preloader";
+import OfflineError from "../../components/OfflineError";
 
 import api, { corsUrl } from "../../utils/api";
+import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
 
 const IMG_BASE = "https://climbing.ge/public/images/indoor_img/";
 
@@ -21,25 +16,32 @@ export default function App({ route }) {
   const [localeIndoorData, setLocaleIndoorData] = useState({});
   const [globalIndoorInfoData, setGlobalIndoorInfoData] = useState({});
   const [isLoading, setLoading] = useState(true);
+  const [noCache, setNoCache] = useState(false);
 
   useEffect(() => {
-    const baseUrl =
-      corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/indoor/en/" + route.params);
-    api
-      .get(baseUrl)
+    api.get(corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/indoor/en/" + route.params))
       .then(({ data }) => {
         setGlobalIndoorData(data);
-        setLocaleIndoorData(data.locale_data);
-        setGlobalIndoorInfoData(data.general_info);
+        setLocaleIndoorData(data.locale_data || {});
+        setGlobalIndoorInfoData(data.general_info || {});
+        saveArticleData('indoor', route.params, data);
         setLoading(false);
       })
-      .catch((error) => {
-        Alert.alert("ERROR!", "Axios request is fale");
+      .catch(async () => {
+        const cached = await loadArticleData('indoor', route.params);
+        if (cached) {
+          setGlobalIndoorData(cached);
+          setLocaleIndoorData(cached.locale_data || {});
+          setGlobalIndoorInfoData(cached.general_info || {});
+        } else {
+          setNoCache(true);
+        }
         setLoading(false);
       });
   }, []);
 
   if (isLoading) return <Preloader />;
+  if (noCache) return <OfflineError />;
 
   return (
     <ScrollView style={styles.container}>

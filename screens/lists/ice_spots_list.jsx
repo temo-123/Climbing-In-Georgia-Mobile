@@ -1,54 +1,73 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Alert, FlatList } from 'react-native';
+import { StyleSheet, View, FlatList } from 'react-native';
 import api, { corsUrl } from '../../utils/api';
 import { useSiteDescription } from '../../utils/useSiteData';
+import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
 
 import IceCard from "../../components/cards/ice_card_component";
 import Article_list_header_text from "../../components/article_list_header_text_component";
 import IceRoutesQuantityText from "../../components/Routes_and_sectors/Ice_sectors/ice_routes_quantyti_text_component";
 import EmptyState from "../../components/EmptyState";
 import Preloader from "../../components/Preloader";
+import OfflineBanner from "../../components/OfflineBanner";
+import OfflineError from "../../components/OfflineError";
 
 export default function App() {
   const [ice_data, setData] = useState([]);
   const [isLoading, setLoading] = useState(true);
+  const [isOffline, setIsOffline] = useState(false);
+  const [noCache, setNoCache] = useState(false);
   const description = useSiteDescription('ice');
 
   useEffect(() => {
     api.get(corsUrl('https://climbing.ge/api/get_article/get_locale_articles/ice/en'))
       .then(({ data }) => {
         setData(data);
+        saveOfflineData(OFFLINE_KEYS.ice, data);
         setLoading(false);
       })
-      .catch(() => {
-        Alert.alert('ERROR!', 'Failed to load ice data');
+      .catch(async () => {
+        const cached = await loadOfflineData(OFFLINE_KEYS.ice);
+        if (cached && cached.length > 0) {
+          setData(cached);
+          setIsOffline(true);
+        } else {
+          setNoCache(true);
+        }
         setLoading(false);
       });
   }, []);
 
   if (isLoading) return <Preloader />;
+  if (noCache) return <OfflineError />;
 
   return (
-    <FlatList
-      data={ice_data}
-      keyExtractor={(item) => item.global_data.id.toString()}
-      ListHeaderComponent={
-        <View>
-          <Article_list_header_text
-            title="Ice Climbing In Georgia"
-            description={description}
-          />
-          <IceRoutesQuantityText />
-        </View>
-      }
-      renderItem={({ item }) => <IceCard cardData={item} />}
-      ListEmptyComponent={<EmptyState message={"No ice climbing spots found.\nCheck back soon!"} />}
-      contentContainerStyle={styles.container}
-    />
+    <View style={styles.wrapper}>
+      {isOffline && <OfflineBanner />}
+      <FlatList
+        data={ice_data}
+        keyExtractor={(item) => item.global_data.id.toString()}
+        ListHeaderComponent={
+          <View>
+            <Article_list_header_text
+              title="Ice Climbing In Georgia"
+              description={description}
+            />
+            <IceRoutesQuantityText />
+          </View>
+        }
+        renderItem={({ item }) => <IceCard cardData={item} />}
+        ListEmptyComponent={<EmptyState message={"No ice climbing spots found.\nCheck back soon!"} />}
+        contentContainerStyle={styles.container}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+  },
   container: {
     padding: 16,
   },

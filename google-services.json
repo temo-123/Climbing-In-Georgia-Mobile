@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "331816048454",
+    "project_id": "climbing-in-georgia-mobail",
+    "storage_bucket": "climbing-in-georgia-mobail.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:331816048454:android:ec483fcc0a3f7a47797747",
+        "android_client_info": {
+          "package_name": "com.anonymous.climbingInGeorgia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGEdyk64Qtcxsmym5OO4UOWhkieTM5X3g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

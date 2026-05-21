@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Text, Alert, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
 
 import IceRoutesTable from "./items/ice_routes_tab";
 import ImageViewerModal from "../../ImageViewerModal";
 import { gStyle } from "../../../assets/styles/styles";
 import api, { corsUrl, imgUri } from "../../../utils/api";
+import { loadSectorsData, saveSectorsData } from "../../../utils/offlineStorage";
 
 const ICE_IMG_BASE = "https://climbing.ge/public/images/sector_img/";
 
@@ -23,17 +24,16 @@ export default function IceSectors({ article_id, onImagePress }) {
   };
 
   useEffect(() => {
-    const baseUrl = corsUrl(
-      "https://climbing.ge/api/get_sector/get_sector_and_routes/" + article_id
-    );
-    api
-      .get(baseUrl)
+    if (!article_id) { setLoading(false); return; }
+    api.get(corsUrl("https://climbing.ge/api/get_sector/get_sector_and_routes/" + article_id))
       .then(({ data }) => {
         setIceSectors(data);
+        saveSectorsData(article_id, data);
         setLoading(false);
       })
-      .catch(() => {
-        Alert.alert("ERROR!", "Failed to load sectors");
+      .catch(async () => {
+        const cached = await loadSectorsData(article_id);
+        if (cached) setIceSectors(cached);
         setLoading(false);
       });
   }, [article_id]);

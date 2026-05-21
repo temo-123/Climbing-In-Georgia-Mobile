@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "climbingInGeorgia",
-    "slug": "climbingInGeorgia",
-    "version": "1.0.0",
+    "name": "Climbing In Georgia",
+    "slug": "climbing-in-georgia-mobile",
+    "version": "1.2.5",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -22,15 +22,26 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.climbingInGeorgia"
+      "package": "com.anonymous.climbingInGeorgia",
+      "googleServicesFile": "./google-services.json",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/analytics"
+    ],
     "extra": {
       "eas": {
-        "projectId": "ea62219d-8cc5-4f1f-88d2-01a09e5b6556"
+        "projectId": "9d7c01bc-2fbf-4bdd-aa63-fd7af5536760"
       }
-    }
+    },
+    "owner": "temo-123"
   }
 }

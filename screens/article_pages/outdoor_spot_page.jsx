@@ -1,7 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
-  Alert,
   ScrollView,
   View,
   Text,
@@ -17,6 +16,8 @@ import Preloader from "../../components/Preloader";
 import { gStyle } from "../../assets/styles/styles";
 
 import api, { corsUrl, imgUri } from "../../utils/api";
+import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
+import OfflineError from "../../components/OfflineError";
 
 const GALLERY_BASE = "https://climbing.ge/public/images/article_gallery_img/";
 const IMG_BASE = "https://climbing.ge/public/images/outdoor_img/";
@@ -26,25 +27,33 @@ export default function App({ route }) {
   const [localeOutdoorData, setLocaleOutdoorData] = useState({});
   const [globalOutdoorInfoData, setGlobalOutdoorInfoData] = useState({});
   const [isLoading, setLoading] = useState(true);
+  const [noCache, setNoCache] = useState(false);
   const [viewerUri, setViewerUri] = useState(null);
 
   useEffect(() => {
-    const baseUrl =
-      corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/outdoor/en/" + route.params);
-    api
-      .get(baseUrl)
+    api.get(corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/outdoor/en/" + route.params))
       .then(({ data }) => {
         setGlobalOutdoorData(data);
         setLocaleOutdoorData(data.locale_data || {});
         setGlobalOutdoorInfoData(data.general_info || {});
+        saveArticleData('outdoor', route.params, data);
         setLoading(false);
       })
-      .catch(() => {
-        Alert.alert("ERROR!", "Failed to load article");
+      .catch(async () => {
+        const cached = await loadArticleData('outdoor', route.params);
+        if (cached) {
+          setGlobalOutdoorData(cached);
+          setLocaleOutdoorData(cached.locale_data || {});
+          setGlobalOutdoorInfoData(cached.general_info || {});
+        } else {
+          setNoCache(true);
+        }
+        setLoading(false);
       });
   }, []);
 
   if (isLoading) return <Preloader />;
+  if (noCache) return <OfflineError />;
 
   const galleryImages = globalOutdoorData.gallery_images || [];
 

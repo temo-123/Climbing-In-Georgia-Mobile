@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, ScrollView, View, Text, TouchableOpacity, Alert } from "react-native";
+import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from "react-native";
 
 import { Image } from "expo-image";
 import api, { corsUrl, imgUri } from "../../utils/api";
+import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
 
 import IceSectors from "../../components/Routes_and_sectors/Ice_sectors/ice_sectors";
 import ArticleBlock from "../../components/article/articl_block";
 import MassiveSection from "../../components/article/mount_masive/mount_masive_description_for_article_page_component";
 import Preloader from "../../components/Preloader";
+import OfflineError from "../../components/OfflineError";
 import { gStyle } from "../../assets/styles/styles";
 
 const IMG_BASE     = "https://climbing.ge/public/images/mount_route_img/";
@@ -18,11 +20,12 @@ export default function MountainRoutePage({ route }) {
   const urlTitle   = typeof route.params === 'object' ? route.params.url_title : route.params;
   const mountMasive = typeof route.params === 'object' ? route.params.mount_masive : null;
 
-  const [globalData, setGlobalData]       = useState({});
-  const [localeData, setLocaleData]       = useState({});
+  const [globalData, setGlobalData]         = useState({});
+  const [localeData, setLocaleData]         = useState({});
   const [globalInfoData, setGlobalInfoData] = useState({});
-  const [isLoading, setLoading]           = useState(true);
-  const [viewerUri, setViewerUri]         = useState(null);
+  const [isLoading, setLoading]             = useState(true);
+  const [noCache, setNoCache]               = useState(false);
+  const [viewerUri, setViewerUri]           = useState(null);
 
   useEffect(() => {
     api.get(corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/mount_route/en/" + urlTitle))
@@ -30,15 +33,24 @@ export default function MountainRoutePage({ route }) {
         setGlobalData(data);
         setLocaleData(data.locale_data || {});
         setGlobalInfoData(data.general_info || {});
+        saveArticleData('mount_route', urlTitle, data);
         setLoading(false);
       })
-      .catch(() => {
-        Alert.alert("ERROR!", "Failed to load article");
+      .catch(async () => {
+        const cached = await loadArticleData('mount_route', urlTitle);
+        if (cached) {
+          setGlobalData(cached);
+          setLocaleData(cached.locale_data || {});
+          setGlobalInfoData(cached.general_info || {});
+        } else {
+          setNoCache(true);
+        }
         setLoading(false);
       });
   }, []);
 
   if (isLoading) return <Preloader />;
+  if (noCache) return <OfflineError />;
 
   const galleryImages = globalData.gallery_images || globalData.global_data?.gallery_images || [];
 
