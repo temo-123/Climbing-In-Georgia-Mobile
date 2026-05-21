@@ -74,8 +74,8 @@ export default function IceRoutesTable({ routes }) {
               style={[styles.cell, styles.cellInfo, styles.infoBtnCell]}
               onPress={() => setSelectedRoute(route)}
             >
-              <View style={styles.infoBtn}>
-                <Text style={styles.infoBtnText}>→</Text>
+              <View style={styles.detailsBtn}>
+                <Text style={styles.detailsBtnText}>Details</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -87,67 +87,71 @@ export default function IceRoutesTable({ routes }) {
   );
 }
 
+function FieldRow({ label, value }) {
+  if (value === null || value === undefined || value === '') return null;
+  return (
+    <View style={modal.fieldRow}>
+      <Text style={modal.fieldLabel}>{label}</Text>
+      <Text style={modal.fieldValue}>{String(value)}</Text>
+    </View>
+  );
+}
+
 function IceRouteModal({ route, onClose }) {
   if (!route) return null;
+
+  const gradeDisplay = route.or_grade
+    ? `${route.grade || '-'} / ${route.or_grade}`
+    : (route.grade || '-');
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <View style={modal.overlay}>
         <View style={modal.sheet}>
           <View style={modal.header}>
-            <Text style={modal.title}>Route Details</Text>
-            <TouchableOpacity onPress={onClose}>
+            <Text style={modal.title} numberOfLines={1}>{route.name || 'Route Details'}</Text>
+            <TouchableOpacity onPress={onClose} style={modal.closeBtnWrap}>
               <Text style={modal.closeBtn}>✕</Text>
             </TouchableOpacity>
           </View>
 
           <ScrollView style={modal.body} showsVerticalScrollIndicator={false}>
-            {/* Route Details */}
             <View style={modal.section}>
               <Text style={modal.sectionTitle}>Route Details</Text>
               <View style={modal.divider} />
-              <Text style={modal.field}><Text style={modal.label}>Name</Text> - {route.name || '-'}</Text>
-              <Text style={modal.field}><Text style={modal.label}>Height</Text> - {route.height || '-'}</Text>
-              {route.category ? (
-                <Text style={modal.field}><Text style={modal.label}>Category</Text> - {route.category}</Text>
-              ) : null}
-              <Text style={modal.field}><Text style={modal.label}>Grade</Text> - {route.grade || '-'}</Text>
-              {route.or_grade ? (
-                <Text style={modal.field}>- {route.or_grade}</Text>
-              ) : null}
+              <FieldRow label="Name" value={route.name} />
+              <FieldRow label="Height" value={route.height ? `${route.height}m` : null} />
+              <FieldRow label="Category" value={route.category} />
+              <FieldRow label="Grade" value={gradeDisplay} />
             </View>
 
-            {/* Additional Information */}
-            {(route.author || route.created_at) ? (
+            {(route.author || route.creation_data) ? (
               <View style={modal.section}>
                 <Text style={modal.sectionTitle}>Additional Information</Text>
                 <View style={modal.divider} />
-                {route.author ? (
-                  <Text style={modal.field}><Text style={modal.label}>Author</Text> - {route.author}</Text>
-                ) : null}
-                {route.created_at ? (
-                  <Text style={modal.field}><Text style={modal.label}>Creation Date</Text> - {route.created_at}</Text>
-                ) : null}
+                <FieldRow label="Author" value={route.author} />
+                <FieldRow label="Created" value={route.creation_data} />
               </View>
             ) : null}
 
-            {/* Technical Details */}
             {(route.anchor_type || route.bolts_type) ? (
               <View style={modal.section}>
                 <Text style={modal.sectionTitle}>Technical Details</Text>
                 <View style={modal.divider} />
-                {route.anchor_type ? (
-                  <Text style={modal.field}><Text style={modal.label}>Anchor Type</Text> - {route.anchor_type}</Text>
-                ) : null}
+                <FieldRow label="Anchor Type" value={route.anchor_type} />
                 {route.bolts_type ? (
-                  <View style={modal.boltRow}>
-                    <Text style={modal.label}>Bolts Type</Text>
-                    <Image
-                      source={{ uri: BOLT_ICONS[route.bolts_type] }}
-                      style={modal.boltIcon}
-                      contentFit="contain"
-                    />
-                  </View>
+                  BOLT_ICONS[route.bolts_type] ? (
+                    <View style={modal.fieldRow}>
+                      <Text style={modal.fieldLabel}>Bolts Type</Text>
+                      <Image
+                        source={{ uri: BOLT_ICONS[route.bolts_type] }}
+                        style={modal.boltIcon}
+                        contentFit="contain"
+                      />
+                    </View>
+                  ) : (
+                    <FieldRow label="Bolts Type" value={route.bolts_type} />
+                  )
                 ) : null}
               </View>
             ) : null}
@@ -191,7 +195,7 @@ const styles = StyleSheet.create({
   cellName:   { flex: 2.2 },
   cellHeight: { flex: 0.8 },
   cellGrade:  { flex: 1.4 },
-  cellInfo:   { flex: 0.6, borderRightWidth: 0 },
+  cellInfo:   { flex: 1.1, borderRightWidth: 0 },
   headerText: {
     fontWeight: 'bold',
     fontSize: 11,
@@ -205,18 +209,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  infoBtn: {
+  detailsBtn: {
     backgroundColor: '#279fbb',
-    borderRadius: 12,
-    width: 24,
-    height: 24,
+    borderRadius: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  infoBtnText: {
+  detailsBtnText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 'bold',
+    letterSpacing: 0.3,
   },
   empty: {
     margin: 8,
@@ -251,10 +256,12 @@ const modal = StyleSheet.create({
     fontWeight: 'bold',
     color: '#222',
   },
+  closeBtnWrap: {
+    padding: 4,
+  },
   closeBtn: {
     fontSize: 18,
     color: '#666',
-    paddingHorizontal: 4,
   },
   body: {
     padding: 16,
@@ -277,20 +284,26 @@ const modal = StyleSheet.create({
     backgroundColor: '#279fbb',
     marginBottom: 10,
   },
-  field: {
-    fontSize: 13,
-    color: '#333',
-    marginBottom: 6,
-  },
-  label: {
-    fontWeight: 'bold',
-    color: '#111',
-  },
-  boltRow: {
+  fieldRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
-    gap: 8,
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  fieldLabel: {
+    fontSize: 13,
+    color: '#888',
+    fontWeight: '600',
+    flex: 1,
+  },
+  fieldValue: {
+    fontSize: 13,
+    color: '#222',
+    fontWeight: '500',
+    flex: 1.2,
+    textAlign: 'right',
   },
   boltIcon: {
     width: 32,

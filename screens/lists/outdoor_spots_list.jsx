@@ -5,7 +5,7 @@ import { useSiteDescription } from '../../utils/useSiteData';
 
 import OutdoorCard from "../../components/cards/outdoor_card_component";
 import Article_list_header_text from "../../components/article_list_header_text_component";
-import RoutesQuantityText from "../../components/roures_quantyti_text_component";
+import RoutesQuantityText from "../../components/Routes_and_sectors/Sport_sector/roures_quantyti_text_component";
 import EmptyState from "../../components/EmptyState";
 import Preloader from "../../components/Preloader";
 

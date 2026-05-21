@@ -5,7 +5,7 @@ import { useSiteDescription } from '../../utils/useSiteData';
 
 import IceCard from "../../components/cards/ice_card_component";
 import Article_list_header_text from "../../components/article_list_header_text_component";
-import IceRoutesQuantityText from "../../components/ice_routes_quantyti_text_component";
+import IceRoutesQuantityText from "../../components/Routes_and_sectors/Ice_sectors/ice_routes_quantyti_text_component";
 import EmptyState from "../../components/EmptyState";
 import Preloader from "../../components/Preloader";
 

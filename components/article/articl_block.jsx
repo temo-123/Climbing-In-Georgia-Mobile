@@ -18,6 +18,11 @@ export default function articleBlock({ local_data, global_data, global_info_data
   const customHTMLElementModels = {
     iframe: iframeModel
   };
+
+  const defaultWebViewProps = {
+    onError: () => {},
+    onHttpError: () => {},
+  };
   
   return (
     <View style={styles.container}>
@@ -48,11 +53,7 @@ export default function articleBlock({ local_data, global_data, global_info_data
                   WebView={WebView}
                   source={{ html: local_data.text }}
                   customHTMLElementModels={customHTMLElementModels}
-                  defaultWebViewProps={
-                    {
-                      /* Any prop you want to pass to all WebViews */
-                    }
-                  }
+                  defaultWebViewProps={defaultWebViewProps}
                   renderersProps={{
                     iframe: {
                       scalesPageToFit: true,
@@ -86,11 +87,7 @@ export default function articleBlock({ local_data, global_data, global_info_data
                   WebView={WebView}
                   source={{ html: local_data.how_get }}
                   customHTMLElementModels={customHTMLElementModels}
-                  defaultWebViewProps={
-                    {
-                      /* Any prop you want to pass to all WebViews */
-                    }
-                  }
+                  defaultWebViewProps={defaultWebViewProps}
                   renderersProps={{
                     iframe: {
                       scalesPageToFit: true,
@@ -119,11 +116,7 @@ export default function articleBlock({ local_data, global_data, global_info_data
                   WebView={WebView}
                   source={{ html: global_data.map }}
                   customHTMLElementModels={customHTMLElementModels}
-                  defaultWebViewProps={
-                    {
-                      /* Any prop you want to pass to all WebViews */
-                    }
-                  }
+                  defaultWebViewProps={defaultWebViewProps}
                   renderersProps={{
                     iframe: {
                       scalesPageToFit: true,
@@ -170,11 +163,7 @@ export default function articleBlock({ local_data, global_data, global_info_data
                   WebView={WebView}
                   source={{ html: global_data.weather }}
                   customHTMLElementModels={customHTMLElementModels}
-                  defaultWebViewProps={
-                    {
-                      /* Any prop you want to pass to all WebViews */
-                    }
-                  }
+                  defaultWebViewProps={defaultWebViewProps}
                   renderersProps={{
                     iframe: {
                       scalesPageToFit: true,
