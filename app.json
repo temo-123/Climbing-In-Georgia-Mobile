@@ -23,7 +23,8 @@
         "NSPhotoLibraryUsageDescription": "Used to view climbing route photos.",
         "NSPhotoLibraryAddUsageDescription": "Used to save climbing route photos.",
         "CFBundleLocalizations": ["en"],
-        "CFBundleDevelopmentRegion": "en"
+        "CFBundleDevelopmentRegion": "en",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {

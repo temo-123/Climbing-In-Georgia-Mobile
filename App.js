@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, LogBox } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { Navigation } from './navigation/Navigation.jsx';
 
@@ -19,9 +20,11 @@ export default function App() {
   // const GStyle = GStyle
   if(1==1){
     return (
-      <SafeAreaProvider>
-        <Navigation />
-      </SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <Navigation />
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
     )
   }
   else{

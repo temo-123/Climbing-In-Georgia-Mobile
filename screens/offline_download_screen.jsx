@@ -9,6 +9,7 @@ import {
   faWifi, faDatabase, faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 import { downloadAllData, getLastDownloadTime } from '../utils/offlineStorage';
+import PageFooter from '../components/PageFooter';
 
 export default function OfflineDownloadScreen() {
   const [lastDownload, setLastDownload] = useState(null);
@@ -102,7 +103,7 @@ export default function OfflineDownloadScreen() {
           ]}>
             {result.completed === 0
               ? 'Download failed. Please check your internet connection.'
-              : `Saved ${result.listCompleted} lists, ${result.articleCompleted} articles, ${result.sectorsCompleted} sectors.`
+              : `Saved ${result.listCompleted} lists, ${result.articleCompleted} articles, ${result.sectorsCompleted} sectors, ${result.imagesCompleted} images.`
                 + (result.failed > 0 ? ` (${result.failed} failed — try again)` : '')}
           </Text>
         </View>
@@ -111,9 +112,10 @@ export default function OfflineDownloadScreen() {
       <View style={styles.tipBox}>
         <Text style={styles.tipTitle}>How it works</Text>
         <Text style={styles.tipText}>• Tap the button while online to save data to your device</Text>
-        <Text style={styles.tipText}>• When offline, all lists will use the cached data automatically</Text>
+        <Text style={styles.tipText}>• When offline, all lists, articles, and images will use the cached data automatically</Text>
         <Text style={styles.tipText}>• Re-download anytime to get the latest content</Text>
       </View>
+      <PageFooter />
     </ScrollView>
   );
 }

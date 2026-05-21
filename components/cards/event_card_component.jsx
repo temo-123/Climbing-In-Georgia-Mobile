@@ -1,10 +1,7 @@
-// import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { Image } from 'expo-image';
-
 import React from 'react';
-
 import { useNavigation } from '@react-navigation/native';
+import CachedImage from '../CachedImage';
 import { imgUri } from '../../utils/api';
 
 export default function outdoorCard({cardData}) {
@@ -12,7 +9,7 @@ export default function outdoorCard({cardData}) {
   return (
     <TouchableOpacity style={styles.article_card} onPress={() => navigation.navigate('event_page', cardData.global_event.id)}>
       <View style={styles.article_card_image_view}>
-        <Image style={styles.article_card_image} source={{uri: imgUri("https://climbing.ge/public/images/event_img/", cardData.global_event.image)}} contentFit="contain" />
+        <CachedImage uri={imgUri("https://climbing.ge/public/images/event_img/", cardData.global_event.image)} style={styles.article_card_image} contentFit="contain" />
       </View>
       <View style={styles.article_card_text}>
         <View style={styles.event_datas}>

@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, ScrollView, Alert } from 'react-native';
 import { gStyle } from '../assets/styles/styles';
 import Preloader from '../components/Preloader';
+import PageFooter from '../components/PageFooter';
 
 export default function App() {
   const [aboutUsData, setAboutUsData] = useState([]);
@@ -30,6 +31,7 @@ export default function App() {
 
       <Text>{aboutUsData.find(item => item.slug === 'guid_description')?.us_data}</Text>
 
+      <PageFooter />
       <StatusBar style="auto" />
     </ScrollView>
   );

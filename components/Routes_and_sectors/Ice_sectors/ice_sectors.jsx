@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
-import { Image } from "expo-image";
 
 import IceRoutesTable from "./items/ice_routes_tab";
 import ImageViewerModal from "../../ImageViewerModal";
+import CachedImage from "../../CachedImage";
 import { gStyle } from "../../../assets/styles/styles";
 import api, { corsUrl, imgUri } from "../../../utils/api";
 import { loadSectorsData, saveSectorsData } from "../../../utils/offlineStorage";
@@ -66,8 +66,8 @@ export default function IceSectors({ article_id, onImagePress }) {
               if (!uri) return null;
               return (
                 <TouchableOpacity key={img.id || imgIdx} onPress={() => handleImagePress(uri)}>
-                  <Image
-                    source={{ uri }}
+                  <CachedImage
+                    uri={uri}
                     style={styles.sectorImage}
                     contentFit="contain"
                   />

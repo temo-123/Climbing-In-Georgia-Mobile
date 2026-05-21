@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api, { corsUrl } from './api';
+import api, { corsUrl, imgUri } from './api';
+import { downloadImages } from './imageCache';
 
 export const OFFLINE_KEYS = {
   outdoor:      '@offline_outdoor',
@@ -11,6 +12,10 @@ export const OFFLINE_KEYS = {
   site_data:    '@offline_site_data',
   download_time:'@offline_download_time',
 };
+
+const GALLERY_BASE    = 'https://climbing.ge/public/images/article_gallery_img/';
+const SECTOR_IMG_BASE = 'https://climbing.ge/public/images/sector_img/';
+const LOCAL_IMG_BASE  = 'https://climbing.ge/public/images/sector_local_img/';
 
 // List endpoints (category lists shown in drawer screens)
 const LIST_ENDPOINTS = [
@@ -26,51 +31,63 @@ const LIST_ENDPOINTS = [
 // Per-type article download config
 const ARTICLE_CONFIGS = [
   {
-    listKey:  OFFLINE_KEYS.outdoor,
-    type:     'outdoor',
-    detailUrl: (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/outdoor/en/${key}`,
-    getKey:   (item) => item.global_data?.url_title,
-    getId:    (item) => item.global_data?.id,
+    listKey:    OFFLINE_KEYS.outdoor,
+    type:       'outdoor',
+    imgBase:    'https://climbing.ge/public/images/outdoor_img/',
+    detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/outdoor/en/${key}`,
+    getKey:     (item) => item.global_data?.url_title,
+    getId:      (item) => item.global_data?.id,
+    getImage:   (item) => item.global_data?.image,
     hasSectors: true,
   },
   {
-    listKey:  OFFLINE_KEYS.ice,
-    type:     'ice',
-    detailUrl: (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/ice/en/${key}`,
-    getKey:   (item) => item.global_data?.url_title,
-    getId:    (item) => item.global_data?.id,
+    listKey:    OFFLINE_KEYS.ice,
+    type:       'ice',
+    imgBase:    'https://climbing.ge/public/images/ice_img/',
+    detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/ice/en/${key}`,
+    getKey:     (item) => item.global_data?.url_title,
+    getId:      (item) => item.global_data?.id,
+    getImage:   (item) => item.global_data?.image,
     hasSectors: true,
   },
   {
-    listKey:  OFFLINE_KEYS.indoor,
-    type:     'indoor',
-    detailUrl: (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/indoor/en/${key}`,
-    getKey:   (item) => item.global_data?.url_title,
-    getId:    (item) => null,
+    listKey:    OFFLINE_KEYS.indoor,
+    type:       'indoor',
+    imgBase:    'https://climbing.ge/public/images/indoor_img/',
+    detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/indoor/en/${key}`,
+    getKey:     (item) => item.global_data?.url_title,
+    getId:      (item) => null,
+    getImage:   (item) => item.global_data?.image,
     hasSectors: false,
   },
   {
-    listKey:  OFFLINE_KEYS.mount_route,
-    type:     'mount_route',
-    detailUrl: (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/mount_route/en/${key}`,
-    getKey:   (item) => item.global_data?.url_title,
-    getId:    (item) => item.global_data?.id,
+    listKey:    OFFLINE_KEYS.mount_route,
+    type:       'mount_route',
+    imgBase:    'https://climbing.ge/public/images/mount_route_img/',
+    detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/mount_route/en/${key}`,
+    getKey:     (item) => item.global_data?.url_title,
+    getId:      (item) => item.global_data?.id,
+    getImage:   (item) => item.global_data?.image,
     hasSectors: true,
   },
   {
-    listKey:  OFFLINE_KEYS.other,
-    type:     'other',
-    detailUrl: (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/other/en/${key}`,
-    getKey:   (item) => item.global_data?.url_title,
-    getId:    (item) => null,
+    listKey:    OFFLINE_KEYS.other,
+    type:       'other',
+    imgBase:    'https://climbing.ge/public/images/other_img/',
+    detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/other/en/${key}`,
+    getKey:     (item) => item.global_data?.url_title,
+    getId:      (item) => null,
+    getImage:   (item) => item.global_data?.image,
     hasSectors: false,
   },
   {
-    listKey:  OFFLINE_KEYS.events,
-    type:     'event',
-    detailUrl: (key) => `https://climbing.ge/api/get_event/get_event_on_site_page/en/${key}`,
-    getKey:   (item) => item.global_event?.id?.toString(),
-    getId:    (item) => null,
+    listKey:    OFFLINE_KEYS.events,
+    type:       'event',
+    imgBase:    'https://climbing.ge/public/images/event_img/',
+    detailUrl:  (key) => `https://climbing.ge/api/get_event/get_event_on_site_page/en/${key}`,
+    getKey:     (item) => item.global_event?.id?.toString(),
+    getId:      (item) => null,
+    getImage:   (item) => item.global_event?.image,
     hasSectors: false,
   },
 ];
@@ -118,6 +135,28 @@ export async function getLastDownloadTime() {
   return loadOfflineData(OFFLINE_KEYS.download_time);
 }
 
+// Collect image URLs from a sectors API response array
+function collectSectorImageUrls(sectorsData) {
+  const urls = [];
+  for (const item of (sectorsData || [])) {
+    if (item.local_images) {
+      for (const li of item.local_images) {
+        if (li.image) urls.push(imgUri(LOCAL_IMG_BASE, li.image));
+      }
+      for (const sub of (item.sectors || [])) {
+        for (const si of (sub.sector_imgs || [])) {
+          if (si.image) urls.push(imgUri(SECTOR_IMG_BASE, si.image));
+        }
+      }
+    } else {
+      for (const si of (item.sector_imgs || [])) {
+        if (si.image) urls.push(imgUri(SECTOR_IMG_BASE, si.image));
+      }
+    }
+  }
+  return urls;
+}
+
 // --- Bulk download ---
 
 export async function downloadAllData(onProgress) {
@@ -127,8 +166,10 @@ export async function downloadAllData(onProgress) {
   let articleFailed = 0;
   let sectorsCompleted = 0;
   let sectorsFailed = 0;
+  let imagesCompleted = 0;
 
   const cachedLists = {};
+  const allImageUrls = [];
 
   // Phase 1: Download category lists
   for (const ep of LIST_ENDPOINTS) {
@@ -141,6 +182,16 @@ export async function downloadAllData(onProgress) {
       listFailed++;
     }
     if (onProgress) onProgress({ currentLabel: ep.label, phase: 'lists' });
+  }
+
+  // Collect card thumbnail images from all lists
+  for (const config of ARTICLE_CONFIGS) {
+    const list = cachedLists[config.listKey];
+    if (!Array.isArray(list)) continue;
+    for (const item of list) {
+      const filename = config.getImage(item);
+      if (filename) allImageUrls.push(imgUri(config.imgBase, filename));
+    }
   }
 
   // Phase 2: Download each article detail + its sectors
@@ -159,6 +210,15 @@ export async function downloadAllData(onProgress) {
         const { data } = await api.get(corsUrl(config.detailUrl(urlKey)));
         await saveArticleData(config.type, urlKey, data);
         articleCompleted++;
+
+        // Collect article header image
+        const headerImg = data.global_data?.image || data.global_event?.image;
+        if (headerImg) allImageUrls.push(imgUri(config.imgBase, headerImg));
+
+        // Collect gallery images
+        for (const g of (data.gallery_images || [])) {
+          if (g.image) allImageUrls.push(imgUri(GALLERY_BASE, g.image));
+        }
       } catch (_) {
         articleFailed++;
       }
@@ -172,11 +232,26 @@ export async function downloadAllData(onProgress) {
           ));
           await saveSectorsData(articleId, data);
           sectorsCompleted++;
+
+          // Collect sector topo images
+          allImageUrls.push(...collectSectorImageUrls(data));
         } catch (_) {
           sectorsFailed++;
         }
       }
     }
+  }
+
+  // Phase 3: Download images to device filesystem
+  const uniqueUrls = [...new Set(allImageUrls.filter(Boolean))];
+  if (uniqueUrls.length > 0) {
+    await downloadImages(uniqueUrls, (done, total) => {
+      imagesCompleted = done;
+      if (onProgress) onProgress({
+        currentLabel: `Images: ${done} / ${total}`,
+        phase: 'images',
+      });
+    });
   }
 
   const totalCompleted = listCompleted + articleCompleted + sectorsCompleted;
@@ -188,6 +263,7 @@ export async function downloadAllData(onProgress) {
     listCompleted, listFailed,
     articleCompleted, articleFailed,
     sectorsCompleted, sectorsFailed,
+    imagesCompleted,
     completed: totalCompleted,
     failed: listFailed + articleFailed + sectorsFailed,
   };

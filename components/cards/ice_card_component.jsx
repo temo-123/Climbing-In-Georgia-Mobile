@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { Image } from 'expo-image';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import CachedImage from '../CachedImage';
 import api, { corsUrl, imgUri } from '../../utils/api';
 import { countSectorsAndRoutes } from '../../utils/sectorCount';
 import { loadSectorsData, saveSectorsData } from '../../utils/offlineStorage';
@@ -32,9 +32,9 @@ export default function IceCard({ cardData }) {
       onPress={() => navigation.navigate('ice_page', gd.url_title)}
     >
       <View style={styles.imageView}>
-        <Image
+        <CachedImage
+          uri={imgUri("https://climbing.ge/public/images/ice_img/", gd.image)}
           style={styles.image}
-          source={{ uri: imgUri("https://climbing.ge/public/images/ice_img/", gd.image) }}
           contentFit="cover"
         />
       </View>

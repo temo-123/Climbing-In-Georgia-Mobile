@@ -7,6 +7,7 @@ import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
 import ArticleBlock from "../../components/article/articl_block";
 import Preloader from "../../components/Preloader";
 import OfflineError from "../../components/OfflineError";
+import PageFooter from "../../components/PageFooter";
 
 const IMG_BASE = "https://climbing.ge/public/images/event_img/";
 
@@ -53,6 +54,7 @@ export default function App({ route }) {
         imgBase={IMG_BASE}
       />
 
+      <PageFooter />
       <StatusBar style="auto" />
     </ScrollView>
   );

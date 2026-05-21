@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { Image } from 'expo-image';
 import RenderHtml from 'react-native-render-html';
+import CachedImage from '../CachedImage';
+import EmbedBlock from '../EmbedBlock';
 import { gStyle } from '../../assets/styles/styles';
 
 import GlobalInfoBlock from "./article_general_info";
@@ -9,7 +10,7 @@ import IframeRenderer, { iframeModel } from '@native-html/iframe-plugin';
 import WebView from 'react-native-webview';
 import { imgUri } from '../../utils/api';
 
-export default function articleBlock({ local_data, global_data, global_info_data = [], imgBase = null }) {
+export default function articleBlock({ local_data, global_data, global_info_data = [], imgBase = null, afterImageContent = null, headerUri = null }) {
   const { width } = useWindowDimensions();
   const renderers = {
     iframe: IframeRenderer
@@ -29,14 +30,15 @@ export default function articleBlock({ local_data, global_data, global_info_data
 
       <Text style={gStyle.h1}>{local_data.title}</Text>
 
-      {imgBase != null && global_data.image ? (
-        <Image
-          source={{ uri: imgUri(imgBase, global_data.image) }}
+      {(headerUri || (imgBase != null && global_data.image)) ? (
+        <CachedImage
+          uri={headerUri || imgUri(imgBase, global_data.image)}
           style={styles.headerImage}
           contentFit="cover"
         />
       ) : null}
 
+      {afterImageContent}
 
       {(() => {
         if (local_data.text != '' && local_data.text != null){
@@ -105,34 +107,9 @@ export default function articleBlock({ local_data, global_data, global_info_data
         return null;
       })()}
 
-      {(() => {
-        if (global_data.map != '' && global_data.map != null){
-            return (
-              <View>
-                {/* https://www.npmjs.com/package/@native-html/iframe-plugin */}
-                <RenderHtml
-                  contentWidth={width}
-                  renderers={renderers}
-                  WebView={WebView}
-                  source={{ html: global_data.map }}
-                  customHTMLElementModels={customHTMLElementModels}
-                  defaultWebViewProps={defaultWebViewProps}
-                  renderersProps={{
-                    iframe: {
-                      scalesPageToFit: true,
-                      webViewProps: {
-                        /* Any prop you want to pass to iframe WebViews */
-                      }
-                    }
-                  }}
-                />
-
-              </View>
-            )
-        }
-        
-        return null;
-      })()}
+      {global_data.map ? (
+        <EmbedBlock html={global_data.map} height={280} />
+      ) : null}
 
       {(() => {
         if ((local_data.best_time != '' && local_data.best_time != null) || typeof global_info_data.best_time  !== 'undefined'){
@@ -152,34 +129,9 @@ export default function articleBlock({ local_data, global_data, global_info_data
         return null;
       })()}
  
-      {(() => {
-        if (global_data.weather != '' && global_data.weather != null){
-            return (
-              <View>
-                {/* https://www.npmjs.com/package/@native-html/iframe-plugin */}
-                <RenderHtml
-                  contentWidth={width}
-                  renderers={renderers}
-                  WebView={WebView}
-                  source={{ html: global_data.weather }}
-                  customHTMLElementModels={customHTMLElementModels}
-                  defaultWebViewProps={defaultWebViewProps}
-                  renderersProps={{
-                    iframe: {
-                      scalesPageToFit: true,
-                      webViewProps: {
-                        /* Any prop you want to pass to iframe WebViews */
-                      }
-                    }
-                  }}
-                />
-
-              </View>
-            )
-        }
-        
-        return null;
-      })()}
+      {global_data.weather ? (
+        <EmbedBlock html={global_data.weather} height={220} />
+      ) : null}
 
 
       {(() => {

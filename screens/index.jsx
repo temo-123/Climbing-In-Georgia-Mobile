@@ -18,7 +18,8 @@ const Tab = createBottomTabNavigator();
 
 // const gaMiddleware = createMiddleware(eventsMap, ga);
 
-import IndexCard from '../components/cards/index_card_component'
+import IndexCard from '../components/cards/index_card_component';
+import PageFooter from '../components/PageFooter';
 
 export default function HomeScreen({ navigation }) {
 
@@ -46,6 +47,7 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
+        <PageFooter />
       </ScrollView>
   );
 }

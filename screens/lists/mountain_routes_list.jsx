@@ -10,6 +10,7 @@ import EmptyState from "../../components/EmptyState";
 import Preloader from "../../components/Preloader";
 import OfflineBanner from "../../components/OfflineBanner";
 import OfflineError from "../../components/OfflineError";
+import PageFooter from "../../components/PageFooter";
 
 export default function App() {
   const [mount_data, setData] = useState([]);
@@ -54,6 +55,7 @@ export default function App() {
         }
         renderItem={({ item }) => <MountCard cardData={item} />}
         ListEmptyComponent={<EmptyState message={"No mountain routes found.\nCheck back soon!"} />}
+        ListFooterComponent={<PageFooter />}
         contentContainerStyle={styles.container}
       />
     </View>

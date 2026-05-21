@@ -4,11 +4,9 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
-import { Image } from "expo-image";
-
 import React from "react";
-
 import { useNavigation } from "@react-navigation/native";
+import CachedImage from "../CachedImage";
 import { imgUri } from "../../utils/api";
 
 export default function outdoorCard({ cardData }) {
@@ -21,11 +19,9 @@ export default function outdoorCard({ cardData }) {
       }
     >
       <View style={styles.outdoor_article_card_image_view}>
-        <Image
+        <CachedImage
+          uri={imgUri("https://climbing.ge/public/images/other_img/", cardData.global_data.image)}
           style={styles.outdoor_article_card_image}
-          source={{
-            uri: imgUri("https://climbing.ge/public/images/other_img/", cardData.global_data.image),
-          }}
           contentFit="contain"
         />
       </View>

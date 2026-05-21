@@ -7,13 +7,13 @@ import {
   Text,
   TouchableOpacity,
 } from "react-native";
-import { Image } from "expo-image";
-
 import IceSectors from "../../components/Routes_and_sectors/Ice_sectors/ice_sectors";
 import ArticleBlock from "../../components/article/articl_block";
 import ImageViewerModal from "../../components/ImageViewerModal";
+import CachedImage from "../../components/CachedImage";
 import Preloader from "../../components/Preloader";
 import OfflineError from "../../components/OfflineError";
+import PageFooter from "../../components/PageFooter";
 import { gStyle } from "../../assets/styles/styles";
 
 import api, { corsUrl, imgUri } from "../../utils/api";
@@ -28,7 +28,7 @@ export default function App({ route }) {
   const [globalIceInfoData, setGlobalIceInfoData] = useState({});
   const [isLoading, setLoading] = useState(true);
   const [noCache, setNoCache] = useState(false);
-  const [viewerUri, setViewerUri] = useState(null);
+  const [viewer, setViewer] = useState(null); // { uris, idx }
 
   useEffect(() => {
     api.get(corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/ice/en/" + route.params))
@@ -55,7 +55,20 @@ export default function App({ route }) {
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;
 
-  const galleryImages = globalIceData.gallery_images || [];
+  const galleryUris = (globalIceData.gallery_images || [])
+    .map(img => imgUri(GALLERY_BASE, img.image))
+    .filter(Boolean);
+
+  function openGallery(uri) {
+    const idx = galleryUris.indexOf(uri);
+    setViewer({ uris: galleryUris, idx: Math.max(0, idx) });
+  }
+
+  function openSectorImage(uri) {
+    const idx = galleryUris.indexOf(uri);
+    if (idx >= 0) setViewer({ uris: galleryUris, idx });
+    else setViewer({ uris: [uri], idx: 0 });
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -68,40 +81,34 @@ export default function App({ route }) {
 
       <IceSectors
         article_id={globalIceData.global_data?.id}
-        onImagePress={(uri) => setViewerUri(uri)}
+        onImagePress={openSectorImage}
       />
 
-      {galleryImages.length > 0 && (
+      {galleryUris.length > 0 && (
         <View style={styles.gallerySection}>
           <Text style={gStyle.h2}>Gallery</Text>
           <View style={styles.galleryGrid}>
-            {galleryImages.map((img) => {
-              const uri = imgUri(GALLERY_BASE, img.image);
-              if (!uri) return null;
-              return (
-                <TouchableOpacity
-                  key={img.id}
-                  style={styles.galleryItem}
-                  onPress={() => setViewerUri(uri)}
-                >
-                  <Image
-                    source={{ uri }}
-                    style={styles.galleryThumb}
-                    contentFit="cover"
-                  />
-                </TouchableOpacity>
-              );
-            })}
+            {galleryUris.map((uri, idx) => (
+              <TouchableOpacity
+                key={idx}
+                style={styles.galleryItem}
+                onPress={() => openGallery(uri)}
+              >
+                <CachedImage uri={uri} style={styles.galleryThumb} contentFit="cover" />
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
       )}
 
       <ImageViewerModal
-        uri={viewerUri}
-        visible={viewerUri != null}
-        onClose={() => setViewerUri(null)}
+        uris={viewer?.uris}
+        initialIndex={viewer?.idx ?? 0}
+        visible={viewer !== null}
+        onClose={() => setViewer(null)}
       />
 
+      <PageFooter />
       <StatusBar style="auto" />
     </ScrollView>
   );

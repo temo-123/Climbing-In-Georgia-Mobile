@@ -11,6 +11,7 @@ import EmptyState from "../../components/EmptyState";
 import Preloader from "../../components/Preloader";
 import OfflineBanner from "../../components/OfflineBanner";
 import OfflineError from "../../components/OfflineError";
+import PageFooter from "../../components/PageFooter";
 
 export default function App() {
   const [outdoor_data, setData] = useState([]);
@@ -58,6 +59,7 @@ export default function App() {
         }
         renderItem={({ item }) => <OutdoorCard cardData={item} />}
         ListEmptyComponent={<EmptyState message={"No outdoor spots found.\nCheck back soon!"} />}
+        ListFooterComponent={<PageFooter />}
         contentContainerStyle={styles.container}
       />
     </View>

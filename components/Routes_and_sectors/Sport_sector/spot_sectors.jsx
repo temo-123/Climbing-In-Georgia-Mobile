@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
-import { Image } from "expo-image";
 
 import RoutesTable from "./items/routes_tab";
 import MultiPitchTab from "./items/multi_pitch_tab";
 import SectorInfoBar from "./items/sector_info_bar";
 import ImageViewerModal from "../../ImageViewerModal";
+import CachedImage from "../../CachedImage";
 import { gStyle } from "../../../assets/styles/styles";
 import api, { corsUrl, imgUri } from "../../../utils/api";
 import { loadSectorsData, saveSectorsData } from "../../../utils/offlineStorage";
@@ -30,8 +30,8 @@ function SectorItem({ item, onImagePress }) {
         if (!uri) return null;
         return (
           <TouchableOpacity key={img.id} onPress={() => onImagePress(uri)}>
-            <Image
-              source={{ uri }}
+            <CachedImage
+              uri={uri}
               style={styles.sectorImage}
               contentFit="contain"
             />
@@ -100,8 +100,8 @@ export default function SpotSectors({ article_id, onImagePress }) {
                     ) : null}
                     {uri ? (
                       <TouchableOpacity onPress={() => handleImagePress(uri)}>
-                        <Image
-                          source={{ uri }}
+                        <CachedImage
+                          uri={uri}
                           style={styles.sectorImage}
                           contentFit="contain"
                         />

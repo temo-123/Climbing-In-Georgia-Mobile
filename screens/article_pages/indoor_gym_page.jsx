@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import ArticleBlock from "../../components/article/articl_block";
 import Preloader from "../../components/Preloader";
 import OfflineError from "../../components/OfflineError";
+import PageFooter from "../../components/PageFooter";
 
 import api, { corsUrl } from "../../utils/api";
 import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
@@ -52,6 +53,7 @@ export default function App({ route }) {
         imgBase={IMG_BASE}
       />
 
+      <PageFooter />
       <StatusBar style="auto" />
     </ScrollView>
   );
