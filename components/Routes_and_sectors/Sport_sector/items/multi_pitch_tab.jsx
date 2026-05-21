@@ -1,18 +1,20 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { Table, Row } from 'react-native-reanimated-table';
+import { useTranslation } from 'react-i18next';
 import { getRowBg } from './routes_tab';
 import { gStyle } from '../../../../assets/styles/styles';
 
-const HEADER = ['#', 'Name', 'Grade FR', 'Grade YDS'];
-const FLEX   = [0.4, 2.5, 1, 1];
+const FLEX = [0.4, 2.5, 1, 1];
 
 function PitchesTable({ pitchs }) {
+  const { t } = useTranslation();
   if (!pitchs || pitchs.length === 0) return null;
+  const header = ['#', t('routes_tab.col_name'), t('routes_tab.col_grade_fr'), t('routes_tab.col_grade_yds')];
   return (
     <Table borderStyle={styles.border}>
       <Row
-        data={HEADER}
+        data={header}
         style={styles.head}
         textStyle={styles.headText}
         flexArr={FLEX}
@@ -36,6 +38,7 @@ function PitchesTable({ pitchs }) {
 }
 
 export default function MultiPitchTab({ mtps }) {
+  const { t } = useTranslation();
   if (!mtps || mtps.length === 0) return null;
 
   return (
@@ -43,7 +46,7 @@ export default function MultiPitchTab({ mtps }) {
       {mtps.map((mtp, index) => (
         <View key={mtp.mtp_id || index} style={styles.mtpBlock}>
           <Text style={gStyle.h3}>
-            Multi-Pitch {mtp.mtp_num}
+            {t('multi_pitch.prefix')} {mtp.mtp_num}
             {mtp.mtp_name && String(mtp.mtp_name) !== String(mtp.mtp_num)
               ? `: ${mtp.mtp_name}`
               : ''}

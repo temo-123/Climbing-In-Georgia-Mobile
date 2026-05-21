@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, ScrollView } from "react-native";
+import { useLocale } from '../../utils/LocaleContext';
 import api, { corsUrl } from "../../utils/api";
 import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
 
@@ -12,6 +13,7 @@ import PageFooter from "../../components/PageFooter";
 const IMG_BASE = "https://climbing.ge/public/images/event_img/";
 
 export default function App({ route }) {
+  const { locale } = useLocale();
   const [globalEventData, setGlobalEventData] = useState({});
   const [localeEventData, setLocaleEventData] = useState({});
   const [globalEventInfoData, setGlobalEventInfoData] = useState({});
@@ -21,7 +23,8 @@ export default function App({ route }) {
   const eventKey = route.params?.toString();
 
   useEffect(() => {
-    api.get(corsUrl("https://climbing.ge/api/get_event/get_event_on_site_page/en/" + eventKey))
+    setLoading(true);
+    api.get(corsUrl(`https://climbing.ge/api/get_event/get_event_on_site_page/${locale}/` + eventKey))
       .then(({ data }) => {
         setGlobalEventData(data);
         setLocaleEventData(data.locale_data || {});
@@ -40,7 +43,7 @@ export default function App({ route }) {
         }
         setLoading(false);
       });
-  }, []);
+  }, [locale]);
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;
@@ -53,7 +56,6 @@ export default function App({ route }) {
         global_info_data={globalEventInfoData}
         imgBase={IMG_BASE}
       />
-
       <PageFooter />
       <StatusBar style="auto" />
     </ScrollView>
@@ -61,8 +63,5 @@ export default function App({ route }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
+  container: { flex: 1, padding: 16 },
 });

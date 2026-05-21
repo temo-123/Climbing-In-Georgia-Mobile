@@ -1,12 +1,8 @@
 import { StatusBar } from "expo-status-bar";
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  TouchableOpacity,
-} from "react-native";
+import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from "react-native";
 import React, { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
+import { useLocale } from '../../utils/LocaleContext';
 
 import SpotSectors from "../../components/Routes_and_sectors/Sport_sector/spot_sectors";
 import ArticleBlock from "../../components/article/articl_block";
@@ -24,15 +20,18 @@ const GALLERY_BASE = "https://climbing.ge/public/images/article_gallery_img/";
 const IMG_BASE = "https://climbing.ge/public/images/outdoor_img/";
 
 export default function App({ route }) {
+  const { t } = useTranslation();
+  const { locale } = useLocale();
   const [globalOutdoorData, setGlobalOutdoorData] = useState({});
   const [localeOutdoorData, setLocaleOutdoorData] = useState({});
   const [globalOutdoorInfoData, setGlobalOutdoorInfoData] = useState({});
   const [isLoading, setLoading] = useState(true);
   const [noCache, setNoCache] = useState(false);
-  const [viewer, setViewer] = useState(null); // { uris, idx }
+  const [viewer, setViewer] = useState(null);
 
   useEffect(() => {
-    api.get(corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/outdoor/en/" + route.params))
+    setLoading(true);
+    api.get(corsUrl(`https://climbing.ge/api/get_article/get_locale_article_on_page/outdoor/${locale}/` + route.params))
       .then(({ data }) => {
         setGlobalOutdoorData(data);
         setLocaleOutdoorData(data.locale_data || {});
@@ -51,7 +50,7 @@ export default function App({ route }) {
         }
         setLoading(false);
       });
-  }, []);
+  }, [locale]);
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;
@@ -87,7 +86,7 @@ export default function App({ route }) {
 
       {galleryUris.length > 0 && (
         <View style={styles.gallerySection}>
-          <Text style={gStyle.h2}>Gallery</Text>
+          <Text style={gStyle.h2}>{t('article.gallery')}</Text>
           <View style={styles.galleryGrid}>
             {galleryUris.map((uri, idx) => (
               <TouchableOpacity
@@ -116,26 +115,9 @@ export default function App({ route }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  gallerySection: {
-    marginTop: 16,
-    marginBottom: 24,
-  },
-  galleryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 8,
-  },
-  galleryItem: {
-    width: '33.33%',
-    padding: 2,
-  },
-  galleryThumb: {
-    width: '100%',
-    aspectRatio: 1,
-    borderRadius: 4,
-  },
+  container: { flex: 1, padding: 16 },
+  gallerySection: { marginTop: 16, marginBottom: 24 },
+  galleryGrid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 },
+  galleryItem: { width: '33.33%', padding: 2 },
+  galleryThumb: { width: '100%', aspectRatio: 1, borderRadius: 4 },
 });

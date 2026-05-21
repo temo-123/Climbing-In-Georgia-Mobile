@@ -1,29 +1,29 @@
 import { useState, useEffect } from 'react';
 import api, { corsUrl } from './api';
 import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from './offlineStorage';
+import { useLocale } from './LocaleContext';
 
-const SITE_DATA_URL = 'https://climbing.ge/api/get_site_data/get_site_locale_data_for_site/en';
+// Per-locale module-level cache
+const _caches = {};
+const _promises = {};
 
-// Module-level cache so all pages share a single fetch
-let _cache = null;
-let _promise = null;
-
-function getSiteData() {
-  if (_cache) return Promise.resolve(_cache);
-  if (!_promise) {
-    _promise = api.get(corsUrl(SITE_DATA_URL))
+function getSiteData(locale) {
+  if (_caches[locale]) return Promise.resolve(_caches[locale]);
+  if (!_promises[locale]) {
+    _promises[locale] = api
+      .get(corsUrl(`https://climbing.ge/api/get_site_data/get_site_locale_data_for_site/${locale}`))
       .then(({ data }) => {
-        _cache = data;
+        _caches[locale] = data;
         saveOfflineData(OFFLINE_KEYS.site_data, data);
         return data;
       })
       .catch(async () => {
         const cached = await loadOfflineData(OFFLINE_KEYS.site_data);
-        if (cached) { _cache = cached; return cached; }
+        if (cached) { _caches[locale] = cached; return cached; }
         return null;
       });
   }
-  return _promise;
+  return _promises[locale];
 }
 
 const DESCRIPTION_KEYS = {
@@ -36,15 +36,16 @@ const DESCRIPTION_KEYS = {
 };
 
 export function useSiteDescription(pageType) {
+  const { locale } = useLocale();
   const [description, setDescription] = useState('');
 
   useEffect(() => {
-    getSiteData().then(data => {
+    getSiteData(locale).then(data => {
       if (!data) return;
       const key = DESCRIPTION_KEYS[pageType];
       setDescription((key && data.locale_data?.[key]) || '');
     });
-  }, [pageType]);
+  }, [pageType, locale]);
 
   return description;
 }

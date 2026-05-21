@@ -1,8 +1,10 @@
-import { StyleSheet, Text, View, LogBox } from 'react-native';
+import { StyleSheet, LogBox } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { Navigation } from './navigation/Navigation.jsx';
+import { LocaleProvider } from './utils/LocaleContext';
+import './utils/i18n';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
@@ -11,29 +13,16 @@ library.add(fab, faSquareCheck)
 
 LogBox.ignoreLogs(['Unable to activate keep awake']);
 
-// import { GoogleAnalyticsTracker } from 'react-native-google-analytics-bridge';
-
 export default function App() {
-// let tracker = new GoogleAnalyticsTracker('5206567952');
-// tracker.trackScreenView('Home')
-
-  // const GStyle = GStyle
-  if(1==1){
-    return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaProvider>
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <LocaleProvider>
           <Navigation />
-        </SafeAreaProvider>
-      </GestureHandlerRootView>
-    )
-  }
-  else{
-    return (
-      <View style={styles.container}>
-        <Text>You are ofline! Need network for get data!</Text>
-      </View>
-    )
-  }
+        </LocaleProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
 }
 
 const styles = StyleSheet.create({

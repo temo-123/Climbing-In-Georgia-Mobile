@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import CachedImage from '../CachedImage';
 import api, { corsUrl, imgUri } from '../../utils/api';
 import { countSectorsAndRoutes } from '../../utils/sectorCount';
@@ -8,6 +9,7 @@ import { loadSectorsData, saveSectorsData } from '../../utils/offlineStorage';
 
 export default function IceCard({ cardData }) {
   const navigation = useNavigation();
+  const { t } = useTranslation();
   const gd = cardData.global_data;
   const [counts, setCounts] = useState(null);
 
@@ -43,13 +45,13 @@ export default function IceCard({ cardData }) {
         {hasCounts && (
           <View style={styles.statsRow}>
             {counts.sectors > 0 && (
-              <Text style={styles.statChip}>{counts.sectors} sectors</Text>
+              <Text style={styles.statChip}>{counts.sectors} {t('card.sectors')}</Text>
             )}
             {counts.routes > 0 && (
-              <Text style={styles.statChip}>{counts.routes} routes</Text>
+              <Text style={styles.statChip}>{counts.routes} {t('card.routes')}</Text>
             )}
             {counts.mtps > 0 && (
-              <Text style={styles.statChip}>{counts.mtps} mtp</Text>
+              <Text style={styles.statChip}>{counts.mtps} {t('card.mtp')}</Text>
             )}
           </View>
         )}
@@ -70,30 +72,16 @@ const styles = StyleSheet.create({
     borderColor: '#279fbb',
     flexDirection: 'row',
   },
-  imageView: {
-    width: '45%',
-    height: 100,
-  },
+  imageView: { width: '45%', height: 100 },
   image: {
     width: '100%',
     height: '100%',
     borderTopLeftRadius: 8,
     borderBottomLeftRadius: 8,
   },
-  textView: {
-    flex: 1,
-    padding: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '500',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 6,
-    gap: 4,
-  },
+  textView: { flex: 1, padding: 8 },
+  title: { fontSize: 18, fontWeight: '500' },
+  statsRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 6, gap: 4 },
   statChip: {
     fontSize: 11,
     color: '#279fbb',

@@ -1,0 +1,145 @@
+{
+  "nav": {
+    "home": "Climbing In Georgia",
+    "outdoor": "Outdoor Spots",
+    "indoor": "Indoor Gyms",
+    "ice": "Ice & Mix Climbing",
+    "mountain": "Mountaineering Routes",
+    "other": "Other Activity",
+    "events": "Events & Competition",
+    "about": "About Us",
+    "offline": "Offline Mode"
+  },
+  "page": {
+    "indoor_gym": "Indoor Gym",
+    "outdoor_spot": "Outdoor Spot",
+    "event": "Event",
+    "ice_spot": "Ice Climbing Spot",
+    "mountain_route": "Mountaineering Route",
+    "other_activity": "Sport Activity"
+  },
+  "list": {
+    "outdoor_title": "Outdoor Climbing In Georgia",
+    "indoor_title": "Indoor Climbing In Georgia",
+    "ice_title": "Ice Climbing In Georgia",
+    "mountain_title": "Mountain Climbing In Georgia",
+    "other_title": "Other Activity In Georgia",
+    "events_title": "Events & Competitions"
+  },
+  "empty": {
+    "outdoor": "No outdoor spots found.\nCheck back soon!",
+    "indoor": "No indoor gyms found.\nCheck back soon!",
+    "ice": "No ice climbing spots found.\nCheck back soon!",
+    "mountain": "No mountain routes found.\nCheck back soon!",
+    "other": "No activities found.\nCheck back soon!",
+    "events": "No events at the moment.\nCheck back soon!"
+  },
+  "article": {
+    "gallery": "Gallery",
+    "route_photos": "Route Photos",
+    "photos": "Photos",
+    "how_to_get": "How to get there",
+    "best_time": "Best time to climb",
+    "what_need": "What you need",
+    "info_contacts": "Info / Contacts",
+    "routes": "Routes",
+    "about_us": "About us"
+  },
+  "offline_screen": {
+    "title": "Offline Mode",
+    "subtitle": "Download all climbing data so you can browse the app without an internet connection.",
+    "last_downloaded": "Last downloaded: {{date}}",
+    "no_data": "No data downloaded yet",
+    "download_btn": "Download All Data",
+    "starting": "Starting...",
+    "download_failed": "Download failed. Please check your internet connection.",
+    "download_success": "Saved {{lists}} lists, {{articles}} articles, {{sectors}} sectors, {{images}} images.",
+    "download_failed_partial": " ({{failed}} failed — try again)",
+    "how_title": "How it works",
+    "how_1": "• Tap the button while online to save data to your device",
+    "how_2": "• When offline, all lists, articles, and images will use the cached data automatically",
+    "how_3": "• Re-download anytime to get the latest content"
+  },
+  "banner": {
+    "offline": "Offline mode — showing cached data"
+  },
+  "error": {
+    "offline_title": "You are offline",
+    "offline_message": "No cached data found.\nConnect to the internet and download data from\n",
+    "offline_link": "Offline Mode",
+    "offline_suffix": " in the menu."
+  },
+  "sector": {
+    "full_sun": "Full sun",
+    "full_shade": "Full shade",
+    "shade_pm": "Shade PM",
+    "shade_am": "Shade AM",
+    "shade_10": "Shade 10+",
+    "shade_15": "Shade 15+",
+    "helmet": "Helmet",
+    "kids": "Kids",
+    "family": "Family",
+    "vertical": "Vertical",
+    "overhang": "Overhang",
+    "slab": "Slab",
+    "roof": "Roof"
+  },
+  "routes_count": {
+    "sport": "Georgia is waiting for you! Find {{totalSectors}} sectors with {{totalRoutes}} routes for Sport Climbing, Bouldering and Multi-Pitch!\nAll climbing spots are ready to welcome you. {{sportRoutes}} Sport routes in {{sportSectors}} sectors. {{boulderRoutes}} Bouldering routes in {{boulderSectors}} sectors. {{mtpRoutes}} Multi-Pitch routes in {{mtpSectors}} sectors.\nYour next adventure is waiting. Come and explore Georgia's amazing climbing areas today!",
+    "ice": "All climbing spots are ready to welcome you.\n{{dtRoutes}} Dry Tooling routes in {{dtSectors}} sectors. {{iceRoutes}} Ice Climbing routes in {{iceSectors}} sectors.\nYour next adventure is waiting. Come and explore Georgia's amazing climbing areas today!"
+  },
+  "home": {
+    "outdoor": "Outdoor Spots",
+    "indoor": "Indoor Gyms",
+    "ice": "Ice & Mix",
+    "mountain": "Mountain routes",
+    "other": "Other Activity",
+    "about_us": "About us"
+  },
+  "routes_tab": {
+    "no_routes": "No routes",
+    "col_name": "Name",
+    "col_height": "Height",
+    "col_bolts": "Bolts",
+    "col_grade_fr": "Grade FR",
+    "col_grade": "Grade",
+    "col_grade_yds": "Grade YDS",
+    "details_btn": "Details",
+    "modal_route_details": "Route Details",
+    "modal_field_name": "Name",
+    "modal_field_height": "Height",
+    "modal_field_category": "Category",
+    "modal_field_bolts": "Bolts",
+    "modal_field_grade_fr": "Grade FR",
+    "modal_field_grade": "Grade",
+    "modal_additional": "Additional Information",
+    "modal_field_author": "Author",
+    "modal_field_created": "Created",
+    "modal_technical": "Technical Details",
+    "modal_field_anchor": "Anchor Type",
+    "modal_field_bolts_type": "Bolts Type"
+  },
+  "multi_pitch": {
+    "header_name": "Name",
+    "header_grade_fr": "Grade FR",
+    "header_grade_yds": "Grade YDS",
+    "prefix": "Multi-Pitch"
+  },
+  "card": {
+    "sectors": "sectors",
+    "routes": "routes",
+    "mtp": "mtp"
+  },
+  "sectors_block": {
+    "title": "Sectors",
+    "loading": "Loading sectors..."
+  },
+  "massive": {
+    "label": "Mountain Massive",
+    "no_data": "Detailed information about {{name}} is not available yet.",
+    "best_time": "Best Time to Climb",
+    "how_to_get": "How to Get There"
+  },
+  "language": "Language",
+  "footer": "Powered by climbing.ge"
+}

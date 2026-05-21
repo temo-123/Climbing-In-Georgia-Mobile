@@ -11,8 +11,10 @@ import {
 } from "react-native";
 import RenderHtml from "react-native-render-html";
 import { useWindowDimensions } from "react-native";
+import { useTranslation } from 'react-i18next';
 import api, { corsUrl } from "../../../utils/api";
 import EmbedBlock from "../../EmbedBlock";
+import { useLocale } from "../../../utils/LocaleContext";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -29,6 +31,8 @@ function HtmlBlock({ html, width }) {
 }
 
 export default function MassiveSection({ mountMasiveName, articleId }) {
+  const { t } = useTranslation();
+  const { locale } = useLocale();
   const [open, setOpen] = useState(true);
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -37,7 +41,7 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
 
   useEffect(() => {
     if (articleId) fetchData();
-  }, [articleId]);
+  }, [articleId, locale]);
 
   function toggle() {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -51,7 +55,7 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
     if (!articleId) return;
     setLoading(true);
     api
-      .get(corsUrl("https://climbing.ge/api/get_mount/on_page/en/" + articleId))
+      .get(corsUrl(`https://climbing.ge/api/get_mount/on_page/${locale}/` + articleId))
       .then(({ data }) => {
         if (typeof data === "object" && data !== null) {
           setContent(data);
@@ -80,7 +84,7 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
         return (
           <View style={styles.body}>
             <Text style={styles.noData}>
-              Detailed information about {mountMasiveName} is not available yet.
+              {t('massive.no_data', { name: mountMasiveName })}
             </Text>
           </View>
         );
@@ -100,7 +104,7 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
 
           {localeData.best_time ? (
             <View style={styles.subSection}>
-              <Text style={styles.subTitle}>Best Time to Climb</Text>
+              <Text style={styles.subTitle}>{t('massive.best_time')}</Text>
               <HtmlBlock html={localeData.best_time} width={width} />
             </View>
           ) : null}
@@ -111,7 +115,7 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
 
           {localeData.how_get ? (
             <View style={styles.subSection}>
-              <Text style={styles.subTitle}>How to Get There</Text>
+              <Text style={styles.subTitle}>{t('massive.how_to_get')}</Text>
               <HtmlBlock html={localeData.how_get} width={width} />
             </View>
           ) : null}
@@ -126,7 +130,7 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
     return (
       <View style={styles.body}>
         <Text style={styles.noData}>
-          Detailed information about {mountMasiveName} is not available yet.
+          {t('massive.no_data', { name: mountMasiveName })}
         </Text>
       </View>
     );
@@ -136,7 +140,7 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
     <View style={styles.container}>
       <TouchableOpacity style={styles.header} onPress={toggle} activeOpacity={0.7}>
         <View style={styles.headerLeft}>
-          <Text style={styles.headerLabel}>Mountain Massive</Text>
+          <Text style={styles.headerLabel}>{t('massive.label')}</Text>
           <Text style={styles.headerName}>{mountMasiveName || "—"}</Text>
         </View>
         <Text style={styles.arrow}>{open ? "▲" : "▼"}</Text>

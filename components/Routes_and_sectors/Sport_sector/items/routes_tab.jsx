@@ -1,51 +1,36 @@
 import React, { useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
+import { useTranslation } from 'react-i18next';
 
 const BOLT_ICONS = {
   hangerr: 'https://climbing.ge/images/svg/hangerr%20bolt.svg',
   glued:   'https://climbing.ge/images/svg/glued%20bolt.png',
 };
 
-const GRADE_VALUES = {
-  '3': 0, '3+': 0, '4': 0, '4+': 0,
-  '5a': 1, '5b': 2, '5c': 3,
-  '6a': 4, '6a+': 5, '6b': 6, '6b+': 7, '6c': 8, '6c+': 9,
-  '7a': 10, '7a+': 11, '7b': 12, '7b+': 13, '7c': 14, '7c+': 15,
-  '8a': 16, '8a+': 17, '8b': 18, '8b+': 19, '8c': 20, '8c+': 21,
-  '9a': 22, '9a+': 23, '9b': 24, '9b+': 25,
-};
-
 export function getRowBg(grade) {
-  // if (!grade || grade.toLowerCase() === 'project') return '#f0f0f0';
-  // const val = GRADE_VALUES[grade.toLowerCase()];
-  // if (val === undefined) return '#ffffff';
-  // if (val >= 13) return '#df8d8d';
-  // if (val >= 9)  return '#dfad8d';
-  // return '#ffffff';
   return '#f0e4a0';
 }
 
 export default function RoutesTable({ routes }) {
+  const { t } = useTranslation();
   const [selectedRoute, setSelectedRoute] = useState(null);
 
   if (!routes || routes.length === 0) {
-    return <Text style={styles.empty}>No routes</Text>;
+    return <Text style={styles.empty}>{t('routes_tab.no_routes')}</Text>;
   }
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={[styles.row, styles.headerRow]}>
         <Text style={[styles.cell, styles.cellN, styles.headerText]}>#</Text>
-        <Text style={[styles.cell, styles.cellName, styles.headerText]}>Name</Text>
-        <Text style={[styles.cell, styles.cellHeight, styles.headerText]}>Height</Text>
-        <Text style={[styles.cell, styles.cellBolts, styles.headerText]}>Bolts</Text>
-        <Text style={[styles.cell, styles.cellGrade, styles.headerText]}>Grade FR</Text>
+        <Text style={[styles.cell, styles.cellName, styles.headerText]}>{t('routes_tab.col_name')}</Text>
+        <Text style={[styles.cell, styles.cellHeight, styles.headerText]}>{t('routes_tab.col_height')}</Text>
+        <Text style={[styles.cell, styles.cellBolts, styles.headerText]}>{t('routes_tab.col_bolts')}</Text>
+        <Text style={[styles.cell, styles.cellGrade, styles.headerText]}>{t('routes_tab.col_grade_fr')}</Text>
         <View style={[styles.cell, styles.cellInfo]} />
       </View>
 
-      {/* Data rows */}
       {routes.map((route, index) => {
         const gradeText = route.or_grade
           ? `${route.grade || '-'} / ${route.or_grade}`
@@ -56,27 +41,19 @@ export default function RoutesTable({ routes }) {
             key={route.id || index}
             style={[styles.row, index % 2 === 0 ? styles.rowEven : styles.rowOdd]}
           >
-            <Text style={[styles.cell, styles.cellN, styles.rowText]}>
-              {route.num ?? index + 1}
-            </Text>
-            <Text style={[styles.cell, styles.cellName, styles.rowText]}>
-              {route.name || '-'}
-            </Text>
+            <Text style={[styles.cell, styles.cellN, styles.rowText]}>{route.num ?? index + 1}</Text>
+            <Text style={[styles.cell, styles.cellName, styles.rowText]}>{route.name || '-'}</Text>
             <Text style={[styles.cell, styles.cellHeight, styles.rowText]}>
               {route.height ? `${route.height}m` : '-'}
             </Text>
-            <Text style={[styles.cell, styles.cellBolts, styles.rowText]}>
-              {route.bolts || '-'}
-            </Text>
-            <Text style={[styles.cell, styles.cellGrade, styles.rowText]}>
-              {gradeText}
-            </Text>
+            <Text style={[styles.cell, styles.cellBolts, styles.rowText]}>{route.bolts || '-'}</Text>
+            <Text style={[styles.cell, styles.cellGrade, styles.rowText]}>{gradeText}</Text>
             <TouchableOpacity
               style={[styles.cell, styles.cellInfo, styles.infoBtnCell]}
               onPress={() => setSelectedRoute(route)}
             >
               <View style={styles.detailsBtn}>
-                <Text style={styles.detailsBtnText}>Details</Text>
+                <Text style={styles.detailsBtnText}>{t('routes_tab.details_btn')}</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -99,6 +76,7 @@ function FieldRow({ label, value }) {
 }
 
 function RouteModal({ route, onClose }) {
+  const { t } = useTranslation();
   if (!route) return null;
 
   const gradeDisplay = route.or_grade
@@ -110,7 +88,9 @@ function RouteModal({ route, onClose }) {
       <View style={modal.overlay}>
         <View style={modal.sheet}>
           <View style={modal.header}>
-            <Text style={modal.title} numberOfLines={1}>{route.name || 'Route Details'}</Text>
+            <Text style={modal.title} numberOfLines={1}>
+              {route.name || t('routes_tab.modal_route_details')}
+            </Text>
             <TouchableOpacity onPress={onClose} style={modal.closeBtnWrap}>
               <Text style={modal.closeBtn}>✕</Text>
             </TouchableOpacity>
@@ -118,33 +98,33 @@ function RouteModal({ route, onClose }) {
 
           <ScrollView style={modal.body} showsVerticalScrollIndicator={false}>
             <View style={modal.section}>
-              <Text style={modal.sectionTitle}>Route Details</Text>
+              <Text style={modal.sectionTitle}>{t('routes_tab.modal_route_details')}</Text>
               <View style={modal.divider} />
-              <FieldRow label="Name" value={route.name} />
-              <FieldRow label="Height" value={route.height ? `${route.height}m` : null} />
-              <FieldRow label="Category" value={route.category} />
-              <FieldRow label="Bolts" value={route.bolts} />
-              <FieldRow label="Grade FR" value={gradeDisplay} />
+              <FieldRow label={t('routes_tab.modal_field_name')}     value={route.name} />
+              <FieldRow label={t('routes_tab.modal_field_height')}   value={route.height ? `${route.height}m` : null} />
+              <FieldRow label={t('routes_tab.modal_field_category')} value={route.category} />
+              <FieldRow label={t('routes_tab.modal_field_bolts')}    value={route.bolts} />
+              <FieldRow label={t('routes_tab.modal_field_grade_fr')} value={gradeDisplay} />
             </View>
 
             {(route.author || route.creation_data) ? (
               <View style={modal.section}>
-                <Text style={modal.sectionTitle}>Additional Information</Text>
+                <Text style={modal.sectionTitle}>{t('routes_tab.modal_additional')}</Text>
                 <View style={modal.divider} />
-                <FieldRow label="Author" value={route.author} />
-                <FieldRow label="Created" value={route.creation_data} />
+                <FieldRow label={t('routes_tab.modal_field_author')}  value={route.author} />
+                <FieldRow label={t('routes_tab.modal_field_created')} value={route.creation_data} />
               </View>
             ) : null}
 
             {(route.anchor_type || route.bolts_type) ? (
               <View style={modal.section}>
-                <Text style={modal.sectionTitle}>Technical Details</Text>
+                <Text style={modal.sectionTitle}>{t('routes_tab.modal_technical')}</Text>
                 <View style={modal.divider} />
-                <FieldRow label="Anchor Type" value={route.anchor_type} />
+                <FieldRow label={t('routes_tab.modal_field_anchor')} value={route.anchor_type} />
                 {route.bolts_type ? (
                   BOLT_ICONS[route.bolts_type] ? (
                     <View style={modal.fieldRow}>
-                      <Text style={modal.fieldLabel}>Bolts Type</Text>
+                      <Text style={modal.fieldLabel}>{t('routes_tab.modal_field_bolts_type')}</Text>
                       <Image
                         source={{ uri: BOLT_ICONS[route.bolts_type] }}
                         style={modal.boltIcon}
@@ -152,7 +132,7 @@ function RouteModal({ route, onClose }) {
                       />
                     </View>
                   ) : (
-                    <FieldRow label="Bolts Type" value={route.bolts_type} />
+                    <FieldRow label={t('routes_tab.modal_field_bolts_type')} value={route.bolts_type} />
                   )
                 ) : null}
               </View>
@@ -172,20 +152,10 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     overflow: 'hidden',
   },
-  row: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: '#c8c8c8',
-  },
-  headerRow: {
-    backgroundColor: '#f6d27e',
-  },
-  rowEven: {
-    backgroundColor: '#f0e4a0',
-  },
-  rowOdd: {
-    backgroundColor: '#d0cfca',
-  },
+  row: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#c8c8c8' },
+  headerRow: { backgroundColor: '#f6d27e' },
+  rowEven: { backgroundColor: '#f0e4a0' },
+  rowOdd: { backgroundColor: '#d0cfca' },
   cell: {
     paddingVertical: 8,
     paddingHorizontal: 4,
@@ -199,19 +169,9 @@ const styles = StyleSheet.create({
   cellBolts:  { flex: 0.7 },
   cellGrade:  { flex: 1.4 },
   cellInfo:   { flex: 1.1, borderRightWidth: 0 },
-  headerText: {
-    fontWeight: 'bold',
-    fontSize: 11,
-    textAlign: 'center',
-  },
-  rowText: {
-    fontSize: 11,
-    textAlign: 'center',
-  },
-  infoBtnCell: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  headerText: { fontWeight: 'bold', fontSize: 11, textAlign: 'center' },
+  rowText: { fontSize: 11, textAlign: 'center' },
+  infoBtnCell: { alignItems: 'center', justifyContent: 'center' },
   detailsBtn: {
     backgroundColor: '#279fbb',
     borderRadius: 6,
@@ -220,17 +180,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  detailsBtnText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-    letterSpacing: 0.3,
-  },
-  empty: {
-    margin: 8,
-    color: '#888',
-    fontStyle: 'italic',
-  },
+  detailsBtnText: { color: '#fff', fontSize: 10, fontWeight: 'bold', letterSpacing: 0.3 },
+  empty: { margin: 8, color: '#888', fontStyle: 'italic' },
 });
 
 const modal = StyleSheet.create({
@@ -240,12 +191,7 @@ const modal = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
   },
-  sheet: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    maxHeight: '88%',
-    overflow: 'hidden',
-  },
+  sheet: { backgroundColor: '#fff', borderRadius: 12, maxHeight: '88%', overflow: 'hidden' },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -254,21 +200,10 @@ const modal = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#222',
-  },
-  closeBtnWrap: {
-    padding: 4,
-  },
-  closeBtn: {
-    fontSize: 18,
-    color: '#666',
-  },
-  body: {
-    padding: 16,
-  },
+  title: { fontSize: 20, fontWeight: 'bold', color: '#222', flex: 1, marginRight: 8 },
+  closeBtnWrap: { padding: 4 },
+  closeBtn: { fontSize: 18, color: '#666' },
+  body: { padding: 16 },
   section: {
     borderWidth: 1,
     borderColor: '#e0e0e0',
@@ -276,17 +211,8 @@ const modal = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
   },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 6,
-  },
-  divider: {
-    height: 1.5,
-    backgroundColor: '#279fbb',
-    marginBottom: 10,
-  },
+  sectionTitle: { fontSize: 15, fontWeight: 'bold', color: '#222', marginBottom: 6 },
+  divider: { height: 1.5, backgroundColor: '#279fbb', marginBottom: 10 },
   fieldRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -295,21 +221,7 @@ const modal = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
-  fieldLabel: {
-    fontSize: 13,
-    color: '#888',
-    fontWeight: '600',
-    flex: 1,
-  },
-  fieldValue: {
-    fontSize: 13,
-    color: '#222',
-    fontWeight: '500',
-    flex: 1.2,
-    textAlign: 'right',
-  },
-  boltIcon: {
-    width: 32,
-    height: 32,
-  },
+  fieldLabel: { fontSize: 13, color: '#888', fontWeight: '600', flex: 1 },
+  fieldValue: { fontSize: 13, color: '#222', fontWeight: '500', flex: 1.2, textAlign: 'right' },
+  boltIcon: { width: 32, height: 32 },
 });

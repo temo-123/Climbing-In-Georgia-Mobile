@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import { useTranslation } from 'react-i18next';
 
 import RoutesTable from "./items/routes_tab";
 import MultiPitchTab from "./items/multi_pitch_tab";
@@ -30,11 +31,7 @@ function SectorItem({ item, onImagePress }) {
         if (!uri) return null;
         return (
           <TouchableOpacity key={img.id} onPress={() => onImagePress(uri)}>
-            <CachedImage
-              uri={uri}
-              style={styles.sectorImage}
-              contentFit="contain"
-            />
+            <CachedImage uri={uri} style={styles.sectorImage} contentFit="contain" />
           </TouchableOpacity>
         );
       })}
@@ -46,16 +43,14 @@ function SectorItem({ item, onImagePress }) {
 }
 
 export default function SpotSectors({ article_id, onImagePress }) {
+  const { t } = useTranslation();
   const [sectors, setSectors] = useState([]);
   const [isLoading, setLoading] = useState(true);
   const [viewerUri, setViewerUri] = useState(null);
 
   const handleImagePress = (uri) => {
-    if (onImagePress) {
-      onImagePress(uri);
-    } else {
-      setViewerUri(uri);
-    }
+    if (onImagePress) onImagePress(uri);
+    else setViewerUri(uri);
   };
 
   useEffect(() => {
@@ -76,7 +71,7 @@ export default function SpotSectors({ article_id, onImagePress }) {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Text>Loading sectors...</Text>
+        <Text>{t('sectors_block.loading')}</Text>
       </View>
     );
   }
@@ -85,7 +80,7 @@ export default function SpotSectors({ article_id, onImagePress }) {
 
   return (
     <View style={styles.container}>
-      <Text style={gStyle.h2}>Sectors</Text>
+      <Text style={gStyle.h2}>{t('sectors_block.title')}</Text>
 
       {sectors.map((item, index) => {
         if (item.local_images) {
@@ -100,17 +95,12 @@ export default function SpotSectors({ article_id, onImagePress }) {
                     ) : null}
                     {uri ? (
                       <TouchableOpacity onPress={() => handleImagePress(uri)}>
-                        <CachedImage
-                          uri={uri}
-                          style={styles.sectorImage}
-                          contentFit="contain"
-                        />
+                        <CachedImage uri={uri} style={styles.sectorImage} contentFit="contain" />
                       </TouchableOpacity>
                     ) : null}
                   </View>
                 );
               })}
-
               {(item.sectors || []).map((subItem, subIdx) => (
                 <SectorItem
                   key={subItem.sector?.id || subIdx}
@@ -131,7 +121,6 @@ export default function SpotSectors({ article_id, onImagePress }) {
         );
       })}
 
-      {/* Standalone modal for when no parent viewer is provided */}
       {!onImagePress && (
         <ImageViewerModal
           uri={viewerUri}
@@ -144,15 +133,7 @@ export default function SpotSectors({ article_id, onImagePress }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    paddingBottom: 50,
-  },
-  sectorBlock: {
-    marginBottom: 24,
-  },
-  sectorImage: {
-    height: 300,
-    width: "100%",
-    marginVertical: 8,
-  },
+  container: { paddingBottom: 50 },
+  sectorBlock: { marginBottom: 24 },
+  sectorImage: { height: 300, width: "100%", marginVertical: 8 },
 });

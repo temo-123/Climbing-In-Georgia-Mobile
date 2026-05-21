@@ -17,80 +17,82 @@ const GALLERY_BASE    = 'https://climbing.ge/public/images/article_gallery_img/'
 const SECTOR_IMG_BASE = 'https://climbing.ge/public/images/sector_img/';
 const LOCAL_IMG_BASE  = 'https://climbing.ge/public/images/sector_local_img/';
 
-// List endpoints (category lists shown in drawer screens)
-const LIST_ENDPOINTS = [
-  { key: OFFLINE_KEYS.outdoor,     url: 'https://climbing.ge/api/get_article/get_locale_articles/outdoor/en',     label: 'Outdoor Spots' },
-  { key: OFFLINE_KEYS.ice,         url: 'https://climbing.ge/api/get_article/get_locale_articles/ice/en',         label: 'Ice Climbing' },
-  { key: OFFLINE_KEYS.indoor,      url: 'https://climbing.ge/api/get_article/get_locale_articles/indoor/en',      label: 'Indoor Gyms' },
-  { key: OFFLINE_KEYS.mount_route, url: 'https://climbing.ge/api/get_article/get_locale_articles/mount_route/en', label: 'Mountain Routes' },
-  { key: OFFLINE_KEYS.other,       url: 'https://climbing.ge/api/get_article/get_locale_articles/other/en',       label: 'Other Activities' },
-  { key: OFFLINE_KEYS.events,      url: 'https://climbing.ge/api/get_event/get_event_on_site_list/en',            label: 'Events' },
-  { key: OFFLINE_KEYS.site_data,   url: 'https://climbing.ge/api/get_site_data/get_site_locale_data_for_site/en', label: 'Site Data' },
-];
+function buildListEndpoints(locale) {
+  return [
+    { key: OFFLINE_KEYS.outdoor,     url: `https://climbing.ge/api/get_article/get_locale_articles/outdoor/${locale}`,     label: 'Outdoor Spots' },
+    { key: OFFLINE_KEYS.ice,         url: `https://climbing.ge/api/get_article/get_locale_articles/ice/${locale}`,         label: 'Ice Climbing' },
+    { key: OFFLINE_KEYS.indoor,      url: `https://climbing.ge/api/get_article/get_locale_articles/indoor/${locale}`,      label: 'Indoor Gyms' },
+    { key: OFFLINE_KEYS.mount_route, url: `https://climbing.ge/api/get_article/get_locale_articles/mount_route/${locale}`, label: 'Mountain Routes' },
+    { key: OFFLINE_KEYS.other,       url: `https://climbing.ge/api/get_article/get_locale_articles/other/${locale}`,       label: 'Other Activities' },
+    { key: OFFLINE_KEYS.events,      url: `https://climbing.ge/api/get_event/get_event_on_site_list/${locale}`,            label: 'Events' },
+    { key: OFFLINE_KEYS.site_data,   url: `https://climbing.ge/api/get_site_data/get_site_locale_data_for_site/${locale}`, label: 'Site Data' },
+  ];
+}
 
-// Per-type article download config
-const ARTICLE_CONFIGS = [
-  {
-    listKey:    OFFLINE_KEYS.outdoor,
-    type:       'outdoor',
-    imgBase:    'https://climbing.ge/public/images/outdoor_img/',
-    detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/outdoor/en/${key}`,
-    getKey:     (item) => item.global_data?.url_title,
-    getId:      (item) => item.global_data?.id,
-    getImage:   (item) => item.global_data?.image,
-    hasSectors: true,
-  },
-  {
-    listKey:    OFFLINE_KEYS.ice,
-    type:       'ice',
-    imgBase:    'https://climbing.ge/public/images/ice_img/',
-    detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/ice/en/${key}`,
-    getKey:     (item) => item.global_data?.url_title,
-    getId:      (item) => item.global_data?.id,
-    getImage:   (item) => item.global_data?.image,
-    hasSectors: true,
-  },
-  {
-    listKey:    OFFLINE_KEYS.indoor,
-    type:       'indoor',
-    imgBase:    'https://climbing.ge/public/images/indoor_img/',
-    detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/indoor/en/${key}`,
-    getKey:     (item) => item.global_data?.url_title,
-    getId:      (item) => null,
-    getImage:   (item) => item.global_data?.image,
-    hasSectors: false,
-  },
-  {
-    listKey:    OFFLINE_KEYS.mount_route,
-    type:       'mount_route',
-    imgBase:    'https://climbing.ge/public/images/mount_route_img/',
-    detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/mount_route/en/${key}`,
-    getKey:     (item) => item.global_data?.url_title,
-    getId:      (item) => item.global_data?.id,
-    getImage:   (item) => item.global_data?.image,
-    hasSectors: true,
-  },
-  {
-    listKey:    OFFLINE_KEYS.other,
-    type:       'other',
-    imgBase:    'https://climbing.ge/public/images/other_img/',
-    detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/other/en/${key}`,
-    getKey:     (item) => item.global_data?.url_title,
-    getId:      (item) => null,
-    getImage:   (item) => item.global_data?.image,
-    hasSectors: false,
-  },
-  {
-    listKey:    OFFLINE_KEYS.events,
-    type:       'event',
-    imgBase:    'https://climbing.ge/public/images/event_img/',
-    detailUrl:  (key) => `https://climbing.ge/api/get_event/get_event_on_site_page/en/${key}`,
-    getKey:     (item) => item.global_event?.id?.toString(),
-    getId:      (item) => null,
-    getImage:   (item) => item.global_event?.image,
-    hasSectors: false,
-  },
-];
+function buildArticleConfigs(locale) {
+  return [
+    {
+      listKey:    OFFLINE_KEYS.outdoor,
+      type:       'outdoor',
+      imgBase:    'https://climbing.ge/public/images/outdoor_img/',
+      detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/outdoor/${locale}/${key}`,
+      getKey:     (item) => item.global_data?.url_title,
+      getId:      (item) => item.global_data?.id,
+      getImage:   (item) => item.global_data?.image,
+      hasSectors: true,
+    },
+    {
+      listKey:    OFFLINE_KEYS.ice,
+      type:       'ice',
+      imgBase:    'https://climbing.ge/public/images/ice_img/',
+      detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/ice/${locale}/${key}`,
+      getKey:     (item) => item.global_data?.url_title,
+      getId:      (item) => item.global_data?.id,
+      getImage:   (item) => item.global_data?.image,
+      hasSectors: true,
+    },
+    {
+      listKey:    OFFLINE_KEYS.indoor,
+      type:       'indoor',
+      imgBase:    'https://climbing.ge/public/images/indoor_img/',
+      detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/indoor/${locale}/${key}`,
+      getKey:     (item) => item.global_data?.url_title,
+      getId:      (item) => null,
+      getImage:   (item) => item.global_data?.image,
+      hasSectors: false,
+    },
+    {
+      listKey:    OFFLINE_KEYS.mount_route,
+      type:       'mount_route',
+      imgBase:    'https://climbing.ge/public/images/mount_route_img/',
+      detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/mount_route/${locale}/${key}`,
+      getKey:     (item) => item.global_data?.url_title,
+      getId:      (item) => item.global_data?.id,
+      getImage:   (item) => item.global_data?.image,
+      hasSectors: true,
+    },
+    {
+      listKey:    OFFLINE_KEYS.other,
+      type:       'other',
+      imgBase:    'https://climbing.ge/public/images/other_img/',
+      detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/other/${locale}/${key}`,
+      getKey:     (item) => item.global_data?.url_title,
+      getId:      (item) => null,
+      getImage:   (item) => item.global_data?.image,
+      hasSectors: false,
+    },
+    {
+      listKey:    OFFLINE_KEYS.events,
+      type:       'event',
+      imgBase:    'https://climbing.ge/public/images/event_img/',
+      detailUrl:  (key) => `https://climbing.ge/api/get_event/get_event_on_site_page/${locale}/${key}`,
+      getKey:     (item) => item.global_event?.id?.toString(),
+      getId:      (item) => null,
+      getImage:   (item) => item.global_event?.image,
+      hasSectors: false,
+    },
+  ];
+}
 
 // --- Low-level helpers ---
 
@@ -135,7 +137,6 @@ export async function getLastDownloadTime() {
   return loadOfflineData(OFFLINE_KEYS.download_time);
 }
 
-// Collect image URLs from a sectors API response array
 function collectSectorImageUrls(sectorsData) {
   const urls = [];
   for (const item of (sectorsData || [])) {
@@ -157,9 +158,9 @@ function collectSectorImageUrls(sectorsData) {
   return urls;
 }
 
-// --- Bulk download ---
+// --- Bulk download (locale-aware) ---
 
-export async function downloadAllData(onProgress) {
+export async function downloadAllData(locale = 'en', onProgress) {
   let listCompleted = 0;
   let listFailed = 0;
   let articleCompleted = 0;
@@ -167,6 +168,9 @@ export async function downloadAllData(onProgress) {
   let sectorsCompleted = 0;
   let sectorsFailed = 0;
   let imagesCompleted = 0;
+
+  const LIST_ENDPOINTS = buildListEndpoints(locale);
+  const ARTICLE_CONFIGS = buildArticleConfigs(locale);
 
   const cachedLists = {};
   const allImageUrls = [];
@@ -204,18 +208,15 @@ export async function downloadAllData(onProgress) {
       const articleId = config.getId(item);
       if (!urlKey) continue;
 
-      // Download article detail
       if (onProgress) onProgress({ currentLabel: `Article: ${urlKey}`, phase: 'articles' });
       try {
         const { data } = await api.get(corsUrl(config.detailUrl(urlKey)));
         await saveArticleData(config.type, urlKey, data);
         articleCompleted++;
 
-        // Collect article header image
         const headerImg = data.global_data?.image || data.global_event?.image;
         if (headerImg) allImageUrls.push(imgUri(config.imgBase, headerImg));
 
-        // Collect gallery images
         for (const g of (data.gallery_images || [])) {
           if (g.image) allImageUrls.push(imgUri(GALLERY_BASE, g.image));
         }
@@ -223,7 +224,6 @@ export async function downloadAllData(onProgress) {
         articleFailed++;
       }
 
-      // Download sectors if this type has them
       if (config.hasSectors && articleId) {
         if (onProgress) onProgress({ currentLabel: `Sectors: ${urlKey}`, phase: 'sectors' });
         try {
@@ -232,8 +232,6 @@ export async function downloadAllData(onProgress) {
           ));
           await saveSectorsData(articleId, data);
           sectorsCompleted++;
-
-          // Collect sector topo images
           allImageUrls.push(...collectSectorImageUrls(data));
         } catch (_) {
           sectorsFailed++;

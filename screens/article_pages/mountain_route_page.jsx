@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from "react-native";
+import { useTranslation } from 'react-i18next';
+import { useLocale } from '../../utils/LocaleContext';
 
 import CachedImage from "../../components/CachedImage";
 import ImageViewerModal from "../../components/ImageViewerModal";
@@ -46,6 +48,8 @@ function extractSectorImageUris(sectorsData) {
 }
 
 export default function MountainRoutePage({ route }) {
+  const { t } = useTranslation();
+  const { locale } = useLocale();
   const urlTitle    = typeof route.params === 'object' ? route.params.url_title : route.params;
   const mountMasive = typeof route.params === 'object' ? route.params.mount_masive : null;
 
@@ -56,10 +60,11 @@ export default function MountainRoutePage({ route }) {
   const [noCache, setNoCache]                 = useState(false);
   const [sectorImageUris, setSectorImageUris] = useState([]);
   const [routeImages, setRouteImages]         = useState([]);
-  const [viewer, setViewer]                   = useState(null); // { uris, idx }
+  const [viewer, setViewer]                   = useState(null);
 
   useEffect(() => {
-    api.get(corsUrl("https://climbing.ge/api/get_article/get_locale_article_on_page/mount_route/en/" + urlTitle))
+    setLoading(true);
+    api.get(corsUrl(`https://climbing.ge/api/get_article/get_locale_article_on_page/mount_route/${locale}/` + urlTitle))
       .then(({ data }) => {
         setGlobalData(data);
         setLocaleData(data.locale_data || {});
@@ -78,13 +83,12 @@ export default function MountainRoutePage({ route }) {
         }
         setLoading(false);
       });
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     const articleId = globalData.global_data?.id;
     if (!articleId) return;
 
-    // Fetch sector topo images
     api.get(corsUrl(`https://climbing.ge/api/get_sector/get_sector_and_routes/${articleId}`))
       .then(({ data }) => {
         saveSectorsData(articleId, data);
@@ -95,7 +99,6 @@ export default function MountainRoutePage({ route }) {
         if (cached) setSectorImageUris(extractSectorImageUris(cached));
       });
 
-    // Fetch route photos
     api.get(corsUrl(`https://climbing.ge/api/get_mount_route/get_mount_routes_images/${articleId}`))
       .then(({ data }) => {
         if (Array.isArray(data)) setRouteImages(data);
@@ -137,7 +140,6 @@ export default function MountainRoutePage({ route }) {
 
   return (
     <ScrollView style={styles.container}>
-
       <ArticleBlock
         local_data={localeData}
         global_data={globalData.global_data || {}}
@@ -152,17 +154,12 @@ export default function MountainRoutePage({ route }) {
         ) : null}
       />
 
-      {/* Route photos — 2-column grid */}
       {routeImageUris.length > 0 && (
         <View style={styles.section}>
-          <Text style={gStyle.h2}>Route Photos</Text>
+          <Text style={gStyle.h2}>{t('article.route_photos')}</Text>
           <View style={styles.twoColGrid}>
             {routeImageUris.map((uri, idx) => (
-              <TouchableOpacity
-                key={idx}
-                style={styles.twoColItem}
-                onPress={() => openRoutePhoto(idx)}
-              >
+              <TouchableOpacity key={idx} style={styles.twoColItem} onPress={() => openRoutePhoto(idx)}>
                 <CachedImage uri={uri} style={styles.twoColThumb} contentFit="cover" />
               </TouchableOpacity>
             ))}
@@ -170,17 +167,12 @@ export default function MountainRoutePage({ route }) {
         </View>
       )}
 
-      {/* Gallery: article photos + sector topo thumbnails */}
       {galleryUris.length > 0 && (
         <View style={styles.section}>
-          <Text style={gStyle.h2}>Photos</Text>
+          <Text style={gStyle.h2}>{t('article.photos')}</Text>
           <View style={styles.galleryGrid}>
             {galleryUris.map((uri, idx) => (
-              <TouchableOpacity
-                key={idx}
-                style={styles.galleryItem}
-                onPress={() => openGalleryPhoto(uri)}
-              >
+              <TouchableOpacity key={idx} style={styles.galleryItem} onPress={() => openGalleryPhoto(uri)}>
                 <CachedImage uri={uri} style={styles.galleryThumb} contentFit="cover" />
               </TouchableOpacity>
             ))}
@@ -207,40 +199,12 @@ export default function MountainRoutePage({ route }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  section: {
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  twoColGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 8,
-  },
-  twoColItem: {
-    width: '50%',
-    padding: 3,
-  },
-  twoColThumb: {
-    width: '100%',
-    aspectRatio: 1,
-    borderRadius: 6,
-  },
-  galleryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 8,
-  },
-  galleryItem: {
-    width: '33.33%',
-    padding: 2,
-  },
-  galleryThumb: {
-    width: '100%',
-    aspectRatio: 1,
-    borderRadius: 4,
-  },
+  container: { flex: 1, padding: 16 },
+  section: { marginTop: 16, marginBottom: 8 },
+  twoColGrid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 },
+  twoColItem: { width: '50%', padding: 3 },
+  twoColThumb: { width: '100%', aspectRatio: 1, borderRadius: 6 },
+  galleryGrid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 },
+  galleryItem: { width: '33.33%', padding: 2 },
+  galleryThumb: { width: '100%', aspectRatio: 1, borderRadius: 4 },
 });

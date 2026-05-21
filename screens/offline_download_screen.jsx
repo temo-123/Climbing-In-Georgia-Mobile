@@ -8,10 +8,14 @@ import {
   faCloudArrowDown, faCircleCheck,
   faWifi, faDatabase, faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
+import { useTranslation } from 'react-i18next';
+import { useLocale } from '../utils/LocaleContext';
 import { downloadAllData, getLastDownloadTime } from '../utils/offlineStorage';
 import PageFooter from '../components/PageFooter';
 
 export default function OfflineDownloadScreen() {
+  const { t } = useTranslation();
+  const { locale } = useLocale();
   const [lastDownload, setLastDownload] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [currentLabel, setCurrentLabel] = useState('');
@@ -23,10 +27,10 @@ export default function OfflineDownloadScreen() {
 
   async function handleDownload() {
     setIsDownloading(true);
-    setCurrentLabel('Starting...');
+    setCurrentLabel(t('offline_screen.starting'));
     setResult(null);
 
-    const res = await downloadAllData(p => setCurrentLabel(p.currentLabel));
+    const res = await downloadAllData(locale, p => setCurrentLabel(p.currentLabel));
 
     setIsDownloading(false);
     setResult(res);
@@ -50,10 +54,8 @@ export default function OfflineDownloadScreen() {
         <FontAwesomeIcon icon={faCloudArrowDown} size={58} color="#279fbb" />
       </View>
 
-      <Text style={styles.title}>Offline Mode</Text>
-      <Text style={styles.subtitle}>
-        Download all climbing data so you can browse the app without an internet connection.
-      </Text>
+      <Text style={styles.title}>{t('offline_screen.title')}</Text>
+      <Text style={styles.subtitle}>{t('offline_screen.subtitle')}</Text>
 
       <View style={styles.infoBox}>
         <FontAwesomeIcon
@@ -63,8 +65,8 @@ export default function OfflineDownloadScreen() {
         />
         <Text style={[styles.infoText, !lastDownload && styles.infoTextMuted]}>
           {lastDownload
-            ? `Last downloaded: ${formatDate(lastDownload)}`
-            : 'No data downloaded yet'}
+            ? t('offline_screen.last_downloaded', { date: formatDate(lastDownload) })
+            : t('offline_screen.no_data')}
         </Text>
       </View>
 
@@ -76,7 +78,7 @@ export default function OfflineDownloadScreen() {
       >
         {isDownloading
           ? <ActivityIndicator color="#fff" />
-          : <Text style={styles.buttonText}>Download All Data</Text>
+          : <Text style={styles.buttonText}>{t('offline_screen.download_btn')}</Text>
         }
       </TouchableOpacity>
 
@@ -102,18 +104,25 @@ export default function OfflineDownloadScreen() {
             result.completed === 0 && styles.resultTextError,
           ]}>
             {result.completed === 0
-              ? 'Download failed. Please check your internet connection.'
-              : `Saved ${result.listCompleted} lists, ${result.articleCompleted} articles, ${result.sectorsCompleted} sectors, ${result.imagesCompleted} images.`
-                + (result.failed > 0 ? ` (${result.failed} failed — try again)` : '')}
+              ? t('offline_screen.download_failed')
+              : t('offline_screen.download_success', {
+                  lists: result.listCompleted,
+                  articles: result.articleCompleted,
+                  sectors: result.sectorsCompleted,
+                  images: result.imagesCompleted,
+                })
+                + (result.failed > 0
+                  ? t('offline_screen.download_failed_partial', { failed: result.failed })
+                  : '')}
           </Text>
         </View>
       )}
 
       <View style={styles.tipBox}>
-        <Text style={styles.tipTitle}>How it works</Text>
-        <Text style={styles.tipText}>• Tap the button while online to save data to your device</Text>
-        <Text style={styles.tipText}>• When offline, all lists, articles, and images will use the cached data automatically</Text>
-        <Text style={styles.tipText}>• Re-download anytime to get the latest content</Text>
+        <Text style={styles.tipTitle}>{t('offline_screen.how_title')}</Text>
+        <Text style={styles.tipText}>{t('offline_screen.how_1')}</Text>
+        <Text style={styles.tipText}>{t('offline_screen.how_2')}</Text>
+        <Text style={styles.tipText}>{t('offline_screen.how_3')}</Text>
       </View>
       <PageFooter />
     </ScrollView>
@@ -121,10 +130,7 @@ export default function OfflineDownloadScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 24,
-    alignItems: 'center',
-  },
+  container: { padding: 24, alignItems: 'center' },
   iconBox: {
     marginTop: 16,
     marginBottom: 16,
@@ -156,14 +162,8 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     width: '100%',
   },
-  infoText: {
-    fontSize: 14,
-    color: '#279fbb',
-    flex: 1,
-  },
-  infoTextMuted: {
-    color: '#999',
-  },
+  infoText: { fontSize: 14, color: '#279fbb', flex: 1 },
+  infoTextMuted: { color: '#999' },
   button: {
     backgroundColor: '#279fbb',
     borderRadius: 14,
@@ -172,29 +172,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: 'bold',
-    letterSpacing: 0.3,
-  },
-  progressBox: {
-    width: '100%',
-    marginBottom: 20,
-    alignItems: 'center',
-    gap: 10,
-  },
-  progressSpinner: {
-    marginBottom: 4,
-  },
-  progressLabel: {
-    fontSize: 13,
-    color: '#555',
-    textAlign: 'center',
-  },
+  buttonDisabled: { opacity: 0.6 },
+  buttonText: { color: '#fff', fontSize: 17, fontWeight: 'bold', letterSpacing: 0.3 },
+  progressBox: { width: '100%', marginBottom: 20, alignItems: 'center', gap: 10 },
+  progressSpinner: { marginBottom: 4 },
+  progressLabel: { fontSize: 13, color: '#555', textAlign: 'center' },
   resultBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -204,21 +186,10 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 20,
   },
-  resultSuccess: {
-    backgroundColor: '#e6f6ec',
-  },
-  resultError: {
-    backgroundColor: '#fde8e8',
-  },
-  resultText: {
-    fontSize: 14,
-    color: '#2d7a4f',
-    flex: 1,
-    lineHeight: 20,
-  },
-  resultTextError: {
-    color: '#c0392b',
-  },
+  resultSuccess: { backgroundColor: '#e6f6ec' },
+  resultError: { backgroundColor: '#fde8e8' },
+  resultText: { fontSize: 14, color: '#2d7a4f', flex: 1, lineHeight: 20 },
+  resultTextError: { color: '#c0392b' },
   tipBox: {
     width: '100%',
     backgroundColor: '#f5f5f5',
@@ -227,15 +198,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     gap: 6,
   },
-  tipTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 6,
-  },
-  tipText: {
-    fontSize: 13,
-    color: '#555',
-    lineHeight: 20,
-  },
+  tipTitle: { fontSize: 15, fontWeight: 'bold', color: '#333', marginBottom: 6 },
+  tipText: { fontSize: 13, color: '#555', lineHeight: 20 },
 });

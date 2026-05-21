@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, FlatList } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import api, { corsUrl } from '../../utils/api';
 import { useSiteDescription } from '../../utils/useSiteData';
+import { useLocale } from '../../utils/LocaleContext';
 import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
 
 import EventCard from "../../components/cards/event_card_component";
@@ -13,6 +15,8 @@ import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
 
 export default function App() {
+  const { t } = useTranslation();
+  const { locale } = useLocale();
   const [event_data, setData] = useState([]);
   const [isLoading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
@@ -20,7 +24,10 @@ export default function App() {
   const description = useSiteDescription('events');
 
   useEffect(() => {
-    api.get(corsUrl('https://climbing.ge/api/get_event/get_event_on_site_list/en'))
+    setLoading(true);
+    setIsOffline(false);
+    setNoCache(false);
+    api.get(corsUrl(`https://climbing.ge/api/get_event/get_event_on_site_list/${locale}`))
       .then(({ data }) => {
         setData(data);
         saveOfflineData(OFFLINE_KEYS.events, data);
@@ -36,7 +43,7 @@ export default function App() {
         }
         setLoading(false);
       });
-  }, []);
+  }, [locale]);
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;
@@ -49,12 +56,12 @@ export default function App() {
         keyExtractor={(item) => item.global_event.id.toString()}
         ListHeaderComponent={
           <Article_list_header_text
-            title="Events & Competitions"
+            title={t('list.events_title')}
             description={description}
           />
         }
         renderItem={({ item }) => <EventCard cardData={item} />}
-        ListEmptyComponent={<EmptyState message={"No events at the moment.\nCheck back soon!"} />}
+        ListEmptyComponent={<EmptyState message={t('empty.events')} />}
         ListFooterComponent={<PageFooter />}
         contentContainerStyle={styles.container}
       />
@@ -63,10 +70,6 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-  },
-  container: {
-    padding: 16,
-  },
+  wrapper: { flex: 1 },
+  container: { padding: 16 },
 });

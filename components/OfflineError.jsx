@@ -2,16 +2,18 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCloudXmark } from '@fortawesome/free-solid-svg-icons';
+import { useTranslation } from 'react-i18next';
 
 export default function OfflineError() {
+  const { t } = useTranslation();
   return (
     <View style={styles.container}>
       <FontAwesomeIcon icon={faCloudXmark} size={64} color="#ccc" />
-      <Text style={styles.title}>You are offline</Text>
+      <Text style={styles.title}>{t('error.offline_title')}</Text>
       <Text style={styles.message}>
-        No cached data found.{'\n'}
-        Connect to the internet and download data from{'\n'}
-        <Text style={styles.highlight}>Offline Mode</Text> in the menu.
+        {t('error.offline_message')}
+        <Text style={styles.highlight}>{t('error.offline_link')}</Text>
+        {t('error.offline_suffix')}
       </Text>
     </View>
   );

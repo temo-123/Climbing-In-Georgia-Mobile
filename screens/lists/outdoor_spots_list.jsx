@@ -1,7 +1,9 @@
 import { StyleSheet, View, FlatList } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api, { corsUrl } from '../../utils/api';
 import { useSiteDescription } from '../../utils/useSiteData';
+import { useLocale } from '../../utils/LocaleContext';
 import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
 
 import OutdoorCard from "../../components/cards/outdoor_card_component";
@@ -14,6 +16,8 @@ import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
 
 export default function App() {
+  const { t } = useTranslation();
+  const { locale } = useLocale();
   const [outdoor_data, setData] = useState([]);
   const [isLoading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
@@ -21,7 +25,10 @@ export default function App() {
   const description = useSiteDescription('outdoor');
 
   useEffect(() => {
-    api.get(corsUrl('https://climbing.ge/api/get_article/get_locale_articles/outdoor/en'))
+    setLoading(true);
+    setIsOffline(false);
+    setNoCache(false);
+    api.get(corsUrl(`https://climbing.ge/api/get_article/get_locale_articles/outdoor/${locale}`))
       .then(({ data }) => {
         setData(data);
         saveOfflineData(OFFLINE_KEYS.outdoor, data);
@@ -37,7 +44,7 @@ export default function App() {
         }
         setLoading(false);
       });
-  }, []);
+  }, [locale]);
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;
@@ -51,14 +58,14 @@ export default function App() {
         ListHeaderComponent={
           <View>
             <Article_list_header_text
-              title="Outdoor Climbing In Georgia"
+              title={t('list.outdoor_title')}
               description={description}
             />
             <RoutesQuantityText />
           </View>
         }
         renderItem={({ item }) => <OutdoorCard cardData={item} />}
-        ListEmptyComponent={<EmptyState message={"No outdoor spots found.\nCheck back soon!"} />}
+        ListEmptyComponent={<EmptyState message={t('empty.outdoor')} />}
         ListFooterComponent={<PageFooter />}
         contentContainerStyle={styles.container}
       />
@@ -67,10 +74,6 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-  },
-  container: {
-    padding: 16,
-  },
+  wrapper: { flex: 1 },
+  container: { padding: 16 },
 });

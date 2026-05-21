@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 export default function PageFooter() {
+  const { t } = useTranslation();
   return (
     <View style={styles.footer}>
       <View style={styles.line} />
-      <Text style={styles.text}>Powered by climbing.ge</Text>
+      <Text style={styles.text}>{t('footer')}</Text>
     </View>
   );
 }

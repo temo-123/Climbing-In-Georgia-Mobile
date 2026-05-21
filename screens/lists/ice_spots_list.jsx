@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, FlatList } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import api, { corsUrl } from '../../utils/api';
 import { useSiteDescription } from '../../utils/useSiteData';
+import { useLocale } from '../../utils/LocaleContext';
 import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
 
 import IceCard from "../../components/cards/ice_card_component";
@@ -14,6 +16,8 @@ import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
 
 export default function App() {
+  const { t } = useTranslation();
+  const { locale } = useLocale();
   const [ice_data, setData] = useState([]);
   const [isLoading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
@@ -21,7 +25,10 @@ export default function App() {
   const description = useSiteDescription('ice');
 
   useEffect(() => {
-    api.get(corsUrl('https://climbing.ge/api/get_article/get_locale_articles/ice/en'))
+    setLoading(true);
+    setIsOffline(false);
+    setNoCache(false);
+    api.get(corsUrl(`https://climbing.ge/api/get_article/get_locale_articles/ice/${locale}`))
       .then(({ data }) => {
         setData(data);
         saveOfflineData(OFFLINE_KEYS.ice, data);
@@ -37,7 +44,7 @@ export default function App() {
         }
         setLoading(false);
       });
-  }, []);
+  }, [locale]);
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;
@@ -51,14 +58,14 @@ export default function App() {
         ListHeaderComponent={
           <View>
             <Article_list_header_text
-              title="Ice Climbing In Georgia"
+              title={t('list.ice_title')}
               description={description}
             />
             <IceRoutesQuantityText />
           </View>
         }
         renderItem={({ item }) => <IceCard cardData={item} />}
-        ListEmptyComponent={<EmptyState message={"No ice climbing spots found.\nCheck back soon!"} />}
+        ListEmptyComponent={<EmptyState message={t('empty.ice')} />}
         ListFooterComponent={<PageFooter />}
         contentContainerStyle={styles.container}
       />
@@ -67,10 +74,6 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-  },
-  container: {
-    padding: 16,
-  },
+  wrapper: { flex: 1 },
+  container: { padding: 16 },
 });

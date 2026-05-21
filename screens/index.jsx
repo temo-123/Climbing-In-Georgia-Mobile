@@ -1,54 +1,40 @@
 import * as React from 'react';
-import { Image, ScrollView, Button, View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-
+import { Image, ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useTranslation } from 'react-i18next';
 
 import 'react-native-gesture-handler';
 const Tab = createBottomTabNavigator();
-
-// import { GoogleAnalyticsTracker } from "react-native-google-analytics-bridge";
- 
-// tracker.trackScreenView("Home");
-
-// import { GoogleAnalyticsTracker } from 'react-native-google-analytics-bridge';
-// import GoogleAnalytics from '@redux-beacon/react-native-google-analytics';
-
-// const trackingId = 'UA-12345678-1' // replace with your own
-// const ga = GoogleAnalytics(trackingId, GoogleAnalyticsTracker);
-
-// const gaMiddleware = createMiddleware(eventsMap, ga);
 
 import IndexCard from '../components/cards/index_card_component';
 import PageFooter from '../components/PageFooter';
 
 export default function HomeScreen({ navigation }) {
+  const { t } = useTranslation();
 
   return (
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <View style={styles.feed}>
+        <IndexCard url='outdoors_list' image={require('../assets/images/outdoor.png')} title={t('home.outdoor')} />
+        <IndexCard url='indoors_list' image={require('../assets/images/indoor.png')} title={t('home.indoor')} />
+        <IndexCard url='ices_list' image={require('../assets/images/ice.png')} title={t('home.ice')} />
+        <IndexCard url='mountain_routes_list' image={require('../assets/images/mount.png')} title={t('home.mountain')} />
+        <IndexCard url='other_activities_list' image={require('../assets/images/other.png')} title={t('home.other')} />
+      </View>
 
-        <View style={styles.feed}>
-          <IndexCard url='outdoors_list' image={require('../assets/images/outdoor.png')} title='Outdoor Spots'/>
-          <IndexCard url='indoors_list' image={require('../assets/images/indoor.png')} title='Indoor Gyms'/>
-          <IndexCard url='ices_list' image={require('../assets/images/ice.png')} title='Ice & Mix'/>
-          <IndexCard url='mountain_routes_list' image={require('../assets/images/mount.png')} title='Mountain routes'/>
-          <IndexCard url='other_activities_list' image={require('../assets/images/other.png')} title='Other Activity'/>
+      <View style={styles.bottom_feed}>
+        <TouchableOpacity style={styles.long_card} onPress={() => navigation.navigate('about_us')}>
+          <View style={styles.long_card_image_view}>
+            <Image style={styles.long_card_image} source={require('../assets/images/about_us.png')} />
+          </View>
+          <View style={styles.long_card_text_view}>
+            <Text style={styles.long_card_text}>{t('home.about_us')}</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
 
-          {/* <IndexCard url='events_list' image={require('../assets/images/event.png')} title='Events'/> */}
-        </View>
-
-        <View style={styles.bottom_feed}>
-          <TouchableOpacity style={styles.long_card} onPress={() => navigation.navigate('about_us')}>
-            <View style={styles.long_card_image_view}>
-              <Image style={styles.long_card_image} source={require('../assets/images/about_us.png')} />
-            </View>
-            <View style={styles.long_card_text_view}>
-              <Text style={styles.long_card_text}>About us</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        <PageFooter />
-      </ScrollView>
+      <PageFooter />
+    </ScrollView>
   );
 }
 
@@ -58,7 +44,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     padding: 16,
-    justifyContent: 'space-around'
+    justifyContent: 'space-around',
   },
   bottom_feed: {
     flex: 1,
@@ -66,53 +52,28 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingTop: 0,
   },
-
-  card: {
-    backgroundColor: 'white',
-    width: '45%',
-    height: '45%',
-    aspectRatio: 1,
-    alignItems: 'center',
-    marginBottom: 16,
-
-    borderWidth: 1.5,
-    borderRadius: 20,
-    borderColor: "#279fbb",
-
-  },
-  card_img:{
-    width: '75%', 
-    height: '75%',
-    marginTop: 6,
-    resizeMode: 'contain',
-  },
-  card_text: {
-    fontSize: 20
-  },
-
   long_card: {
     backgroundColor: 'white',
     width: '100%',
     height: 100,
     alignItems: 'center',
     marginBottom: 16,
-
     borderWidth: 1.5,
     borderRadius: 20,
-    borderColor: "#279fbb",
-
+    borderColor: '#279fbb',
     flexDirection: 'row',
   },
   long_card_image_view: {
-    width: '50%', 
+    width: '50%',
   },
   long_card_image: {
-    width: '50%', 
+    width: '50%',
     height: '100%',
     margin: 4,
     resizeMode: 'contain',
   },
+  long_card_text_view: {},
   long_card_text: {
-    fontSize: 20
+    fontSize: 20,
   },
 });
