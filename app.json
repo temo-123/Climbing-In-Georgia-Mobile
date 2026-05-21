@@ -15,7 +15,16 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.climbingInGeorgia",
+      "buildNumber": "1",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Used to view climbing route photos.",
+        "NSPhotoLibraryAddUsageDescription": "Used to save climbing route photos.",
+        "CFBundleLocalizations": ["en"],
+        "CFBundleDevelopmentRegion": "en"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -34,8 +43,7 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "@react-native-firebase/app",
-      "@react-native-firebase/analytics"
+      "@react-native-firebase/app"
     ],
     "extra": {
       "eas": {
