@@ -9,6 +9,26 @@
       "client_info": {
         "mobilesdk_app_id": "1:331816048454:android:ec483fcc0a3f7a47797747",
         "android_client_info": {
+          "package_name": "com.anonymous.climbingInGeorgia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGEdyk64Qtcxsmym5OO4UOWhkieTM5X3g"
+        }
+      ],
+      "services":
+     {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:331816048454:android:ae449241b2ced06a797747",
+        "android_client_info": {
           "package_name": "ge.climbing.app"
         }
       },

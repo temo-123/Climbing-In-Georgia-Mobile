@@ -2,7 +2,7 @@
   "expo": {
     "name": "Climbing In Georgia",
     "slug": "climbing-in-georgia-mobile",
-    "version": "1.2.5",
+    "version": "1.2.6",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -10,6 +10,9 @@
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "enabled": false
     },
     "assetBundlePatterns": [
       "**/*"
@@ -22,7 +25,9 @@
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Used to view climbing route photos.",
         "NSPhotoLibraryAddUsageDescription": "Used to save climbing route photos.",
-        "CFBundleLocalizations": ["en"],
+        "CFBundleLocalizations": [
+          "en"
+        ],
         "CFBundleDevelopmentRegion": "en",
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -34,7 +39,7 @@
       },
       "package": "ge.climbing.app",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 1,
+      "versionCode": 3,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE"
