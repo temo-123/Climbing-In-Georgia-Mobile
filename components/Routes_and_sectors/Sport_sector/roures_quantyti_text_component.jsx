@@ -18,16 +18,17 @@ export default function RoutesQuantityText() {
 
   if (!data) return null;
 
-  const sport = data.sport || {};
-  const boulder = data.boulder || {};
-  const mtp = data.mtp || {};
+  const categories = data.categories || {};
+  const sport = categories.sport || {};
+  const boulder = categories.boulder || {};
+  const mtp = categories.mtp || {};
 
-  const sportRoutes  = sport.routes   ?? sport.routes_count   ?? 0;
-  const sportSectors = sport.sectors  ?? sport.sectors_count  ?? 0;
-  const boulderRoutes  = boulder.routes   ?? boulder.routes_count   ?? 0;
-  const boulderSectors = boulder.sectors  ?? boulder.sectors_count  ?? 0;
-  const mtpRoutes  = mtp.routes   ?? mtp.routes_count   ?? 0;
-  const mtpSectors = mtp.sectors  ?? mtp.sectors_count  ?? 0;
+  const sportRoutes    = sport.sport_routes     ?? 0;
+  const sportSectors   = sport.sectors          ?? 0;
+  const boulderRoutes  = boulder.boulder_routes ?? 0;
+  const boulderSectors = boulder.sectors        ?? 0;
+  const mtpRoutes      = mtp.mtps              ?? 0;
+  const mtpSectors     = mtp.sectors            ?? 0;
 
   const totalSectors = sportSectors + boulderSectors + mtpSectors;
   const totalRoutes  = sportRoutes + boulderRoutes + mtpRoutes;
