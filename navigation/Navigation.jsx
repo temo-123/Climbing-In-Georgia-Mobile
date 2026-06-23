@@ -12,6 +12,18 @@ import ice_page from '../screens/article_pages/ice_spot_page';
 import mountain_route_page from '../screens/article_pages/mountain_route_page';
 import other_activity_page from '../screens/article_pages/other_activity_page';
 
+import LoginScreen from '../screens/auth/LoginScreen';
+import RegisterScreen from '../screens/auth/RegisterScreen';
+import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
+
+import UserProfileScreen from '../screens/user/UserProfileScreen';
+import UserOptionsScreen from '../screens/user/UserOptionsScreen';
+import UserCommentsScreen from '../screens/user/UserCommentsScreen';
+import UserRouteReviewsScreen from '../screens/user/UserRouteReviewsScreen';
+import UserAscentsScreen from '../screens/user/UserAscentsScreen';
+import UserDonationsScreen from '../screens/user/UserDonationsScreen';
+import UserFavoritesScreen from '../screens/user/UserFavoritesScreen';
+
 import DrawerNavigator from './DrawerNavigator';
 
 const Stack = createNativeStackNavigator();
@@ -62,6 +74,46 @@ export const Navigation = () => {
         />
         <Stack.Screen name="other_activity_page" component={other_activity_page}
           options={{ title: t('page.other_activity'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="login"
+          component={LoginScreen}
+          options={{ title: t('auth.login'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="register"
+          component={RegisterScreen}
+          options={{ title: t('auth.register'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="forgot_password"
+          component={ForgotPasswordScreen}
+          options={{ title: t('auth.forgot_password_title'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="user_profile"
+          component={UserProfileScreen}
+          options={{ title: t('user.profile'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="user_options"
+          component={UserOptionsScreen}
+          options={{ title: t('user.options'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="user_comments"
+          component={UserCommentsScreen}
+          options={{ title: t('user.my_comments'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="user_route_reviews"
+          component={UserRouteReviewsScreen}
+          options={{ title: t('user.my_route_reviews'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="user_ascents"
+          component={UserAscentsScreen}
+          options={{ title: t('user.my_ascents'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="user_donations"
+          component={UserDonationsScreen}
+          options={{ title: t('user.my_donations'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="user_favorites"
+          component={UserFavoritesScreen}
+          options={{ title: t('user.favorites'), headerStyle, headerTintColor, headerTitleStyle }}
         />
       </Stack.Navigator>
     </NavigationContainer>

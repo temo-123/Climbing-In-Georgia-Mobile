@@ -3,10 +3,12 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../utils/LocaleContext';
+import { useAuth } from '../utils/AuthContext';
 
 export default function CustomDrawerContent(props) {
   const { t } = useTranslation();
   const { locale, setLocale } = useLocale();
+  const { user, logout } = useAuth();
 
   return (
     <DrawerContentScrollView {...props}>
@@ -19,7 +21,34 @@ export default function CustomDrawerContent(props) {
         <Text style={styles.appName}>Climbing In Georgia</Text>
         <Text style={styles.appTagline}>climbing.ge</Text>
       </View>
+
       <DrawerItemList {...props} />
+
+      <View style={styles.section}>
+        {user ? (
+          <>
+            <TouchableOpacity onPress={() => props.navigation.navigate('user_profile')} activeOpacity={0.7}>
+              <Text style={styles.userName}>{user.name} {user.surname}</Text>
+              <Text style={styles.userEmail}>{user.email}</Text>
+              <Text style={styles.profileLink}>{t('auth.profile')} ›</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.logoutBtn} onPress={logout} activeOpacity={0.8}>
+              <Text style={styles.logoutBtnText}>{t('auth.logout')}</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <TouchableOpacity
+              style={styles.loginBtn}
+              onPress={() => props.navigation.navigate('login')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.loginBtnText}>{t('auth.nav_login')}</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+
       <View style={styles.section}>
         <Text style={styles.label}>{t('language')}</Text>
         <View style={styles.buttons}>
@@ -107,5 +136,45 @@ const styles = StyleSheet.create({
   },
   btnTextActive: {
     color: '#fff',
+  },
+  userName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 2,
+  },
+  userEmail: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
+  },
+  profileLink: {
+    fontSize: 12,
+    color: '#279fbb',
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  logoutBtn: {
+    backgroundColor: '#279fbb',
+    borderRadius: 8,
+    paddingVertical: 9,
+    alignItems: 'center',
+  },
+  logoutBtnText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  loginBtn: {
+    borderWidth: 1.5,
+    borderColor: '#279fbb',
+    borderRadius: 8,
+    paddingVertical: 9,
+    alignItems: 'center',
+  },
+  loginBtnText: {
+    color: '#279fbb',
+    fontWeight: '600',
+    fontSize: 14,
   },
 });

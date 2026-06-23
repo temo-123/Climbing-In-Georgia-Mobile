@@ -4,6 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { Navigation } from './navigation/Navigation.jsx';
 import { LocaleProvider } from './utils/LocaleContext';
+import { AuthProvider } from './utils/AuthContext';
 import './utils/i18n';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -18,7 +19,9 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <LocaleProvider>
-          <Navigation />
+          <AuthProvider>
+            <Navigation />
+          </AuthProvider>
         </LocaleProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
