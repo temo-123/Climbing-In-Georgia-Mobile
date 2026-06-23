@@ -7,6 +7,7 @@
     "mountain": "Mountaineering Routes",
     "other": "Other Activity",
     "events": "Events & Competition",
+    "summits": "Summit Tracker",
     "about": "About Us",
     "offline": "Offline Mode"
   },
@@ -198,5 +199,34 @@
     "no_favorite_areas": "No favorite areas yet",
     "no_favorite_products": "No favorite products yet",
     "no_interested_events": "No interested events yet"
+  },
+  "summit": {
+    "summit": "Summit",
+    "scan_qr": "Scan QR Code at Summit",
+    "no_summits": "No summits available",
+    "about": "About",
+    "ascents": "Ascents",
+    "no_ascents": "No ascents recorded yet",
+    "record_ascent": "Record My Ascent",
+    "climber_info": "Climber Info",
+    "ascent_details": "Ascent Details",
+    "route": "Route",
+    "other_route": "Other route (free text)",
+    "comment": "Comment (optional)",
+    "gps": "GPS Location",
+    "capture_gps": "Capture My Location",
+    "gps_denied": "Location permission denied",
+    "gps_error": "Could not get location",
+    "submit_ascent": "Submit Ascent",
+    "submit_error": "Submission failed",
+    "ascent_recorded": "Ascent Recorded!",
+    "done": "Done",
+    "qr_hint": "Point the camera at the QR code on the summit",
+    "cancel_scan": "Cancel",
+    "invalid_qr_title": "Invalid QR Code",
+    "invalid_qr_message": "This QR code is not a valid climbing.ge summit code.",
+    "camera_loading": "Loading camera...",
+    "camera_permission": "Camera access is required to scan QR codes.",
+    "grant_permission": "Grant Permission"
   }
 }

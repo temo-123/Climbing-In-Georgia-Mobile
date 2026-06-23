@@ -24,6 +24,10 @@ import UserAscentsScreen from '../screens/user/UserAscentsScreen';
 import UserDonationsScreen from '../screens/user/UserDonationsScreen';
 import UserFavoritesScreen from '../screens/user/UserFavoritesScreen';
 
+import SummitDetailScreen from '../screens/summit/SummitDetailScreen';
+import SubmitAscentScreen from '../screens/summit/SubmitAscentScreen';
+import QRScannerScreen from '../screens/summit/QRScannerScreen';
+
 import DrawerNavigator from './DrawerNavigator';
 
 const Stack = createNativeStackNavigator();
@@ -114,6 +118,18 @@ export const Navigation = () => {
         <Stack.Screen name="user_favorites"
           component={UserFavoritesScreen}
           options={{ title: t('user.favorites'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="summit_detail"
+          component={SummitDetailScreen}
+          options={({ route }) => ({ title: route.params?.title ?? t('summit.summit'), headerStyle, headerTintColor, headerTitleStyle })}
+        />
+        <Stack.Screen name="submit_ascent"
+          component={SubmitAscentScreen}
+          options={{ title: t('summit.record_ascent'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="qr_scanner"
+          component={QRScannerScreen}
+          options={{ title: t('summit.scan_qr'), headerStyle, headerTintColor, headerTitleStyle }}
         />
       </Stack.Navigator>
     </NavigationContainer>

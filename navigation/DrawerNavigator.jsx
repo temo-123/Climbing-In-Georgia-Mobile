@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import index from '../screens/index';
 import about_us from '../screens/about_us';
+import summits_list from '../screens/summit/SummitsListScreen';
 import offline_download from '../screens/offline_download_screen';
 import indoors_list from '../screens/lists/indoor_gyms_list';
 import outdoors_list from '../screens/lists/outdoor_spots_list';
@@ -45,6 +46,9 @@ function DrawerNavigation() {
       />
       <Drawer.Screen name="events_list" component={events_list}
         options={{ title: t('nav.events'), headerStyle, headerTintColor, headerTitleStyle }}
+      />
+      <Drawer.Screen name="summits_list" component={summits_list}
+        options={{ title: t('nav.summits'), headerStyle, headerTintColor, headerTitleStyle }}
       />
       <Drawer.Screen name="about_us" component={about_us}
         options={{ title: t('nav.about'), headerStyle, headerTintColor, headerTitleStyle }}
