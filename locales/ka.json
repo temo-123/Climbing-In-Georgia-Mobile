@@ -227,6 +227,20 @@
     "invalid_qr_message": "ეს QR კოდი climbing.ge-ს მწვერვალის კოდი არ არის.",
     "camera_loading": "კამერა იტვირთება...",
     "camera_permission": "QR კოდის სასკანებლად კამერაზე წვდომა საჭიროა.",
-    "grant_permission": "წვდომის მინიჭება"
+    "grant_permission": "წვდომის მინიჭება",
+    "offline_banner": "ინტერნეტი არ არის. ასვლა შეინახება და ავტომატურად გაიგზავნება კავშირის აღდგენისას.",
+    "queued_title": "ასვლა შენახულია ოფლაინ რეჟიმში",
+    "queued_message": "ასვლა მოწყობილობაზე შეინახა და ავტომატურად ატვირთავს ინტერნეტთან კავშირისას.",
+    "photo": "ფოტო (სურვილისამებრ)",
+    "take_photo": "ფოტოს გადაღება",
+    "choose_from_gallery": "გალერიიდან არჩევა",
+    "remove_photo": "ფოტოს წაშლა",
+    "gallery_permission": "ფოტოს მისართავად გალერიაზე წვდომა საჭიროა.",
+    "captcha_title": "გადამოწმება",
+    "captcha_placeholder": "პასუხი",
+    "captcha_error": "არასწორი პასუხი. სცადეთ თავიდან.",
+    "sync_notification_title": "ასვლები ატვირთულია",
+    "sync_notification_body_one": "{{count}} ასვლა წარმატებით ატვირთულია.",
+    "sync_notification_body": "{{count}} ასვლა წარმატებით ატვირთულია."
   }
 }

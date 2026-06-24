@@ -227,6 +227,20 @@
     "invalid_qr_message": "This QR code is not a valid climbing.ge summit code.",
     "camera_loading": "Loading camera...",
     "camera_permission": "Camera access is required to scan QR codes.",
-    "grant_permission": "Grant Permission"
+    "grant_permission": "Grant Permission",
+    "offline_banner": "You are offline. Your ascent will be saved and uploaded automatically when you reconnect.",
+    "queued_title": "Ascent Saved Offline",
+    "queued_message": "Your ascent has been saved to your device and will upload automatically when you go online.",
+    "photo": "Photo (Optional)",
+    "take_photo": "Take Photo",
+    "choose_from_gallery": "Choose from Gallery",
+    "remove_photo": "Remove Photo",
+    "gallery_permission": "Gallery access is required to attach a photo.",
+    "captcha_title": "Verification",
+    "captcha_placeholder": "Answer",
+    "captcha_error": "Incorrect answer. Please try again.",
+    "sync_notification_title": "Ascents Uploaded",
+    "sync_notification_body_one": "{{count}} ascent uploaded successfully.",
+    "sync_notification_body": "{{count}} ascent(s) uploaded successfully."
   }
 }
