@@ -18,7 +18,7 @@ export default function CustomDrawerContent(props) {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.appName}>Climbing In Georgia</Text>
+        <Text style={styles.appName}>Climb Georgia</Text>
         <Text style={styles.appTagline}>climbing.ge</Text>
       </View>
 
