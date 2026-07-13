@@ -266,17 +266,22 @@ eas login
 # Preview APK (for testing / side-loading)
 eas build -p android --profile preview
 
-# Production AAB (for Google Play Store)
+# Production AAB (for Google Play Store — auto-increments version)
 eas build -p android --profile production
+
+# Production APK (same version as above, for side-loading a production build)
+eas build -p android --profile production-apk
 ```
 
 The EAS cloud build takes approximately 5–10 minutes. A download link is provided when it completes.
+
+Use `production-apk` when you need a `.apk` of the same release you submitted to Google Play (e.g. to share outside the Play Store) — it reuses the production build config but skips the automatic version bump so it doesn't drift from the `.aab` you already submitted.
 
 ---
 
 ## Version
 
-**1.2.5**
+**1.2.7**
 
 ---
 

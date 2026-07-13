@@ -11,8 +11,10 @@ npx expo start --android
 npx expo start --ios
 npx expo start --web
 
-# Build APK (EAS cloud build)
-eas build -p android --profile preview
+# Build Android (EAS cloud build)
+eas build -p android --profile preview         # .apk, internal testing build
+eas build -p android --profile production      # .aab, for Google Play submission (auto-increments version)
+eas build -p android --profile production-apk  # .apk of the production build, same version, no auto-increment
 ```
 
 No lint or test scripts are configured in this project.
