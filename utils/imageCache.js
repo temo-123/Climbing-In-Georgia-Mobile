@@ -1,10 +1,39 @@
-import * as FileSystem from 'expo-file-system';
+// SDK 54's expo-file-system default export moved to a new File/Directory API;
+// the imperative methods this file uses (getInfoAsync, downloadAsync,
+// createDownloadResumable, etc.) are the stable legacy implementation, not a
+// deprecated shim — import from here explicitly rather than the main entry.
+import * as FileSystem from 'expo-file-system/legacy';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CACHE_DIR = FileSystem.documentDirectory + 'img_cache/';
 const MAP_KEY = '@image_cache_map';
 
 let _map = null;
+
+// FileSystem.downloadAsync has no built-in timeout — a single stuck download
+// (dead URL, dropped connection, etc.) used to block this whole loop forever.
+// Racing a plain setTimeout against it (an earlier version of this fix) only
+// stopped *this code* from waiting — the underlying native download kept
+// running and holding its connection, which can starve the connection pool
+// for later requests to the same host. createDownloadResumable's
+// cancelAsync() actually tears down the native download, not just our await.
+async function downloadWithTimeout(url, localPath, ms) {
+  const resumable = FileSystem.createDownloadResumable(url, localPath);
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    resumable.cancelAsync().catch(() => {});
+  }, ms);
+  try {
+    const result = await resumable.downloadAsync();
+    if (!result) throw new Error('Download cancelled or timed out');
+    return result;
+  } catch (err) {
+    throw timedOut ? new Error(`Timed out after ${ms}ms`) : err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 function djb2Hash(str) {
   let hash = 5381;
@@ -78,7 +107,7 @@ export async function downloadImages(urls, onProgress) {
         }
       }
       const localPath = urlToLocalPath(url);
-      const result = await FileSystem.downloadAsync(url, localPath);
+      const result = await downloadWithTimeout(url, localPath, 20000);
       if (result.status === 200) {
         map[url] = localPath;
         changed = true;

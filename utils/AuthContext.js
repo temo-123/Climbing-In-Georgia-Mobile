@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from './api';
 import { encryptPassword } from './rsaEncrypt';
+import { withRecaptchaRetry } from './recaptcha';
 
 const API_BASE = 'https://climbing.ge/api';
 const AUTH_TOKEN_KEY = '@auth_token';
@@ -44,7 +45,9 @@ export function AuthProvider({ children }) {
 
   async function login(email, password) {
     const encrypted = encryptPassword(password);
-    const res = await api.post(`${API_BASE}/login`, { email, password: encrypted });
+    const res = await withRecaptchaRetry('login', (recaptcha_token) =>
+      api.post(`${API_BASE}/login`, { email, password: encrypted, recaptcha_token })
+    );
     const { token: newToken, user: newUser } = res.data;
     await AsyncStorage.setItem(AUTH_TOKEN_KEY, newToken);
     api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
@@ -64,13 +67,16 @@ export function AuthProvider({ children }) {
   }
 
   async function register(name, surname, email, password, passwordConfirmation) {
-    const res = await api.post(`${API_BASE}/register`, {
-      name,
-      surname,
-      email,
-      password,
-      password_confirmation: passwordConfirmation,
-    });
+    const res = await withRecaptchaRetry('register', (recaptcha_token) =>
+      api.post(`${API_BASE}/register`, {
+        name,
+        surname,
+        email,
+        password,
+        password_confirmation: passwordConfirmation,
+        recaptcha_token,
+      })
+    );
     const { token: newToken, user: newUser } = res.data;
     await AsyncStorage.setItem(AUTH_TOKEN_KEY, newToken);
     api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;

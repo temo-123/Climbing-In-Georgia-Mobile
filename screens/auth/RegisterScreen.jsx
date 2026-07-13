@@ -36,11 +36,19 @@ export default function RegisterScreen({ navigation }) {
       await register(name.trim(), surname.trim(), email.trim(), password, passwordConfirm);
       navigation.goBack();
     } catch (err) {
+      if (!err.isAxiosError) {
+        // Not an HTTP error — reCAPTCHA token generation itself failed
+        // (WebView not ready, timed out, etc.), not a server rejection.
+        setError(`${t('auth.generic_error')}\n\n[TEMP DEBUG] recaptcha failed: ${err?.message}`);
+        return;
+      }
       if (err?.response?.data?.errors) {
         const errs = Object.values(err.response.data.errors).flat();
         setError(errs.join('\n'));
       } else {
-        setError(err?.response?.data?.message || t('auth.generic_error'));
+        setError(
+          `${err?.response?.data?.message || t('auth.generic_error')}\n\n[TEMP DEBUG] status: ${err?.response?.status}\n${JSON.stringify(err?.response?.data)}`,
+        );
       }
     } finally {
       setLoading(false);

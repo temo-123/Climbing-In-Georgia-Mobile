@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  ActivityIndicator, FlatList,
+  ActivityIndicator, FlatList, Modal,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
 import api from '../../utils/api';
+import { loadSummitData, loadSummitAscentsData } from '../../utils/offlineStorage';
+import OfflineBanner from '../../components/OfflineBanner';
+import OfflineError from '../../components/OfflineError';
 
 const API = 'https://climbing.ge/api/summit';
 
-function AscentRow({ item }) {
-  const [expanded, setExpanded] = useState(false);
+function AscentRow({ item, onPress }) {
   return (
-    <View style={styles.ascentRow}>
+    <TouchableOpacity style={styles.ascentRow} onPress={() => onPress(item)} activeOpacity={0.7}>
       <View style={styles.ascentMain}>
         <View style={styles.ascentLeft}>
           <Text style={styles.climberName}>{item.name} {item.surname}</Text>
@@ -24,17 +27,63 @@ function AscentRow({ item }) {
           {item.is_gps_validated && (
             <View style={styles.gpsBadge}><Text style={styles.gpsBadgeText}>GPS ✓</Text></View>
           )}
-          {!!item.comment && (
-            <TouchableOpacity onPress={() => setExpanded(v => !v)}>
-              <Text style={styles.expandBtn}>{expanded ? '▲' : '▼'}</Text>
-            </TouchableOpacity>
+          <Text style={styles.expandBtn}>›</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function AscentDetailsModal({ ascent, onClose, t }) {
+  return (
+    <Modal visible={!!ascent} transparent animationType="fade" onRequestClose={onClose}>
+      <View style={styles.modalBackdrop}>
+        <View style={styles.modalCard}>
+          {!!ascent && (
+            <>
+              <Text style={styles.modalName}>{ascent.name} {ascent.surname}</Text>
+              <Text style={styles.modalMeta}>
+                {ascent.ascent_date ? new Date(ascent.ascent_date).toLocaleDateString('en-GB') : ''}
+                {ascent.ascent_time ? `  ·  ${ascent.ascent_time}` : ''}
+              </Text>
+
+              {(!!ascent.route_name || !!ascent.route_grade) && (
+                <View style={styles.modalRow}>
+                  <Text style={styles.modalRowLabel}>{t('summit.route')}</Text>
+                  <Text style={styles.modalRowValue}>
+                    {ascent.route_name}{ascent.route_grade ? ` (${ascent.route_grade})` : ''}
+                  </Text>
+                </View>
+              )}
+
+              <View style={styles.modalRow}>
+                <Text style={styles.modalRowLabel}>{t('summit.gps')}</Text>
+                <Text style={[styles.modalRowValue, ascent.is_gps_validated ? styles.modalGpsOk : styles.modalGpsWarn]}>
+                  {ascent.is_gps_validated ? `✓ ${t('summit.gps_verified')}` : `⚠ ${t('summit.gps_not_verified')}`}
+                </Text>
+              </View>
+
+              {!!ascent.photo && (
+                <View style={styles.modalRow}>
+                  <Text style={styles.modalRowLabel}>{t('summit.photo')}</Text>
+                  <Text style={styles.modalRowValue}>📷 {t('summit.photo_attached')}</Text>
+                </View>
+              )}
+
+              {!!ascent.comment && (
+                <View style={styles.modalCommentBox}>
+                  <Text style={styles.modalComment}>{ascent.comment}</Text>
+                </View>
+              )}
+
+              <TouchableOpacity style={styles.modalCloseBtn} onPress={onClose} activeOpacity={0.85}>
+                <Text style={styles.modalCloseBtnText}>{t('summit.done')}</Text>
+              </TouchableOpacity>
+            </>
           )}
         </View>
       </View>
-      {expanded && !!item.comment && (
-        <Text style={styles.comment}>{item.comment}</Text>
-      )}
-    </View>
+    </Modal>
   );
 }
 
@@ -44,25 +93,52 @@ export default function SummitDetailScreen({ route, navigation }) {
   const [summit, setSummit] = useState(null);
   const [ascents, setAscents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [isOffline, setIsOffline] = useState(false);
+  const [noCache, setNoCache] = useState(false);
+  const [selectedAscent, setSelectedAscent] = useState(null);
+  const isFirstLoad = useRef(true);
 
-  useEffect(() => {
-    Promise.all([
-      api.get(`${API}/show/${url_title}`),
-      api.get(`${API}/ascents/${url_title}`),
-    ]).then(([s, a]) => {
-      setSummit(s.data);
-      const data = a.data?.ascents ?? a.data ?? [];
-      setAscents(Array.isArray(data) ? data : []);
-    }).catch(() => setError(t('auth.generic_error')))
-      .finally(() => setLoading(false));
-  }, [url_title]);
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstLoad.current) setLoading(true);
+      setIsOffline(false);
+      setNoCache(false);
+      Promise.all([
+        api.get(`${API}/show/${url_title}`),
+        api.get(`${API}/ascents/${url_title}`),
+      ]).then(([s, a]) => {
+        setSummit(s.data);
+        const data = a.data?.ascents ?? a.data ?? [];
+        setAscents(Array.isArray(data) ? data : []);
+      }).catch(async () => {
+        // Offline (or the request failed) — fall back to whatever the Offline
+        // Mode download cached. Ascent history is a best-effort "last seen"
+        // snapshot here (it's inherently live/social data), but the summit's
+        // own info is what actually matters for reaching "Record Ascent".
+        const cachedSummit = await loadSummitData(url_title);
+        if (cachedSummit) {
+          setSummit(cachedSummit);
+          const cachedAscents = await loadSummitAscentsData(url_title);
+          const data = cachedAscents?.ascents ?? cachedAscents ?? [];
+          setAscents(Array.isArray(data) ? data : []);
+          setIsOffline(true);
+        } else {
+          setNoCache(true);
+        }
+      })
+        .finally(() => {
+          setLoading(false);
+          isFirstLoad.current = false;
+        });
+    }, [url_title])
+  );
 
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#279fbb" /></View>;
-  if (error || !summit) return <View style={styles.center}><Text style={styles.errorText}>{error || t('auth.generic_error')}</Text></View>;
+  if (noCache || !summit) return <OfflineError />;
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+      {isOffline && <OfflineBanner />}
       <View style={styles.heroCard}>
         <Text style={styles.heroIcon}>🏔️</Text>
         <Text style={styles.heroTitle}>{summit.title}</Text>
@@ -97,7 +173,7 @@ export default function SummitDetailScreen({ route, navigation }) {
 
       <TouchableOpacity
         style={styles.recordBtn}
-        onPress={() => navigation.navigate('submit_ascent', { summit_id: summit.id, title: summit.title })}
+        onPress={() => navigation.navigate('submit_ascent', { summit_id: summit.id, url_title: summit.url_title, title: summit.title })}
         activeOpacity={0.85}
       >
         <Text style={styles.recordBtnText}>{t('summit.record_ascent')}</Text>
@@ -110,16 +186,20 @@ export default function SummitDetailScreen({ route, navigation }) {
         {ascents.length === 0 ? (
           <Text style={styles.emptyText}>{t('summit.no_ascents')}</Text>
         ) : (
-          ascents.map((item, i) => <AscentRow key={item.id ?? i} item={item} />)
+          ascents.map((item, i) => <AscentRow key={item.id ?? i} item={item} onPress={setSelectedAscent} />)
         )}
       </View>
+
+      <AscentDetailsModal ascent={selectedAscent} onClose={() => setSelectedAscent(null)} t={t} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: '#f4f6f8' },
-  container: { padding: 16, paddingBottom: 32 },
+  // Extra bottom room so the last ascent row never ends up under the floating
+  // "Support Us" button (rendered globally in App.js, bottom-right).
+  container: { padding: 16, paddingBottom: 120 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   heroCard: {
     backgroundColor: '#279fbb',
@@ -185,8 +265,49 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   gpsBadgeText: { fontSize: 10, fontWeight: '700', color: '#155724' },
-  expandBtn: { fontSize: 14, color: '#279fbb', paddingHorizontal: 4 },
-  comment: { fontSize: 13, color: '#555', marginTop: 8, lineHeight: 19, fontStyle: 'italic' },
+  expandBtn: { fontSize: 20, color: '#bbb', paddingHorizontal: 4, fontWeight: '700' },
   emptyText: { color: '#aaa', fontSize: 14, textAlign: 'center', paddingVertical: 16 },
-  errorText: { color: '#e74c3c', fontSize: 14 },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 22,
+  },
+  modalName: { fontSize: 19, fontWeight: '800', color: '#222', marginBottom: 4 },
+  modalMeta: { fontSize: 13, color: '#888', marginBottom: 18 },
+  modalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  modalRowLabel: { fontSize: 13, color: '#888', fontWeight: '600' },
+  modalRowValue: { fontSize: 13, color: '#333', fontWeight: '600', flexShrink: 1, textAlign: 'right' },
+  modalGpsOk: { color: '#1e8449' },
+  modalGpsWarn: { color: '#b9770e' },
+  modalCommentBox: {
+    backgroundColor: '#f4f6f8',
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 12,
+  },
+  modalComment: { fontSize: 13, color: '#555', lineHeight: 19, fontStyle: 'italic' },
+  modalCloseBtn: {
+    backgroundColor: '#279fbb',
+    borderRadius: 12,
+    paddingVertical: 13,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  modalCloseBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 });

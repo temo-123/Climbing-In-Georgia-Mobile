@@ -2,8 +2,22 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useTranslation } from 'react-i18next';
+import api from '../../utils/api';
 
-const SUMMIT_ASCENT_PATTERN = /\/make_ascent\/(\d+)/;
+// Real summit QR codes encode e.g. http://summit.climbing.ge/summit/{url_title}?make_ascent={id}
+const SUMMIT_URL_TITLE_PATTERN = /\/summit\/([^/?]+)/;
+const MAKE_ASCENT_ID_PATTERN = /make_ascent[=/](\d+)/;
+const API = 'https://climbing.ge/api/summit';
+
+function parseSummitQr(data) {
+  const idMatch = data.match(MAKE_ASCENT_ID_PATTERN);
+  if (!idMatch) return null;
+  const urlTitleMatch = data.match(SUMMIT_URL_TITLE_PATTERN);
+  return {
+    summit_id: parseInt(idMatch[1], 10),
+    url_title: urlTitleMatch ? urlTitleMatch[1] : null,
+  };
+}
 
 export default function QRScannerScreen({ navigation }) {
   const { t } = useTranslation();
@@ -17,20 +31,50 @@ export default function QRScannerScreen({ navigation }) {
     }
   }, [permission]);
 
-  function handleBarcodeScanned({ data }) {
+  function resetScanner() {
+    setScanned(false);
+    cooldown.current = false;
+  }
+
+  async function handleBarcodeScanned({ data }) {
     if (scanned || cooldown.current) return;
     cooldown.current = true;
     setScanned(true);
 
-    const match = data.match(SUMMIT_ASCENT_PATTERN);
-    if (match) {
-      const summit_id = parseInt(match[1], 10);
-      navigation.replace('submit_ascent', { summit_id, title: `Summit #${summit_id}` });
-    } else {
+    const parsed = parseSummitQr(data);
+    if (!parsed) {
       Alert.alert(
         t('summit.invalid_qr_title'),
-        t('summit.invalid_qr_message'),
-        [{ text: 'OK', onPress: () => { setScanned(false); cooldown.current = false; } }],
+        `${t('summit.invalid_qr_message')}\n\n[TEMP DEBUG] scanned: ${data}`,
+        [{ text: 'OK', onPress: resetScanner }],
+      );
+      return;
+    }
+
+    try {
+      let summit;
+      if (parsed.url_title) {
+        const res = await api.get(`${API}/show/${parsed.url_title}`);
+        summit = res.data;
+      } else {
+        const res = await api.get(`${API}/list`);
+        const summits = Array.isArray(res.data) ? res.data : [];
+        summit = summits.find(s => s.id === parsed.summit_id);
+      }
+      if (!summit) {
+        Alert.alert(
+          t('summit.summit_not_found_title'),
+          t('summit.summit_not_found_message'),
+          [{ text: 'OK', onPress: resetScanner }],
+        );
+        return;
+      }
+      navigation.replace('submit_ascent', { summit_id: summit.id, url_title: summit.url_title, title: summit.title });
+    } catch {
+      Alert.alert(
+        t('summit.summit_not_found_title'),
+        t('summit.summit_not_found_message'),
+        [{ text: 'OK', onPress: resetScanner }],
       );
     }
   }

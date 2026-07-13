@@ -109,12 +109,28 @@ export default function OfflineDownloadScreen() {
                   lists: result.listCompleted,
                   articles: result.articleCompleted,
                   sectors: result.sectorsCompleted,
+                  summits: result.summitsCompleted,
                   images: result.imagesCompleted,
                 })
                 + (result.failed > 0
                   ? t('offline_screen.download_failed_partial', { failed: result.failed })
                   : '')}
           </Text>
+        </View>
+      )}
+
+      {/* [TEMP DEBUG] remove once the summit download failure is diagnosed */}
+      {result && !isDownloading && result.debugErrors?.length > 0 && (
+        <View style={styles.debugBox}>
+          <Text style={styles.debugTitle}>[TEMP DEBUG] {result.debugErrors.length} error(s):</Text>
+          {result.debugErrors.map((e, i) => (
+            <Text key={i} style={styles.debugText}>
+              {e.phase} / {e.label}{'\n'}
+              url: {e.url}{'\n'}
+              status: {String(e.status)}  message: {e.message}{'\n'}
+              data: {JSON.stringify(e.data)}
+            </Text>
+          ))}
         </View>
       )}
 
@@ -190,6 +206,15 @@ const styles = StyleSheet.create({
   resultError: { backgroundColor: '#fde8e8' },
   resultText: { fontSize: 14, color: '#2d7a4f', flex: 1, lineHeight: 20 },
   resultTextError: { color: '#c0392b' },
+  debugBox: {
+    width: '100%',
+    backgroundColor: '#fdf3e3',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 20,
+  },
+  debugTitle: { fontSize: 12, fontWeight: 'bold', color: '#7a5c00', marginBottom: 6 },
+  debugText: { fontSize: 11, color: '#7a5c00', marginBottom: 8, lineHeight: 16 },
   tipBox: {
     width: '100%',
     backgroundColor: '#f5f5f5',

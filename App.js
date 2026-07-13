@@ -8,6 +8,8 @@ import { Navigation } from './navigation/Navigation.jsx';
 import { LocaleProvider } from './utils/LocaleContext';
 import { AuthProvider } from './utils/AuthContext';
 import { getQueue, syncQueue } from './utils/ascentQueue';
+import { RecaptchaHost } from './utils/recaptcha';
+import DonationButton from './components/donation/DonationButton';
 import './utils/i18n';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -44,7 +46,9 @@ export default function App() {
       <SafeAreaProvider>
         <LocaleProvider>
           <AuthProvider>
+            <RecaptchaHost />
             <Navigation />
+            <DonationButton />
           </AuthProvider>
         </LocaleProvider>
       </SafeAreaProvider>

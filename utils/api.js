@@ -14,6 +14,7 @@ export function imgUri(base, filename) {
 }
 
 const api = axios.create({
+  timeout: 20000,
   headers: {
     'User-Agent': 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
     'Accept': 'application/json',

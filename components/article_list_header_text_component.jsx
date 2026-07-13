@@ -1,6 +1,13 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import RenderHtml from 'react-native-render-html';
+
+const descriptionTagsStyles = {
+  body: { fontSize: 13, color: '#555', textAlign: 'center', lineHeight: 20 },
+  p: { margin: 0 },
+};
 
 export default function ArticleListHeaderText({ title, description }) {
+  const { width } = useWindowDimensions();
   return (
     <View style={styles.container}>
       <View style={styles.titleRow}>
@@ -9,7 +16,11 @@ export default function ArticleListHeaderText({ title, description }) {
         <View style={styles.accent} />
       </View>
       {!!description ? (
-        <Text style={styles.description}>{description}</Text>
+        <RenderHtml
+          contentWidth={width - 16}
+          source={{ html: description }}
+          tagsStyles={descriptionTagsStyles}
+        />
       ) : null}
     </View>
   );
@@ -40,12 +51,5 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
     textAlign: 'center',
     letterSpacing: 0.3,
-  },
-  description: {
-    fontSize: 13,
-    color: '#555',
-    textAlign: 'center',
-    paddingHorizontal: 8,
-    lineHeight: 20,
   },
 });

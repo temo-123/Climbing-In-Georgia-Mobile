@@ -4,7 +4,10 @@ import {
   ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import api from '../../utils/api';
+import api, { corsUrl } from '../../utils/api';
+import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
+import OfflineBanner from '../../components/OfflineBanner';
+import OfflineError from '../../components/OfflineError';
 
 const API = 'https://climbing.ge/api/summit';
 
@@ -42,7 +45,7 @@ function SummitCard({ item, navigation }) {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.ascentBtn}
-          onPress={() => navigation.navigate('submit_ascent', { summit_id: item.id, title: item.title })}
+          onPress={() => navigation.navigate('submit_ascent', { summit_id: item.id, url_title: item.url_title, title: item.title })}
           activeOpacity={0.8}
         >
           <Text style={styles.ascentBtnText}>Record Ascent</Text>
@@ -57,23 +60,47 @@ export default function SummitsListScreen({ navigation }) {
   const [summits, setSummits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState('');
+  const [isOffline, setIsOffline] = useState(false);
+  const [noCache, setNoCache] = useState(false);
 
   function load(isRefresh = false) {
     if (isRefresh) setRefreshing(true);
-    api.get(`${API}/list`)
-      .then(res => setSummits(Array.isArray(res.data) ? res.data : []))
-      .catch(() => setError(t('auth.generic_error')))
+    setIsOffline(false);
+    setNoCache(false);
+    api.get(corsUrl(`${API}/list`))
+      .then(res => {
+        const data = Array.isArray(res.data) ? res.data : [];
+        setSummits(data);
+        saveOfflineData(OFFLINE_KEYS.summits, data);
+      })
+      .catch(async () => {
+        const cached = await loadOfflineData(OFFLINE_KEYS.summits);
+        if (cached && cached.length > 0) {
+          setSummits(cached);
+          setIsOffline(true);
+        } else {
+          setNoCache(true);
+        }
+      })
       .finally(() => { setLoading(false); setRefreshing(false); });
   }
 
   useEffect(() => { load(); }, []);
 
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#279fbb" /></View>;
-  if (error) return <View style={styles.center}><Text style={styles.errorText}>{error}</Text></View>;
+  if (noCache) return <OfflineError />;
 
   return (
     <View style={styles.container}>
+      {isOffline && <OfflineBanner />}
+
+      <View style={styles.offlineHintBox}>
+        <Text style={styles.offlineHintText}>💡 {t('summit.offline_hint')}</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('offline_mode')} activeOpacity={0.7}>
+          <Text style={styles.offlineHintLink}>{t('summit.offline_hint_link')}</Text>
+        </TouchableOpacity>
+      </View>
+
       <TouchableOpacity
         style={styles.qrBtn}
         onPress={() => navigation.navigate('qr_scanner')}
@@ -97,7 +124,23 @@ export default function SummitsListScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f4f6f8' },
-  list: { padding: 16, paddingTop: 8 },
+  offlineHintBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    backgroundColor: '#e8f6fa',
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    gap: 6,
+  },
+  offlineHintText: { fontSize: 12, color: '#1a6f85', flexShrink: 1 },
+  offlineHintLink: { fontSize: 12, color: '#279fbb', fontWeight: '700', textDecorationLine: 'underline' },
+  // Extra bottom room so the last card never ends up under the floating
+  // "Support Us" button (rendered globally in App.js, bottom-right).
+  list: { padding: 16, paddingTop: 8, paddingBottom: 120 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   qrBtn: {
     flexDirection: 'row',
@@ -168,5 +211,4 @@ const styles = StyleSheet.create({
   },
   ascentBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
   emptyText: { color: '#888', fontSize: 15 },
-  errorText: { color: '#e74c3c', fontSize: 14 },
 });
