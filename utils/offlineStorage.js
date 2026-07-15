@@ -17,6 +17,7 @@ export const OFFLINE_KEYS = {
 const GALLERY_BASE    = 'https://climbing.ge/public/images/article_gallery_img/';
 const SECTOR_IMG_BASE = 'https://climbing.ge/public/images/sector_img/';
 const LOCAL_IMG_BASE  = 'https://climbing.ge/public/images/sector_local_img/';
+const ASCENT_PHOTO_BASE = 'https://climbing.ge/public/images/summit_ascents_img/';
 
 // Backstop against a request that never settles. Racing a plain setTimeout
 // against the request (as this used to do) only stops *our* code from
@@ -374,6 +375,10 @@ export async function downloadAllData(locale = 'en', onProgress) {
         );
         await saveSummitAscentsData(summit.url_title, data);
         summitAscentsCompleted++;
+        const ascentList = data?.ascents ?? data ?? [];
+        for (const ascent of (Array.isArray(ascentList) ? ascentList : [])) {
+          if (ascent.photo) allImageUrls.push(imgUri(ASCENT_PHOTO_BASE, ascent.photo));
+        }
       } catch (err) {
         summitAscentsFailed++;
         debugErrors.push({

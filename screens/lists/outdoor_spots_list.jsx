@@ -1,4 +1,4 @@
-import { StyleSheet, View, FlatList } from 'react-native';
+import { StyleSheet, View, FlatList, TouchableOpacity, Text } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api, { corsUrl } from '../../utils/api';
@@ -14,6 +14,7 @@ import Preloader from "../../components/Preloader";
 import OfflineBanner from "../../components/OfflineBanner";
 import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
+import RouteAuthorsModal from "../../components/RouteAuthorsModal";
 
 export default function App() {
   const { t } = useTranslation();
@@ -22,6 +23,7 @@ export default function App() {
   const [isLoading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
   const [noCache, setNoCache] = useState(false);
+  const [authorsVisible, setAuthorsVisible] = useState(false);
   const description = useSiteDescription('outdoor');
 
   useEffect(() => {
@@ -62,6 +64,9 @@ export default function App() {
               description={description}
             />
             <RoutesQuantityText />
+            <TouchableOpacity style={styles.authorsBtn} onPress={() => setAuthorsVisible(true)} activeOpacity={0.85}>
+              <Text style={styles.authorsBtnText}>{t('about.check_route_authors')}</Text>
+            </TouchableOpacity>
           </View>
         }
         renderItem={({ item }) => <OutdoorCard cardData={item} />}
@@ -69,6 +74,7 @@ export default function App() {
         ListFooterComponent={<PageFooter />}
         contentContainerStyle={styles.container}
       />
+      <RouteAuthorsModal visible={authorsVisible} onClose={() => setAuthorsVisible(false)} />
     </View>
   );
 }
@@ -76,4 +82,12 @@ export default function App() {
 const styles = StyleSheet.create({
   wrapper: { flex: 1 },
   container: { padding: 16 },
+  authorsBtn: {
+    backgroundColor: '#279fbb',
+    borderRadius: 12,
+    paddingVertical: 13,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  authorsBtnText: { color: '#fff', fontSize: 14, fontWeight: '800' },
 });

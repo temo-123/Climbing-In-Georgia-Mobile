@@ -66,6 +66,7 @@ All images are served from `https://climbing.ge/public/images/`:
 | Mountain route card images | `public/images/mount_route_img/` |
 | Other activity card images | `public/images/other_img/` |
 | Event card images | `public/images/event_img/` |
+| Summit ascent photos (`photo` field from `GET /api/summit/ascents/{url_title}`) | `public/images/summit_ascents_img/` — filename already includes an `ascents/` prefix (e.g. `ascents/<hash>.jpg`), no `{}` placeholders |
 
 **Never use** `https://climbing.ge/images/TYPE_img/` (without `public/`) for filenames containing `{}` — the server returns SPA HTML instead of the image for those paths.
 

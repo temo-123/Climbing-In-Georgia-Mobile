@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api from '../../utils/api';
+import { saveOfflineData, loadOfflineData } from '../../utils/offlineStorage';
+import OfflineBanner from '../../components/OfflineBanner';
+import OfflineError from '../../components/OfflineError';
 
 const API = 'https://climbing.ge/api';
+const CACHE_KEY = '@my_ascents_cache';
 
 function AscentCard({ item }) {
   return (
@@ -28,17 +32,33 @@ export default function UserAscentsScreen() {
   const { t } = useTranslation();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [isOffline, setIsOffline] = useState(false);
+  const [noCache, setNoCache] = useState(false);
 
   useEffect(() => {
     api.get(`${API}/my_ascents`)
-      .then(res => setData(Array.isArray(res.data) ? res.data : res.data?.data ?? []))
-      .catch(() => setError(t('auth.generic_error')))
+      .then(res => {
+        const list = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+        setData(list);
+        saveOfflineData(CACHE_KEY, list);
+      })
+      .catch(async () => {
+        // Offline (or the request failed) — fall back to the last successful
+        // fetch instead of a bare "Something went wrong", matching every
+        // other summit screen's offline behavior.
+        const cached = await loadOfflineData(CACHE_KEY);
+        if (Array.isArray(cached) && cached.length > 0) {
+          setData(cached);
+          setIsOffline(true);
+        } else {
+          setNoCache(true);
+        }
+      })
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#279fbb" /></View>;
-  if (error) return <View style={styles.center}><Text style={styles.errorText}>{error}</Text></View>;
+  if (noCache) return <OfflineError />;
   if (!data.length) return <View style={styles.center}><Text style={styles.emptyText}>{t('user.no_ascents')}</Text></View>;
 
   return (
@@ -47,6 +67,7 @@ export default function UserAscentsScreen() {
       keyExtractor={(item, i) => String(item.id ?? i)}
       renderItem={({ item }) => <AscentCard item={item} />}
       contentContainerStyle={styles.list}
+      ListHeaderComponent={isOffline ? <OfflineBanner /> : null}
     />
   );
 }
@@ -65,5 +86,4 @@ const styles = StyleSheet.create({
   note: { fontSize: 13, color: '#555', lineHeight: 19, marginBottom: 4 },
   date: { fontSize: 11, color: '#aaa', marginTop: 6, textAlign: 'right' },
   emptyText: { color: '#888', fontSize: 15 },
-  errorText: { color: '#e74c3c', fontSize: 14 },
 });

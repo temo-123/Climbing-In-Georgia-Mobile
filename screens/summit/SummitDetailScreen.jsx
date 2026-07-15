@@ -1,16 +1,40 @@
 import React, { useState, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  ActivityIndicator, FlatList, Modal,
+  ActivityIndicator, FlatList, Modal, Image,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
-import api from '../../utils/api';
+import api, { corsUrl, imgUri } from '../../utils/api';
+import { useLocale } from '../../utils/LocaleContext';
 import { loadSummitData, loadSummitAscentsData } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
 
 const API = 'https://climbing.ge/api/summit';
+// Matches summit.climbing.ge's own "Photos from the Summit" gallery — the
+// `photo` field returned by /summit/ascents/{url_title} is already a relative
+// path like "ascents/<hash>.jpg" (no {} placeholders, so no imgUri encoding
+// is strictly required, but using it keeps this consistent with every other
+// image path in the app).
+const ASCENT_PHOTO_BASE = 'https://climbing.ge/public/images/summit_ascents_img/';
+
+function PhotoThumbnail({ item, onPress }) {
+  return (
+    <TouchableOpacity style={styles.thumbWrap} onPress={() => onPress(item)} activeOpacity={0.8}>
+      <Image
+        source={{ uri: imgUri(ASCENT_PHOTO_BASE, item.photo) }}
+        style={styles.thumbImage}
+        resizeMode="cover"
+      />
+      <View style={styles.thumbCaptionBar}>
+        <Text style={styles.thumbCaption} numberOfLines={1}>
+          {item.name}{item.ascent_date ? ` · ${new Date(item.ascent_date).toLocaleDateString('en-GB')}` : ''}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
 
 function AscentRow({ item, onPress }) {
   return (
@@ -47,6 +71,14 @@ function AscentDetailsModal({ ascent, onClose, t }) {
                 {ascent.ascent_time ? `  ·  ${ascent.ascent_time}` : ''}
               </Text>
 
+              {!!ascent.photo && (
+                <Image
+                  source={{ uri: imgUri(ASCENT_PHOTO_BASE, ascent.photo) }}
+                  style={styles.modalPhoto}
+                  resizeMode="cover"
+                />
+              )}
+
               {(!!ascent.route_name || !!ascent.route_grade) && (
                 <View style={styles.modalRow}>
                   <Text style={styles.modalRowLabel}>{t('summit.route')}</Text>
@@ -62,13 +94,6 @@ function AscentDetailsModal({ ascent, onClose, t }) {
                   {ascent.is_gps_validated ? `✓ ${t('summit.gps_verified')}` : `⚠ ${t('summit.gps_not_verified')}`}
                 </Text>
               </View>
-
-              {!!ascent.photo && (
-                <View style={styles.modalRow}>
-                  <Text style={styles.modalRowLabel}>{t('summit.photo')}</Text>
-                  <Text style={styles.modalRowValue}>📷 {t('summit.photo_attached')}</Text>
-                </View>
-              )}
 
               {!!ascent.comment && (
                 <View style={styles.modalCommentBox}>
@@ -89,6 +114,7 @@ function AscentDetailsModal({ ascent, onClose, t }) {
 
 export default function SummitDetailScreen({ route, navigation }) {
   const { t } = useTranslation();
+  const { locale } = useLocale();
   const { url_title, title } = route.params;
   const [summit, setSummit] = useState(null);
   const [ascents, setAscents] = useState([]);
@@ -104,8 +130,8 @@ export default function SummitDetailScreen({ route, navigation }) {
       setIsOffline(false);
       setNoCache(false);
       Promise.all([
-        api.get(`${API}/show/${url_title}`),
-        api.get(`${API}/ascents/${url_title}`),
+        api.get(corsUrl(`${API}/show/${url_title}`)),
+        api.get(corsUrl(`${API}/ascents/${url_title}`)),
       ]).then(([s, a]) => {
         setSummit(s.data);
         const data = a.data?.ascents ?? a.data ?? [];
@@ -136,13 +162,21 @@ export default function SummitDetailScreen({ route, navigation }) {
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#279fbb" /></View>;
   if (noCache || !summit) return <OfflineError />;
 
+  const photoAscents = ascents.filter(a => !!a.photo);
+
+  // The API sends both `title` and (when set) `ka_title` in one payload rather
+  // than a locale-specific response — pick which leads based on the app's own
+  // language rather than always showing the English title first.
+  const primaryTitle = (locale === 'ka' && summit.ka_title) || summit.title;
+  const secondaryTitle = primaryTitle === summit.title ? summit.ka_title : summit.title;
+
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
       {isOffline && <OfflineBanner />}
       <View style={styles.heroCard}>
         <Text style={styles.heroIcon}>🏔️</Text>
-        <Text style={styles.heroTitle}>{summit.title}</Text>
-        {!!summit.ka_title && <Text style={styles.heroKa}>{summit.ka_title}</Text>}
+        <Text style={styles.heroTitle}>{primaryTitle}</Text>
+        {!!secondaryTitle && <Text style={styles.heroKa}>{secondaryTitle}</Text>}
         <View style={styles.heroBadges}>
           {!!summit.height && (
             <View style={styles.badge}>
@@ -189,6 +223,17 @@ export default function SummitDetailScreen({ route, navigation }) {
           ascents.map((item, i) => <AscentRow key={item.id ?? i} item={item} onPress={setSelectedAscent} />)
         )}
       </View>
+
+      {photoAscents.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>📷 {t('summit.photos_from_summit')}</Text>
+          <View style={styles.photoGrid}>
+            {photoAscents.map((item, i) => (
+              <PhotoThumbnail key={item.id ?? i} item={item} onPress={setSelectedAscent} />
+            ))}
+          </View>
+        </View>
+      )}
 
       <AscentDetailsModal ascent={selectedAscent} onClose={() => setSelectedAscent(null)} t={t} />
     </ScrollView>
@@ -283,6 +328,32 @@ const styles = StyleSheet.create({
   },
   modalName: { fontSize: 19, fontWeight: '800', color: '#222', marginBottom: 4 },
   modalMeta: { fontSize: 13, color: '#888', marginBottom: 18 },
+  modalPhoto: {
+    width: '100%',
+    height: 220,
+    borderRadius: 10,
+    backgroundColor: '#f4f6f8',
+    marginBottom: 12,
+  },
+  photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  thumbWrap: {
+    width: '31%',
+    aspectRatio: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#f4f6f8',
+  },
+  thumbImage: { width: '100%', height: '100%' },
+  thumbCaptionBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+  },
+  thumbCaption: { fontSize: 10, color: '#fff', fontWeight: '600' },
   modalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

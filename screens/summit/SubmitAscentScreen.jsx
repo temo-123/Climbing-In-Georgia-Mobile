@@ -9,10 +9,11 @@ import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import * as Network from 'expo-network';
 import { useAuth } from '../../utils/AuthContext';
-import api from '../../utils/api';
-import { queueAscent } from '../../utils/ascentQueue';
+import api, { corsUrl } from '../../utils/api';
+import { queueAscent, describeError } from '../../utils/ascentQueue';
 import { withRecaptchaRetry, isRecaptchaFailure } from '../../utils/recaptcha';
 import { loadSummitData, loadSummitRoutesData } from '../../utils/offlineStorage';
+import { compressImageIfNeeded } from '../../utils/imageCompress';
 
 const API = 'https://climbing.ge/api/summit';
 // Matches the backend's own Haversine check (SummitPublicController::submit_ascent) exactly,
@@ -50,7 +51,10 @@ export default function SubmitAscentScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [queued, setQueued] = useState(false);
+  const [queuedReason, setQueuedReason] = useState('network');
+  const [queuedDetail, setQueuedDetail] = useState('');
   const [imageUri, setImageUri] = useState(null);
+  const [compressingPhoto, setCompressingPhoto] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
 
   function applySummitCoords(summitData) {
@@ -67,7 +71,7 @@ export default function SubmitAscentScreen({ route, navigation }) {
       // trustworthy signal. Actual reachability is proven by the request itself.
       setIsOffline(!state.isConnected);
     });
-    api.get(`${API}/routes/${summit_id}`)
+    api.get(corsUrl(`${API}/routes/${summit_id}`))
       .then(res => setRoutes(Array.isArray(res.data) ? res.data : []))
       .catch(async () => {
         // Offline (or the request failed) — fall back to what was cached by
@@ -76,7 +80,7 @@ export default function SubmitAscentScreen({ route, navigation }) {
         const cached = await loadSummitRoutesData(summit_id);
         if (Array.isArray(cached)) setRoutes(cached);
       });
-    api.get(`${API}/show/${url_title}`)
+    api.get(corsUrl(`${API}/show/${url_title}`))
       .then(res => applySummitCoords(res.data))
       .catch(async () => {
         // Same fallback for the summit's own coordinates — without these, GPS
@@ -112,7 +116,17 @@ export default function SubmitAscentScreen({ route, navigation }) {
         });
       }
       if (!result.canceled && result.assets?.[0]?.uri) {
-        setImageUri(result.assets[0].uri);
+        setCompressingPhoto(true);
+        try {
+          // Full-resolution phone photos can be several MB — compress down to
+          // the backend's comfortable upload size before ever attaching it,
+          // so both the immediate submit and the offline queue/sync always
+          // deal with an already-right-sized file.
+          const compressedUri = await compressImageIfNeeded(result.assets[0].uri);
+          setImageUri(compressedUri);
+        } finally {
+          setCompressingPhoto(false);
+        }
       }
     } catch {
       Alert.alert(t('auth.generic_error'));
@@ -131,12 +145,9 @@ export default function SubmitAscentScreen({ route, navigation }) {
       }
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
       setCoords({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
-    } catch (err) {
+    } catch {
       setGpsError(true);
-      Alert.alert(
-        t('summit.gps_error'),
-        `[TEMP DEBUG] ${err?.code || ''} ${err?.message || String(err)}`,
-      );
+      Alert.alert(t('summit.gps_error'));
     } finally {
       setGpsLoading(false);
     }
@@ -167,29 +178,44 @@ export default function SubmitAscentScreen({ route, navigation }) {
       other_route: otherRoute.trim() || undefined,
     };
 
-    const netState = await Network.getNetworkStateAsync();
-    // Same as above — only gate on isConnected. Genuine unreachability still gets
-    // caught below (the !err.response branch) when the real request fails.
-    if (!netState.isConnected) {
-      // Previously had no try/catch here — if queueAscent threw for any
-      // reason, setLoading(false) below would never run and the Submit
-      // button would spin forever with no error and no queued screen.
+    // reason is stored on the queued item and drives the "Ascent Saved…"
+    // screen's wording — a device that's genuinely online but whose
+    // submission couldn't be *verified* (reCAPTCHA) must not be told
+    // "we'll upload when you go online", since that's simply false and is
+    // exactly what made a working queue look like a bug: an online
+    // submission ending up on a screen that talks about being offline.
+    async function queueAndFinish(reason, err) {
+      // Store the real underlying error (same describeError() logic the
+      // pending-ascents list uses for a failed sync) right at queue time —
+      // otherwise a freshly-queued item shows no detail at all until its
+      // *next* sync attempt happens to fail too, which is exactly the gap
+      // that made "why did this get saved locally?" impossible to answer
+      // from the app alone.
+      const detail = describeError(err);
       try {
-        await queueAscent({ summit_id, url_title, image_uri: imageUri || undefined, ...ascentPayload });
+        await queueAscent({
+          summit_id, url_title, summit_title: title,
+          image_uri: imageUri || undefined, queue_reason: reason,
+          lastError: detail, lastErrorAt: new Date().toISOString(),
+          ...ascentPayload,
+        });
+        setQueuedReason(reason);
+        setQueuedDetail(detail);
         setQueued(true);
-      } catch (err) {
-        Alert.alert(
-          '[TEMP DEBUG] queueAscent failed',
-          `netState: ${JSON.stringify(netState)}\n${err?.message || String(err)}`,
-        );
-      } finally {
-        setLoading(false);
+      } catch {
+        Alert.alert(t('auth.generic_error'));
       }
-      return;
     }
 
+    // Always attempt the real submission first — Network.getNetworkStateAsync()
+    // reports link-layer state ("Wi-Fi/cellular is up"), not proof the request
+    // will actually succeed. Gating on it beforehand meant a stale or wrong
+    // "not connected" read could send a genuinely-online submission straight
+    // to the offline queue without ever trying — which is exactly what made
+    // online submissions look like they were being "treated as offline".
+    // Real failure (below) is the only trustworthy signal now.
     try {
-      const res = await withRecaptchaRetry('make_ascent', async (recaptcha_token) => {
+      await withRecaptchaRetry('make_ascent', async (recaptcha_token) => {
         const payloadWithCaptcha = { ...ascentPayload, recaptcha_token };
         if (imageUri) {
           const fd = new FormData();
@@ -204,62 +230,37 @@ export default function SubmitAscentScreen({ route, navigation }) {
           // Longer timeout than the shared default (20s) — a full-resolution,
           // uncropped photo can legitimately take longer to upload on a slow
           // connection; the default was cutting uploads off as a false "network error".
-          return api.post(`${API}/ascent/${summit_id}`, fd, { timeout: 60000 });
+          return api.post(corsUrl(`${API}/ascent/${summit_id}`), fd, { timeout: 60000 });
         }
-        return api.post(`${API}/ascent/${summit_id}`, payloadWithCaptcha);
+        return api.post(corsUrl(`${API}/ascent/${summit_id}`), payloadWithCaptcha);
       });
-      Alert.alert(
-        '[TEMP DEBUG] submit response',
-        `status: ${res.status}\n${JSON.stringify(res.data)}`,
-        [{ text: 'OK', onPress: () => setSuccess(true) }],
-      );
+      setSuccess(true);
     } catch (err) {
       if (!err.isAxiosError) {
         // Not an HTTP error at all — reCAPTCHA token generation itself failed
-        // (WebView not ready, timed out, etc.), not a network or server issue.
-        Alert.alert(
-          t('summit.submit_error'),
-          `${t('auth.generic_error')}\n\n[TEMP DEBUG] recaptcha failed: ${err?.message}`,
-        );
+        // (WebView not ready, page failed to load, timed out). From the
+        // user's perspective this is just as "couldn't reach the server" as a
+        // network error, so queue it the same way instead of a dead-end
+        // alert that requires noticing the failure and retrying by hand.
+        await queueAndFinish('recaptcha_unavailable', err);
       } else if (!err.response) {
-        // Genuine network-level failure (request never reached the server) — queue for later
-        Alert.alert(
-          '[TEMP DEBUG] queuing offline',
-          `message: ${err?.message}\ncode: ${err?.code}`,
-          [{
-            text: 'OK',
-            onPress: async () => {
-              await queueAscent({ summit_id, url_title, image_uri: imageUri || undefined, ...ascentPayload });
-              setQueued(true);
-            },
-          }],
-        );
-        return;
+        // Genuine network-level failure (request never reached the server) —
+        // queue silently for automatic retry instead of surfacing the raw
+        // axios error ("Network Error") as if something were broken.
+        await queueAndFinish('network', err);
       } else if (isRecaptchaFailure(err)) {
-        // Both retry attempts still scored too low. Rather than a dead end, queue
-        // it like an offline submission — background sync (on app foreground /
-        // reconnect) will keep retrying with fresh tokens until one passes.
-        Alert.alert(
-          '[TEMP DEBUG] queuing — recaptcha score',
-          `${err.response.data?.message}\n\nQueued for automatic retry.`,
-          [{
-            text: 'OK',
-            onPress: async () => {
-              await queueAscent({ summit_id, url_title, image_uri: imageUri || undefined, ...ascentPayload });
-              setQueued(true);
-            },
-          }],
-        );
-        return;
+        // Reached the server, but reCAPTCHA verification itself failed (both
+        // retry attempts scored too low, or a token/secret mismatch on the
+        // backend) — the device is online, this is not a connectivity issue.
+        // Still queue it for automatic retry rather than a dead end, but
+        // under a distinct reason so the UI doesn't lie about being offline.
+        await queueAndFinish('recaptcha_score', err);
       } else {
         const fieldErrors = err.response.data?.errors;
         const msg = fieldErrors
           ? Object.values(fieldErrors).flat().join('\n')
           : err.response.data?.message ?? t('auth.generic_error');
-        Alert.alert(
-          t('summit.submit_error'),
-          `${msg}\n\n[TEMP DEBUG] status: ${err.response.status}\n${JSON.stringify(err.response.data)}`,
-        );
+        Alert.alert(t('summit.submit_error'), msg);
       }
     } finally {
       setLoading(false);
@@ -267,11 +268,22 @@ export default function SubmitAscentScreen({ route, navigation }) {
   }
 
   if (queued) {
+    // recaptcha_score means the request reached the server just fine — the
+    // device is online, only verification failed — so the copy must not
+    // claim this was saved because of a connectivity problem.
+    const isVerificationIssue = queuedReason === 'recaptcha_score';
     return (
       <View style={styles.successContainer}>
-        <Text style={styles.successIcon}>📥</Text>
-        <Text style={styles.successTitle}>{t('summit.queued_title')}</Text>
-        <Text style={styles.successSub}>{t('summit.queued_message')}</Text>
+        <Text style={styles.successIcon}>{isVerificationIssue ? '🔄' : '📥'}</Text>
+        <Text style={styles.successTitle}>
+          {t(isVerificationIssue ? 'summit.queued_title_verification' : 'summit.queued_title')}
+        </Text>
+        <Text style={styles.successSub}>
+          {t(isVerificationIssue ? 'summit.queued_message_verification' : 'summit.queued_message')}
+        </Text>
+        {!!queuedDetail && (
+          <Text style={styles.queuedDetailText}>{t('summit.queued_reason_detail', { detail: queuedDetail })}</Text>
+        )}
         <TouchableOpacity style={styles.doneBtn} onPress={() => navigation.goBack()} activeOpacity={0.85}>
           <Text style={styles.doneBtnText}>{t('summit.done')}</Text>
         </TouchableOpacity>
@@ -404,7 +416,12 @@ export default function SubmitAscentScreen({ route, navigation }) {
 
         {/* Photo */}
         <Text style={styles.sectionTitle}>{t('summit.photo')}</Text>
-        {imageUri ? (
+        {compressingPhoto ? (
+          <View style={styles.photoCompressingBox}>
+            <ActivityIndicator color="#279fbb" />
+            <Text style={styles.photoCompressingText}>{t('summit.compressing_photo')}</Text>
+          </View>
+        ) : imageUri ? (
           <View style={styles.photoPreviewWrap}>
             <Image source={{ uri: imageUri }} style={styles.photoPreview} resizeMode="contain" />
             <TouchableOpacity style={styles.photoRemoveBtn} onPress={() => setImageUri(null)} activeOpacity={0.8}>
@@ -447,6 +464,7 @@ const styles = StyleSheet.create({
   successIcon: { fontSize: 72, marginBottom: 20 },
   successTitle: { fontSize: 22, fontWeight: '800', color: '#279fbb', textAlign: 'center', marginBottom: 8 },
   successSub: { fontSize: 15, color: '#555', textAlign: 'center', marginBottom: 36 },
+  queuedDetailText: { fontSize: 12, color: '#999', textAlign: 'center', marginTop: -24, marginBottom: 24, fontFamily: 'monospace' },
   doneBtn: { backgroundColor: '#279fbb', borderRadius: 12, paddingVertical: 14, paddingHorizontal: 40 },
   doneBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   summitBanner: {
@@ -504,6 +522,18 @@ const styles = StyleSheet.create({
   gpsStatusWarn: { color: '#b9770e' },
   gpsRetryBtn: { alignSelf: 'center', paddingVertical: 4, paddingHorizontal: 10, marginBottom: 20 },
   gpsRetryText: { fontSize: 13, color: '#279fbb', fontWeight: '700' },
+  photoCompressingBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    borderWidth: 1.5,
+    borderColor: '#279fbb',
+    borderRadius: 10,
+    paddingVertical: 16,
+    marginBottom: 20,
+  },
+  photoCompressingText: { fontSize: 13, color: '#279fbb', fontWeight: '600' },
   photoBtnRow: { flexDirection: 'row', gap: 10, marginBottom: 20 },
   photoBtn: {
     flex: 1,

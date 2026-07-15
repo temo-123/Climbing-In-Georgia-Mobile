@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Constants from 'expo-constants';
+import * as Network from 'expo-network';
 
 import { Navigation } from './navigation/Navigation.jsx';
 import { LocaleProvider } from './utils/LocaleContext';
@@ -31,14 +32,37 @@ export default function App() {
     setupNotifications();
     trySyncQueue();
 
-    const sub = AppState.addEventListener('change', nextState => {
+    const appStateSub = AppState.addEventListener('change', nextState => {
       if (appState.current.match(/inactive|background/) && nextState === 'active') {
         trySyncQueue();
       }
       appState.current = nextState;
     });
 
-    return () => sub.remove();
+    // Ascents queued while offline previously only synced on the next
+    // background→foreground transition — someone who queues an ascent and
+    // then just waits for signal (walking down from a summit) with the app
+    // still open would never see it upload. This fires the moment
+    // connectivity actually returns instead.
+    let networkSub;
+    let reconnectTimer;
+    try {
+      networkSub = Network.addNetworkStateListener(state => {
+        // "isConnected" is link-layer ("Wi-Fi/cellular is up"), not proof the
+        // route to the internet actually works yet (DHCP/DNS can lag a couple
+        // seconds behind the OS reporting connected) — a short settle delay
+        // avoids syncing into that gap and marking a queued ascent as failed
+        // for a connection that was never really usable in the first place.
+        clearTimeout(reconnectTimer);
+        if (state.isConnected) reconnectTimer = setTimeout(trySyncQueue, 2000);
+      });
+    } catch {}
+
+    return () => {
+      appStateSub.remove();
+      networkSub?.remove();
+      clearTimeout(reconnectTimer);
+    };
   }, []);
 
   return (

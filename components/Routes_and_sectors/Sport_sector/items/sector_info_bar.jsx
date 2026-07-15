@@ -1,24 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import {
   faSun, faMoon, faCloudSun, faCloudMoon,
   faPersonWalking,
   faChildren, faPeopleGroup,
   faArrowUp, faMountain, faAnglesUp, faDiamondTurnRight,
+  faHelmetSafety,
 } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
 
-const HELMET_IMG = require('../../../../assets/xxx/helmet.png');
-
-function InfoChip({ icon, localIcon, label, color, bg }) {
+function InfoChip({ icon, label, color, bg }) {
   return (
     <View style={[styles.chip, { backgroundColor: bg || '#f0f0f0' }]}>
-      {icon ? (
-        <FontAwesomeIcon icon={icon} size={14} color={color || '#555'} />
-      ) : localIcon ? (
-        <Image source={localIcon} style={[styles.localIcon, { tintColor: color }]} />
-      ) : null}
+      {icon && <FontAwesomeIcon icon={icon} size={14} color={color || '#555'} />}
       {label ? <Text style={[styles.chipLabel, { color: color || '#555' }]}>{label}</Text> : null}
     </View>
   );
@@ -46,7 +41,7 @@ export default function SectorInfoBar({ sector }) {
   if (sector.wolking_time)
     chips.push(<InfoChip key="walk"   icon={faPersonWalking} label={`${sector.wolking_time} min`} color="#2e7d32" bg="#e8f5e9" />);
   if (sector.is_helmet === 1)
-    chips.push(<InfoChip key="helm"   localIcon={HELMET_IMG} label={t('sector.helmet')} color="#b71c1c" bg="#ffebee" />);
+    chips.push(<InfoChip key="helm"   icon={faHelmetSafety}  label={t('sector.helmet')} color="#b71c1c" bg="#ffebee" />);
   if (sector.for_kids)
     chips.push(<InfoChip key="kids"   icon={faChildren}  label={t('sector.kids')}       color="#00695c" bg="#e0f2f1" />);
   if (sector.for_family)
@@ -84,10 +79,5 @@ const styles = StyleSheet.create({
   chipLabel: {
     fontSize: 12,
     fontWeight: '500',
-  },
-  localIcon: {
-    width: 14,
-    height: 14,
-    resizeMode: 'contain',
   },
 });

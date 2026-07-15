@@ -1,7 +1,10 @@
 node_modules
 Climbing In Georgia Mobile.code-workspace
+.expo/
 
 # Environment variables (see .env.example for the template)
 .env
 .env.local
 .env.*.local
+
+CLAUDE.md

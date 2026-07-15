@@ -5,13 +5,21 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api, { corsUrl } from '../../utils/api';
+import { useLocale } from '../../utils/LocaleContext';
 import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
+import PendingAscentsBanner from '../../components/PendingAscentsBanner';
 
 const API = 'https://climbing.ge/api/summit';
 
-function SummitCard({ item, navigation }) {
+function SummitCard({ item, navigation, t, locale }) {
+  // The API doesn't send a locale-specific response — it sends both `title`
+  // and (when set) `ka_title` in the same payload — so which one leads is
+  // purely a display choice that should follow the app's own language.
+  const primaryTitle = (locale === 'ka' && item.ka_title) || item.title;
+  const secondaryTitle = primaryTitle === item.title ? item.ka_title : item.title;
+
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -19,8 +27,8 @@ function SummitCard({ item, navigation }) {
           <Text style={styles.icon}>🏔️</Text>
         </View>
         <View style={styles.cardInfo}>
-          <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
-          {!!item.ka_title && <Text style={styles.kaTitle}>{item.ka_title}</Text>}
+          <Text style={styles.title} numberOfLines={2}>{primaryTitle}</Text>
+          {!!secondaryTitle && <Text style={styles.kaTitle}>{secondaryTitle}</Text>}
           {!!item.region && <Text style={styles.region}>{item.region.us_name}</Text>}
         </View>
         {!!item.height && (
@@ -41,14 +49,14 @@ function SummitCard({ item, navigation }) {
           onPress={() => navigation.navigate('summit_detail', { url_title: item.url_title, title: item.title })}
           activeOpacity={0.8}
         >
-          <Text style={styles.detailBtnText}>Details</Text>
+          <Text style={styles.detailBtnText}>{t('summit.details')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.ascentBtn}
           onPress={() => navigation.navigate('submit_ascent', { summit_id: item.id, url_title: item.url_title, title: item.title })}
           activeOpacity={0.8}
         >
-          <Text style={styles.ascentBtnText}>Record Ascent</Text>
+          <Text style={styles.ascentBtnText}>{t('summit.record_ascent')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -57,6 +65,7 @@ function SummitCard({ item, navigation }) {
 
 export default function SummitsListScreen({ navigation }) {
   const { t } = useTranslation();
+  const { locale } = useLocale();
   const [summits, setSummits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -93,6 +102,7 @@ export default function SummitsListScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {isOffline && <OfflineBanner />}
+      <PendingAscentsBanner />
 
       <View style={styles.offlineHintBox}>
         <Text style={styles.offlineHintText}>💡 {t('summit.offline_hint')}</Text>
@@ -113,7 +123,7 @@ export default function SummitsListScreen({ navigation }) {
       <FlatList
         data={summits}
         keyExtractor={item => String(item.id)}
-        renderItem={({ item }) => <SummitCard item={item} navigation={navigation} />}
+        renderItem={({ item }) => <SummitCard item={item} navigation={navigation} t={t} locale={locale} />}
         contentContainerStyle={styles.list}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(true)} colors={['#279fbb']} />}
         ListEmptyComponent={<View style={styles.center}><Text style={styles.emptyText}>{t('summit.no_summits')}</Text></View>}

@@ -6,6 +6,7 @@ import { withRecaptchaRetry } from './recaptcha';
 
 const API_BASE = 'https://climbing.ge/api';
 const AUTH_TOKEN_KEY = '@auth_token';
+const AUTH_USER_CACHE_KEY = '@auth_user_cache';
 
 const AuthContext = createContext({
   user: null,
@@ -29,15 +30,40 @@ export function AuthProvider({ children }) {
   async function restoreSession() {
     try {
       const stored = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
-      if (stored) {
-        api.defaults.headers.common['Authorization'] = `Bearer ${stored}`;
+      if (!stored) return;
+
+      api.defaults.headers.common['Authorization'] = `Bearer ${stored}`;
+      setToken(stored);
+
+      // Show the last-known user immediately (e.g. so the offline ascent form
+      // can auto-fill name/surname/email right away) while the token gets
+      // verified in the background, rather than making every app launch wait
+      // on a network round-trip just to redisplay the user's own name.
+      try {
+        const cachedUserRaw = await AsyncStorage.getItem(AUTH_USER_CACHE_KEY);
+        if (cachedUserRaw) setUser(JSON.parse(cachedUserRaw));
+      } catch {}
+
+      try {
         const res = await api.get(`${API_BASE}/auth_user`);
         setUser(res.data);
-        setToken(stored);
+        await AsyncStorage.setItem(AUTH_USER_CACHE_KEY, JSON.stringify(res.data));
+      } catch (err) {
+        // Only a genuine "this token is no longer valid" response should log
+        // the user out. A network failure (offline at launch, timeout, a
+        // flaky connection) must NOT destroy the session — that previously
+        // logged a user out just for opening the app without signal,
+        // silently wiping the exact user data offline ascent submission is
+        // supposed to auto-fill from. Keep the cached token/user as-is here.
+        if (err?.response?.status === 401) {
+          await AsyncStorage.multiRemove([AUTH_TOKEN_KEY, AUTH_USER_CACHE_KEY]);
+          delete api.defaults.headers.common['Authorization'];
+          setToken(null);
+          setUser(null);
+        }
       }
     } catch {
-      await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
-      delete api.defaults.headers.common['Authorization'];
+      // AsyncStorage itself failed — nothing to restore from.
     } finally {
       setIsLoading(false);
     }
@@ -50,6 +76,7 @@ export function AuthProvider({ children }) {
     );
     const { token: newToken, user: newUser } = res.data;
     await AsyncStorage.setItem(AUTH_TOKEN_KEY, newToken);
+    await AsyncStorage.setItem(AUTH_USER_CACHE_KEY, JSON.stringify(newUser));
     api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     setToken(newToken);
     setUser(newUser);
@@ -60,7 +87,7 @@ export function AuthProvider({ children }) {
     try {
       await api.post(`${API_BASE}/logout`);
     } catch {}
-    await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
+    await AsyncStorage.multiRemove([AUTH_TOKEN_KEY, AUTH_USER_CACHE_KEY]);
     delete api.defaults.headers.common['Authorization'];
     setToken(null);
     setUser(null);
@@ -79,6 +106,7 @@ export function AuthProvider({ children }) {
     );
     const { token: newToken, user: newUser } = res.data;
     await AsyncStorage.setItem(AUTH_TOKEN_KEY, newToken);
+    await AsyncStorage.setItem(AUTH_USER_CACHE_KEY, JSON.stringify(newUser));
     api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     setToken(newToken);
     setUser(newUser);

@@ -20,6 +20,7 @@ export default function HomeScreen({ navigation }) {
         <IndexCard url='ices_list' image={require('../assets/images/ice.png')} title={t('home.ice')} />
         <IndexCard url='mountain_routes_list' image={require('../assets/images/mount.png')} title={t('home.mountain')} />
         <IndexCard url='other_activities_list' image={require('../assets/images/other.png')} title={t('home.other')} />
+        <IndexCard url='summits_list' image={require('../assets/images/summit.png')} title={t('home.summits')} />
       </View>
 
       <View style={styles.bottom_feed}>
@@ -40,14 +41,12 @@ export default function HomeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   feed: {
-    flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
     padding: 16,
     justifyContent: 'space-around',
   },
   bottom_feed: {
-    flex: 1,
     flexDirection: 'column',
     padding: 16,
     paddingTop: 0,

@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useTranslation } from 'react-i18next';
-import api from '../../utils/api';
+import api, { corsUrl } from '../../utils/api';
+import { loadSummitData, loadOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
 
 // Real summit QR codes encode e.g. http://summit.climbing.ge/summit/{url_title}?make_ascent={id}
 const SUMMIT_URL_TITLE_PATTERN = /\/summit\/([^/?]+)/;
@@ -45,38 +46,48 @@ export default function QRScannerScreen({ navigation }) {
     if (!parsed) {
       Alert.alert(
         t('summit.invalid_qr_title'),
-        `${t('summit.invalid_qr_message')}\n\n[TEMP DEBUG] scanned: ${data}`,
+        t('summit.invalid_qr_message'),
         [{ text: 'OK', onPress: resetScanner }],
       );
       return;
     }
 
+    let summit;
     try {
-      let summit;
       if (parsed.url_title) {
-        const res = await api.get(`${API}/show/${parsed.url_title}`);
+        const res = await api.get(corsUrl(`${API}/show/${parsed.url_title}`));
         summit = res.data;
       } else {
-        const res = await api.get(`${API}/list`);
+        const res = await api.get(corsUrl(`${API}/list`));
         const summits = Array.isArray(res.data) ? res.data : [];
         summit = summits.find(s => s.id === parsed.summit_id);
       }
-      if (!summit) {
-        Alert.alert(
-          t('summit.summit_not_found_title'),
-          t('summit.summit_not_found_message'),
-          [{ text: 'OK', onPress: resetScanner }],
-        );
-        return;
-      }
-      navigation.replace('submit_ascent', { summit_id: summit.id, url_title: summit.url_title, title: summit.title });
     } catch {
+      // Offline (or the request failed) — fall back to whatever Offline Mode
+      // cached, so scanning the QR code at a summit still gets you to the
+      // ascent form even with no signal, instead of a dead-end "not found"
+      // for a summit that's actually right there in the offline cache.
+      if (parsed.url_title) {
+        summit = await loadSummitData(parsed.url_title);
+      }
+      if (!summit) {
+        const cachedList = await loadOfflineData(OFFLINE_KEYS.summits);
+        summit = (Array.isArray(cachedList) ? cachedList : []).find(s => (
+          (parsed.url_title && s.url_title === parsed.url_title)
+          || s.id === parsed.summit_id
+        ));
+      }
+    }
+
+    if (!summit) {
       Alert.alert(
         t('summit.summit_not_found_title'),
         t('summit.summit_not_found_message'),
         [{ text: 'OK', onPress: resetScanner }],
       );
+      return;
     }
+    navigation.replace('submit_ascent', { summit_id: summit.id, url_title: summit.url_title, title: summit.title });
   }
 
   if (!permission) {

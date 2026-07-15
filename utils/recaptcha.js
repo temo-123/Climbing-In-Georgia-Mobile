@@ -55,7 +55,13 @@ export function RecaptchaHost() {
   }
 
   return (
-    <View style={{ width: 0, height: 0, overflow: 'hidden' }}>
+    // Deliberately NOT 0x0 — Android's WebView frequently fails to fully
+    // initialize (skips layout/rendering, never fires load callbacks
+    // reliably) for a view with zero measured area, which showed up as
+    // intermittent "reCAPTCHA is not ready yet" on real devices even long
+    // after app launch. 1x1 + absolute positioning off-screen keeps it
+    // invisible while giving Android a real surface to render into.
+    <View style={{ position: 'absolute', top: -1000, left: 0, width: 1, height: 1, overflow: 'hidden' }}>
       <WebView
         ref={(r) => { ref.current = r; webviewRef = r; }}
         source={{ uri: buildUri('login') }}
