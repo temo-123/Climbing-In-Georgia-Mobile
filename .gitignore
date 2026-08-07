@@ -1,6 +1,7 @@
 node_modules
 Climbing In Georgia Mobile.code-workspace
 .expo/
+google-play-service-account.json
 
 # Environment variables (see .env.example for the template)
 .env

@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import CachedImage from '../CachedImage';
-import api, { corsUrl, imgUri } from '../../utils/api';
+import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from '../../utils/api';
 import { countSectorsAndRoutes } from '../../utils/sectorCount';
 import { loadSectorsData, saveSectorsData } from '../../utils/offlineStorage';
+import { COLORS } from '../../assets/styles/styles';
 
 export default function IceCard({ cardData }) {
   const navigation = useNavigation();
@@ -15,7 +16,7 @@ export default function IceCard({ cardData }) {
 
   useEffect(() => {
     if (!gd.id) return;
-    api.get(corsUrl(`https://climbing.ge/api/get_sector/get_sector_and_routes/${gd.id}`))
+    api.get(corsUrl(`${API_BASE_URL}/get_sector/get_sector_and_routes/${gd.id}`))
       .then(({ data }) => {
         saveSectorsData(gd.id, data);
         setCounts(countSectorsAndRoutes(data));
@@ -35,7 +36,7 @@ export default function IceCard({ cardData }) {
     >
       <View style={styles.imageView}>
         <CachedImage
-          uri={imgUri("https://climbing.ge/public/images/ice_img/", gd.image)}
+          uri={imgUri(IMG_BASES.ice, gd.image)}
           style={styles.image}
           contentFit="cover"
         />
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1.5,
     borderRadius: 10,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     flexDirection: 'row',
   },
   imageView: { width: '45%', height: 100 },
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
   statsRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 6, gap: 4 },
   statChip: {
     fontSize: 11,
-    color: '#279fbb',
+    color: COLORS.primary,
     backgroundColor: '#e8f6fb',
     borderRadius: 4,
     paddingHorizontal: 6,

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import api, { corsUrl } from '../utils/api';
+import api, { corsUrl, API_BASE_URL } from '../utils/api';
 import { StatusBar } from 'expo-status-bar';
 import {
   StyleSheet, Text, View, ScrollView, TouchableOpacity,
@@ -9,7 +9,7 @@ import RenderHtml from 'react-native-render-html';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../utils/LocaleContext';
 import { withRecaptchaRetry } from '../utils/recaptcha';
-import { gStyle } from '../assets/styles/styles';
+import { gStyle, COLORS } from '../assets/styles/styles';
 import Preloader from '../components/Preloader';
 import PageFooter from '../components/PageFooter';
 import RouteAuthorsModal from '../components/RouteAuthorsModal';
@@ -44,7 +44,7 @@ export default function App() {
     setLoading(true);
     setHasError(false);
     api
-      .get(corsUrl(`https://climbing.ge/api/get_site_data/get_site_locale_data/${locale}`))
+      .get(corsUrl(`${API_BASE_URL}/get_site_data/get_site_locale_data/${locale}`))
       .then(({ data }) => {
         setAboutUsData(data);
         setLoading(false);
@@ -60,7 +60,7 @@ export default function App() {
   }, [fetchData]);
 
   useEffect(() => {
-    api.get(corsUrl('https://climbing.ge/api/get_site_social_links/get_site_social_links'))
+    api.get(corsUrl(`${API_BASE_URL}/get_site_social_links/get_site_social_links`))
       .then(({ data }) => setSocialLinks(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, []);
@@ -96,7 +96,7 @@ export default function App() {
       // verified against climbing.ge's own "Message" form (name, surname,
       // email, num, country, msg, recaptcha_token).
       await withRecaptchaRetry('send_message', (recaptcha_token) => api.post(
-        corsUrl('https://climbing.ge/api/message'),
+        corsUrl(`${API_BASE_URL}/message`),
         {
           name: name.trim(),
           surname: surname.trim(),
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   retryBtn: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 28,
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e8f6fa',
   },
-  sectionTitle: { fontSize: 16, fontWeight: '800', color: '#279fbb', marginBottom: 10 },
+  sectionTitle: { fontSize: 16, fontWeight: '800', color: COLORS.primary, marginBottom: 10 },
   contactRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#f0f0f0',
   },
   contactLabel: { fontSize: 13, color: '#888', fontWeight: '600' },
-  contactValue: { fontSize: 13, color: '#279fbb', fontWeight: '700' },
+  contactValue: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
   linkRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -298,9 +298,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   linkText: { flex: 1, fontSize: 13, color: '#222', fontWeight: '600' },
-  linkArrow: { fontSize: 14, color: '#279fbb' },
+  linkArrow: { fontSize: 14, color: COLORS.primary },
   authorsBtn: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   messageSubtitle: { fontSize: 13, color: '#666', marginBottom: 14, lineHeight: 19 },
   input: {
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   },
   textArea: { height: 110, paddingTop: 12 },
   sendBtn: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',

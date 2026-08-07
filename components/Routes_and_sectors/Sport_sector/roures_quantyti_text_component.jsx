@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native';
-import api, { corsUrl } from '../../../utils/api';
+import api, { corsUrl, API_BASE_URL } from '../../../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const CATEGORIES_URL = 'https://climbing.ge/api/get_sector/sectors_and_routes_quantity_by_categories/';
+const CATEGORIES_URL = `${API_BASE_URL}/get_sector/sectors_and_routes_quantity_by_categories/`;
 
 export default function RoutesQuantityText() {
   const { t } = useTranslation();

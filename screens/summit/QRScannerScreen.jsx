@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useTranslation } from 'react-i18next';
-import api, { corsUrl } from '../../utils/api';
+import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { loadSummitData, loadOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
+import { COLORS } from '../../assets/styles/styles';
 
 // Real summit QR codes encode e.g. http://summit.climbing.ge/summit/{url_title}?make_ascent={id}
 const SUMMIT_URL_TITLE_PATTERN = /\/summit\/([^/?]+)/;
 const MAKE_ASCENT_ID_PATTERN = /make_ascent[=/](\d+)/;
-const API = 'https://climbing.ge/api/summit';
+const API = `${API_BASE_URL}/summit`;
 
 function parseSummitQr(data) {
   const idMatch = data.match(MAKE_ASCENT_ID_PATTERN);
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
   camera: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: '#111' },
   infoText: { color: '#fff', fontSize: 15, textAlign: 'center', marginBottom: 20 },
-  btn: { backgroundColor: '#279fbb', borderRadius: 10, paddingVertical: 12, paddingHorizontal: 28 },
+  btn: { backgroundColor: COLORS.primary, borderRadius: 10, paddingVertical: 12, paddingHorizontal: 28 },
   btnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
 
   overlay: { ...StyleSheet.absoluteFillObject },
@@ -184,7 +185,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: CORNER_SIZE,
     height: CORNER_SIZE,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
   },
   cornerTL: { top: 0, left: 0, borderTopWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS },
   cornerTR: { top: 0, right: 0, borderTopWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS },

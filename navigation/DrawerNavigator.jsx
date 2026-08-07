@@ -12,11 +12,12 @@ import ices_list from '../screens/lists/ice_spots_list';
 import mountain_routes_list from '../screens/lists/mountain_routes_list';
 import other_activities_list from '../screens/lists/other_activities_list';
 import CustomDrawerContent from './CustomDrawerContent';
+import { COLORS } from '../assets/styles/styles';
 
 const Drawer = createDrawerNavigator();
 
 const headerStyle = {
-  backgroundColor: '#279fbb',
+  backgroundColor: COLORS.primary,
 };
 const headerTintColor = '#fff';
 const headerTitleStyle = { fontWeight: 'bold' };

@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../utils/AuthContext';
+import { COLORS } from '../../assets/styles/styles';
 
 export default function ForgotPasswordScreen({ navigation }) {
   const { t } = useTranslation();
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#279fbb',
+    color: COLORS.primary,
     marginBottom: 12,
     textAlign: 'center',
   },
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
     color: '#222',
   },
   button: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   link: {
-    color: '#279fbb',
+    color: COLORS.primary,
     textAlign: 'center',
     fontSize: 14,
     marginTop: 4,
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
   },
   successIcon: {
     fontSize: 60,
-    color: '#279fbb',
+    color: COLORS.primary,
     marginBottom: 20,
   },
   successTitle: {
@@ -159,7 +160,7 @@ const styles = StyleSheet.create({
   },
   successSub: {
     fontSize: 14,
-    color: '#279fbb',
+    color: COLORS.primary,
     marginBottom: 32,
   },
 });

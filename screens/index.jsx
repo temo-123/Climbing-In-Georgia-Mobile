@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 
 import 'react-native-gesture-handler';
+import { COLORS } from '../assets/styles/styles';
 const Tab = createBottomTabNavigator();
 
 import IndexCard from '../components/cards/index_card_component';
@@ -59,7 +60,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1.5,
     borderRadius: 20,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     flexDirection: 'row',
   },
   long_card_image_view: {

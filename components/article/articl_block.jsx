@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import RenderHtml from 'react-native-render-html';
 import CachedImage from '../CachedImage';
 import EmbedBlock from '../EmbedBlock';
+import HtmlContent from '../HtmlContent';
 import { gStyle } from '../../assets/styles/styles';
 import { useTranslation } from 'react-i18next';
 
@@ -29,9 +29,9 @@ export default function articleBlock({ local_data, global_data, global_info_data
 
   function HtmlBlock({ html }) {
     return (
-      <RenderHtml
+      <HtmlContent
+        html={html}
         contentWidth={width}
-        source={{ html }}
         renderers={iframeConfig.renderers}
         WebView={WebView}
         customHTMLElementModels={iframeConfig.customHTMLElementModels}
@@ -67,7 +67,7 @@ export default function articleBlock({ local_data, global_data, global_info_data
       ) : null}
 
       {global_data.map ? (
-        <EmbedBlock html={global_data.map} height={280} />
+        <EmbedBlock html={global_data.map} height={280} type="map" />
       ) : null}
 
       {(local_data.best_time || typeof global_info_data.best_time !== 'undefined') ? (
@@ -81,7 +81,7 @@ export default function articleBlock({ local_data, global_data, global_info_data
       ) : null}
 
       {global_data.weather ? (
-        <EmbedBlock html={global_data.weather} height={220} />
+        <EmbedBlock html={global_data.weather} height={220} type="weather" />
       ) : null}
 
       {(local_data.what_need || typeof global_info_data.what_need_info !== 'undefined') ? (

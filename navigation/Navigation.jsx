@@ -29,10 +29,11 @@ import SubmitAscentScreen from '../screens/summit/SubmitAscentScreen';
 import QRScannerScreen from '../screens/summit/QRScannerScreen';
 
 import DrawerNavigator from './DrawerNavigator';
+import { COLORS } from '../assets/styles/styles';
 
 const Stack = createNativeStackNavigator();
 
-const headerStyle = { backgroundColor: '#279fbb' };
+const headerStyle = { backgroundColor: COLORS.primary };
 const headerTintColor = '#fff';
 const headerTitleStyle = { fontWeight: 'bold' };
 
@@ -138,7 +139,7 @@ export const Navigation = () => {
 
 const styles = StyleSheet.create({
   navbar: {
-    headerStyle: { backgroundColor: '#279fbb' },
+    headerStyle: { backgroundColor: COLORS.primary },
     headerTintColor: '#fff',
     headerTitleStyle: { fontWeight: 'bold' },
   },

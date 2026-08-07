@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../utils/AuthContext';
+import { COLORS } from '../../assets/styles/styles';
 
 export default function LoginScreen({ navigation }) {
   const { t } = useTranslation();
@@ -119,13 +120,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#279fbb',
+    color: COLORS.primary,
     marginBottom: 32,
     textAlign: 'center',
   },
   input: {
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 10,
     marginBottom: 16,
   },
@@ -156,7 +157,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   button: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
@@ -169,18 +170,18 @@ const styles = StyleSheet.create({
   },
   outlineButton: {
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
   },
   outlineButtonText: {
-    color: '#279fbb',
+    color: COLORS.primary,
     fontSize: 15,
     fontWeight: '600',
   },
   link: {
-    color: '#279fbb',
+    color: COLORS.primary,
     textAlign: 'center',
     fontSize: 14,
     marginBottom: 4,

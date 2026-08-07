@@ -7,7 +7,8 @@ import {
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
 import CachedImage from "../CachedImage";
-import { imgUri } from "../../utils/api";
+import { imgUri, IMG_BASES } from "../../utils/api";
+import { COLORS } from '../../assets/styles/styles';
 
 export default function outdoorCard({ cardData }) {
   const navigation = useNavigation();
@@ -20,7 +21,7 @@ export default function outdoorCard({ cardData }) {
     >
       <View style={styles.outdoor_article_card_image_view}>
         <CachedImage
-          uri={imgUri("https://climbing.ge/public/images/other_img/", cardData.global_data.image)}
+          uri={imgUri(IMG_BASES.other, cardData.global_data.image)}
           style={styles.outdoor_article_card_image}
           contentFit="contain"
         />
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
 
     borderWidth: 1.5,
     borderRadius: 10,
-    borderColor: "#279fbb",
+    borderColor: COLORS.primary,
 
     flexDirection: "row",
   },

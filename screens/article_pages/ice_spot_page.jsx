@@ -13,11 +13,11 @@ import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
 import { gStyle } from "../../assets/styles/styles";
 
-import api, { corsUrl, imgUri } from "../../utils/api";
+import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from "../../utils/api";
 import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
 
-const GALLERY_BASE = "https://climbing.ge/public/images/article_gallery_img/";
-const IMG_BASE = "https://climbing.ge/public/images/ice_img/";
+const GALLERY_BASE = IMG_BASES.gallery;
+const IMG_BASE = IMG_BASES.ice;
 
 export default function App({ route }) {
   const { t } = useTranslation();
@@ -31,7 +31,7 @@ export default function App({ route }) {
 
   useEffect(() => {
     setLoading(true);
-    api.get(corsUrl(`https://climbing.ge/api/get_article/get_locale_article_on_page/ice/${locale}/` + route.params))
+    api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/ice/${locale}/` + route.params))
       .then(({ data }) => {
         setGlobalIceData(data);
         setLocaleIceData(data.locale_data || {});

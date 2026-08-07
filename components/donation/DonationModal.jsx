@@ -9,9 +9,10 @@ import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../utils/LocaleContext';
 import { useAuth } from '../../utils/AuthContext';
 import { getDonationSiteData } from '../../utils/donationSiteData';
-import api from '../../utils/api';
+import api, { API_BASE_URL } from '../../utils/api';
+import { COLORS } from '../../assets/styles/styles';
 
-const API_BASE = 'https://climbing.ge/api';
+const API_BASE = API_BASE_URL;
 const PREDEFINED_AMOUNTS = [5, 10, 20, 50, 100, 200];
 const EMPTY_DONATOR = { name: '', surname: '', email: '', phone_number: '', country: '', age: '' };
 
@@ -242,7 +243,7 @@ export default function DonationModal({ visible, onClose }) {
             ) : (
               <View>
                 {bankLoading ? (
-                  <ActivityIndicator color="#279fbb" style={styles.loader} />
+                  <ActivityIndicator color={COLORS.primary} style={styles.loader} />
                 ) : bankInfo && !bankInfo.allowed ? (
                   <View style={styles.bankMessageBox}>
                     <Text style={styles.bankMessageText}>{t('donation.bank_only_georgia')}</Text>
@@ -306,26 +307,26 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 22,
   },
-  title: { fontSize: 19, fontWeight: '800', color: '#279fbb', textAlign: 'center', marginBottom: 8 },
+  title: { fontSize: 19, fontWeight: '800', color: COLORS.primary, textAlign: 'center', marginBottom: 8 },
   loader: { marginVertical: 32 },
   tabRow: { flexDirection: 'row', gap: 10, marginVertical: 16 },
   tabBtn: {
     flex: 1,
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 10,
     paddingVertical: 11,
     alignItems: 'center',
   },
-  tabBtnActive: { backgroundColor: '#279fbb' },
-  tabBtnText: { fontSize: 14, color: '#279fbb', fontWeight: '700' },
+  tabBtnActive: { backgroundColor: COLORS.primary },
+  tabBtnText: { fontSize: 14, color: COLORS.primary, fontWeight: '700' },
   tabBtnTextActive: { color: '#fff' },
-  sectionTitle: { fontSize: 14, fontWeight: '700', color: '#279fbb', marginBottom: 10, marginTop: 6 },
+  sectionTitle: { fontSize: 14, fontWeight: '700', color: COLORS.primary, marginBottom: 10, marginTop: 6 },
   userInfoBox: { backgroundColor: '#e8f6fa', borderRadius: 10, padding: 12, marginBottom: 12 },
   userInfoText: { fontSize: 13, color: '#1a6f85' },
   input: {
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 11,
@@ -372,8 +373,8 @@ const styles = StyleSheet.create({
   bankRowLabel: { width: 110, fontSize: 12, fontWeight: '700', color: '#666' },
   bankRowValue: { flex: 1, fontSize: 13, color: '#222', fontWeight: '600' },
   ibanValue: { fontFamily: 'monospace', letterSpacing: 0.5 },
-  copyBtn: { borderWidth: 1, borderColor: '#279fbb', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, marginLeft: 8 },
-  copyBtnText: { fontSize: 11, color: '#279fbb', fontWeight: '700' },
+  copyBtn: { borderWidth: 1, borderColor: COLORS.primary, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, marginLeft: 8 },
+  copyBtnText: { fontSize: 11, color: COLORS.primary, fontWeight: '700' },
   closeBtn: {
     borderWidth: 1.5,
     borderColor: '#999',

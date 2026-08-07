@@ -6,8 +6,11 @@ import { useLocale } from '../../utils/LocaleContext';
 
 import CachedImage from "../../components/CachedImage";
 import ImageViewerModal from "../../components/ImageViewerModal";
-import api, { corsUrl, imgUri } from "../../utils/api";
-import { loadArticleData, saveArticleData, loadSectorsData, saveSectorsData } from "../../utils/offlineStorage";
+import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from "../../utils/api";
+import {
+  loadArticleData, saveArticleData, loadSectorsData, saveSectorsData,
+  loadRouteImagesData, saveRouteImagesData,
+} from "../../utils/offlineStorage";
 
 import IceSectors from "../../components/Routes_and_sectors/Ice_sectors/ice_sectors";
 import ArticleBlock from "../../components/article/articl_block";
@@ -17,11 +20,11 @@ import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
 import { gStyle } from "../../assets/styles/styles";
 
-const IMG_BASE           = "https://climbing.ge/public/images/mount_route_img/";
-const ROUTE_PHOTO_BASE   = "https://climbing.ge/public/images/mount_route_description_img/";
-const GALLERY_BASE       = "https://climbing.ge/public/images/article_gallery_img/";
-const SECTOR_IMG_BASE    = "https://climbing.ge/public/images/sector_img/";
-const LOCAL_IMG_BASE     = "https://climbing.ge/public/images/sector_local_img/";
+const IMG_BASE           = IMG_BASES.mountRoute;
+const ROUTE_PHOTO_BASE   = IMG_BASES.mountRouteDescription;
+const GALLERY_BASE       = IMG_BASES.gallery;
+const SECTOR_IMG_BASE    = IMG_BASES.sector;
+const LOCAL_IMG_BASE     = IMG_BASES.sectorLocal;
 
 function extractSectorImageUris(sectorsData) {
   const uris = [];
@@ -64,7 +67,7 @@ export default function MountainRoutePage({ route }) {
 
   useEffect(() => {
     setLoading(true);
-    api.get(corsUrl(`https://climbing.ge/api/get_article/get_locale_article_on_page/mount_route/${locale}/` + urlTitle))
+    api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/mount_route/${locale}/` + urlTitle))
       .then(({ data }) => {
         setGlobalData(data);
         setLocaleData(data.locale_data || {});
@@ -89,7 +92,7 @@ export default function MountainRoutePage({ route }) {
     const articleId = globalData.global_data?.id;
     if (!articleId) return;
 
-    api.get(corsUrl(`https://climbing.ge/api/get_sector/get_sector_and_routes/${articleId}`))
+    api.get(corsUrl(`${API_BASE_URL}/get_sector/get_sector_and_routes/${articleId}`))
       .then(({ data }) => {
         saveSectorsData(articleId, data);
         setSectorImageUris(extractSectorImageUris(data));
@@ -99,11 +102,17 @@ export default function MountainRoutePage({ route }) {
         if (cached) setSectorImageUris(extractSectorImageUris(cached));
       });
 
-    api.get(corsUrl(`https://climbing.ge/api/get_mount_route/get_mount_routes_images/${articleId}`))
+    api.get(corsUrl(`${API_BASE_URL}/get_mount_route/get_mount_routes_images/${articleId}`))
       .then(({ data }) => {
-        if (Array.isArray(data)) setRouteImages(data);
+        if (Array.isArray(data)) {
+          setRouteImages(data);
+          saveRouteImagesData(articleId, data);
+        }
       })
-      .catch(() => {});
+      .catch(async () => {
+        const cached = await loadRouteImagesData(articleId);
+        if (Array.isArray(cached)) setRouteImages(cached);
+      });
   }, [globalData.global_data?.id]);
 
   if (isLoading) return <Preloader />;

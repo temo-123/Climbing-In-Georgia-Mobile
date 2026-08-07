@@ -5,19 +5,20 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
-import api, { corsUrl, imgUri } from '../../utils/api';
+import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from '../../utils/api';
 import { useLocale } from '../../utils/LocaleContext';
 import { loadSummitData, loadSummitAscentsData } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
+import { COLORS } from '../../assets/styles/styles';
 
-const API = 'https://climbing.ge/api/summit';
+const API = `${API_BASE_URL}/summit`;
 // Matches summit.climbing.ge's own "Photos from the Summit" gallery — the
 // `photo` field returned by /summit/ascents/{url_title} is already a relative
 // path like "ascents/<hash>.jpg" (no {} placeholders, so no imgUri encoding
 // is strictly required, but using it keeps this consistent with every other
 // image path in the app).
-const ASCENT_PHOTO_BASE = 'https://climbing.ge/public/images/summit_ascents_img/';
+const ASCENT_PHOTO_BASE = IMG_BASES.summitAscent;
 
 function PhotoThumbnail({ item, onPress }) {
   return (
@@ -159,7 +160,7 @@ export default function SummitDetailScreen({ route, navigation }) {
     }, [url_title])
   );
 
-  if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#279fbb" /></View>;
+  if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>;
   if (noCache || !summit) return <OfflineError />;
 
   const photoAscents = ascents.filter(a => !!a.photo);
@@ -247,7 +248,7 @@ const styles = StyleSheet.create({
   container: { padding: 16, paddingBottom: 120 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   heroCard: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 1 },
   },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#279fbb', marginBottom: 12 },
+  sectionTitle: { fontSize: 15, fontWeight: '700', color: COLORS.primary, marginBottom: 12 },
   description: { fontSize: 14, color: '#444', lineHeight: 22 },
   coordsRow: {
     flexDirection: 'row',
@@ -286,7 +287,7 @@ const styles = StyleSheet.create({
   coordsLabel: { fontSize: 16 },
   coordsText: { fontSize: 13, color: '#555', fontFamily: 'monospace' },
   recordBtn: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
@@ -374,7 +375,7 @@ const styles = StyleSheet.create({
   },
   modalComment: { fontSize: 13, color: '#555', lineHeight: 19, fontStyle: 'italic' },
   modalCloseBtn: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 13,
     alignItems: 'center',

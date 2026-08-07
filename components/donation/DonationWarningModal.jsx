@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../utils/LocaleContext';
 import { getDonationSiteData } from '../../utils/donationSiteData';
 import DonationModal from './DonationModal';
+import { COLORS } from '../../assets/styles/styles';
 
 export default function DonationWarningModal({ visible, onClose }) {
   const { t } = useTranslation();
@@ -43,7 +44,7 @@ export default function DonationWarningModal({ visible, onClose }) {
             <Text style={styles.title}>{t('donation.modal_title')}</Text>
 
             {loading ? (
-              <ActivityIndicator color="#279fbb" style={styles.loader} />
+              <ActivityIndicator color={COLORS.primary} style={styles.loader} />
             ) : (
               <ScrollView style={styles.scroll}>
                 {!!content?.short_description && (
@@ -101,10 +102,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 24,
   },
-  title: { fontSize: 18, fontWeight: '800', color: '#279fbb', textAlign: 'center', marginBottom: 12 },
+  title: { fontSize: 18, fontWeight: '800', color: COLORS.primary, textAlign: 'center', marginBottom: 12 },
   loader: { marginVertical: 32 },
   scroll: { marginBottom: 16 },
-  termsTitle: { fontSize: 14, fontWeight: '700', color: '#279fbb', marginTop: 12, marginBottom: 6 },
+  termsTitle: { fontSize: 14, fontWeight: '700', color: COLORS.primary, marginTop: 12, marginBottom: 6 },
   checkboxRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16, gap: 10 },
   checkbox: {
     width: 22,

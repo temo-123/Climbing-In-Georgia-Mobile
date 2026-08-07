@@ -5,9 +5,10 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../utils/AuthContext';
-import api from '../../utils/api';
+import api, { API_BASE_URL } from '../../utils/api';
+import { COLORS } from '../../assets/styles/styles';
 
-const API = 'https://climbing.ge/api';
+const API = API_BASE_URL;
 
 export default function UserOptionsScreen() {
   const { t } = useTranslation();
@@ -117,13 +118,13 @@ export default function UserOptionsScreen() {
 
 const styles = StyleSheet.create({
   container: { padding: 20, paddingBottom: 40, backgroundColor: '#fff', flexGrow: 1 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#279fbb', marginBottom: 14, marginTop: 4 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: COLORS.primary, marginBottom: 14, marginTop: 4 },
   input: {
-    borderWidth: 1.5, borderColor: '#279fbb', borderRadius: 10,
+    borderWidth: 1.5, borderColor: COLORS.primary, borderRadius: 10,
     paddingHorizontal: 14, paddingVertical: 12, marginBottom: 12, fontSize: 15, color: '#222',
   },
   button: {
-    backgroundColor: '#279fbb', borderRadius: 10, paddingVertical: 13,
+    backgroundColor: COLORS.primary, borderRadius: 10, paddingVertical: 13,
     alignItems: 'center', marginBottom: 4,
   },
   buttonText: { color: '#fff', fontSize: 15, fontWeight: 'bold' },

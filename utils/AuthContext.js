@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from './api';
+import api, { API_BASE_URL } from './api';
 import { encryptPassword } from './rsaEncrypt';
 import { withRecaptchaRetry } from './recaptcha';
 
-const API_BASE = 'https://climbing.ge/api';
+const API_BASE = API_BASE_URL;
 const AUTH_TOKEN_KEY = '@auth_token';
 const AUTH_USER_CACHE_KEY = '@auth_user_cache';
 

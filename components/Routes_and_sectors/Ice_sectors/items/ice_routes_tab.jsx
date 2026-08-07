@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
+import { COLORS } from '../../../../assets/styles/styles';
 
 const BOLT_ICONS = {
   hangerr: 'https://climbing.ge/images/svg/hangerr%20bolt.svg',
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
   rowText: { fontSize: 11, textAlign: 'center' },
   infoBtnCell: { alignItems: 'center', justifyContent: 'center' },
   detailsBtn: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 6,
     paddingVertical: 5,
     paddingHorizontal: 6,
@@ -204,7 +205,7 @@ const modal = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: { fontSize: 15, fontWeight: 'bold', color: '#222', marginBottom: 6 },
-  divider: { height: 1.5, backgroundColor: '#279fbb', marginBottom: 10 },
+  divider: { height: 1.5, backgroundColor: COLORS.primary, marginBottom: 10 },
   fieldRow: {
     flexDirection: 'row',
     alignItems: 'center',

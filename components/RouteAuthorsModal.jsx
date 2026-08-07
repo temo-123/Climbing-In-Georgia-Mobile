@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import api, { corsUrl } from '../utils/api';
+import api, { corsUrl, API_BASE_URL } from '../utils/api';
+import { COLORS } from '../assets/styles/styles';
 
 const SORT_FIELDS = ['total', 'name', 'sport', 'boulder', 'dry', 'ice'];
-const API = 'https://climbing.ge/api/get_route/routes_authers_by_categories/';
+const API = `${API_BASE_URL}/get_route/routes_authers_by_categories/`;
 
 // Module-level cache — this list rarely changes and is used from two
 // screens (About Us and the Outdoor list), no need to refetch every open.
@@ -123,7 +124,7 @@ export default function RouteAuthorsModal({ visible, onClose }) {
           </View>
 
           {loading ? (
-            <ActivityIndicator size="large" color="#279fbb" style={styles.loader} />
+            <ActivityIndicator size="large" color={COLORS.primary} style={styles.loader} />
           ) : sorted.length === 0 ? (
             <Text style={styles.emptyText}>{t('about.no_authors')}</Text>
           ) : (
@@ -168,13 +169,13 @@ const styles = StyleSheet.create({
   sortRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   sortChip: {
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  sortChipActive: { backgroundColor: '#279fbb' },
-  sortChipText: { fontSize: 12, color: '#279fbb', fontWeight: '600' },
+  sortChipActive: { backgroundColor: COLORS.primary },
+  sortChipText: { fontSize: 12, color: COLORS.primary, fontWeight: '600' },
   sortChipTextActive: { color: '#fff' },
   loader: { marginVertical: 24 },
   emptyText: { color: '#999', textAlign: 'center', marginVertical: 24 },
@@ -191,10 +192,10 @@ const styles = StyleSheet.create({
     minWidth: 36,
     alignItems: 'center',
   },
-  totalBadgeText: { fontSize: 13, fontWeight: '800', color: '#279fbb' },
+  totalBadgeText: { fontSize: 13, fontWeight: '800', color: COLORS.primary },
   separator: { height: 1, backgroundColor: '#f0f0f0' },
   closeCard: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 13,
     alignItems: 'center',

@@ -1,6 +1,6 @@
-import api from './api';
+import api, { API_BASE_URL } from './api';
 
-const API_BASE = 'https://climbing.ge/api';
+const API_BASE = API_BASE_URL;
 const cache = {};
 
 export function getDonationSiteData(locale) {

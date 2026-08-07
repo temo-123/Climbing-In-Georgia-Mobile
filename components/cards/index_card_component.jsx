@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { COLORS } from '../../assets/styles/styles';
 
 export default function indexCard({ url, image, title }) {
   const navigation = useNavigation();
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1.5,
     borderRadius: 20,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     paddingBottom: 8,
   },
   card_img: {

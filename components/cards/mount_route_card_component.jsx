@@ -2,14 +2,15 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import CachedImage from '../CachedImage';
-import { imgUri } from '../../utils/api';
+import { imgUri, IMG_BASES } from '../../utils/api';
+import { COLORS } from '../../assets/styles/styles';
 
 export default function outdoorCard({cardData}) {
   const navigation = useNavigation();
   return (
     <TouchableOpacity style={styles.outdoor_article_card} onPress={() => navigation.navigate('mountain_route_page', { url_title: cardData.global_data.url_title, mount_masive: cardData.mount_masive })}>
       <View style={styles.outdoor_article_card_image_view}>
-        <CachedImage uri={imgUri("https://climbing.ge/public/images/mount_route_img/", cardData.global_data.image)} style={styles.outdoor_article_card_image} contentFit="contain" />
+        <CachedImage uri={imgUri(IMG_BASES.mountRoute, cardData.global_data.image)} style={styles.outdoor_article_card_image} contentFit="contain" />
       </View>
       <View style={styles.outdoor_article_card_text}>
         <Text style={styles.outdoor_article_card_title}>{cardData.locale_data.title}</Text>
@@ -31,7 +32,7 @@ const styles = StyleSheet.create({
 
     borderWidth: 1.5,
     borderRadius: 10,
-    borderColor: "#279fbb",
+    borderColor: COLORS.primary,
 
     flexDirection: 'row',
   },
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
   },
   outdoor_article_card_masive: {
     fontSize: 12,
-    color: '#279fbb',
+    color: COLORS.primary,
     marginTop: 2,
   },
   outdoor_article_card_routes: {

@@ -9,25 +9,21 @@ import {
   Platform,
   UIManager,
 } from "react-native";
-import RenderHtml from "react-native-render-html";
 import { useWindowDimensions } from "react-native";
 import { useTranslation } from 'react-i18next';
-import api, { corsUrl } from "../../../utils/api";
+import api, { corsUrl, API_BASE_URL } from "../../../utils/api";
 import EmbedBlock from "../../EmbedBlock";
+import HtmlContent from "../../HtmlContent";
 import { useLocale } from "../../../utils/LocaleContext";
+import { saveMassiveData, loadMassiveData } from "../../../utils/offlineStorage";
+import { COLORS } from '../../../assets/styles/styles';
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
 function HtmlBlock({ html, width }) {
-  if (!html) return null;
-  return (
-    <RenderHtml
-      contentWidth={width}
-      source={{ html }}
-    />
-  );
+  return <HtmlContent html={html} contentWidth={width} />;
 }
 
 export default function MassiveSection({ mountMasiveName, articleId }) {
@@ -55,13 +51,17 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
     if (!articleId) return;
     setLoading(true);
     api
-      .get(corsUrl(`https://climbing.ge/api/get_mount/on_page/${locale}/` + articleId))
+      .get(corsUrl(`${API_BASE_URL}/get_mount/on_page/${locale}/` + articleId))
       .then(({ data }) => {
         if (typeof data === "object" && data !== null) {
           setContent(data);
+          saveMassiveData(locale, articleId, data);
         }
       })
-      .catch(() => {})
+      .catch(async () => {
+        const cached = await loadMassiveData(locale, articleId);
+        if (cached) setContent(cached);
+      })
       .finally(() => {
         setLoading(false);
         setFetched(true);
@@ -70,7 +70,7 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
 
   const renderContent = () => {
     if (loading) {
-      return <ActivityIndicator color="#279fbb" style={styles.loader} />;
+      return <ActivityIndicator color={COLORS.primary} style={styles.loader} />;
     }
 
     if (content) {
@@ -110,7 +110,7 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
           ) : null}
 
           {globalData.weather ? (
-            <EmbedBlock html={globalData.weather} height={220} padding={60} />
+            <EmbedBlock html={globalData.weather} height={220} padding={60} type="weather" />
           ) : null}
 
           {localeData.how_get ? (
@@ -121,7 +121,7 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
           ) : null}
 
           {globalData.map ? (
-            <EmbedBlock html={globalData.map} height={280} padding={60} />
+            <EmbedBlock html={globalData.map} height={280} padding={60} type="map" />
           ) : null}
         </View>
       );
@@ -154,7 +154,7 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
 const styles = StyleSheet.create({
   container: {
     borderWidth: 1.5,
-    borderColor: "#279fbb",
+    borderColor: COLORS.primary,
     borderRadius: 10,
     marginBottom: 16,
     overflow: "hidden",
@@ -179,11 +179,11 @@ const styles = StyleSheet.create({
   headerName: {
     fontSize: 15,
     fontWeight: "bold",
-    color: "#279fbb",
+    color: COLORS.primary,
   },
   arrow: {
     fontSize: 12,
-    color: "#279fbb",
+    color: COLORS.primary,
   },
   body: {
     padding: 14,
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     color: "#222",
     marginBottom: 6,
     borderBottomWidth: 1.5,
-    borderBottomColor: "#279fbb",
+    borderBottomColor: COLORS.primary,
     paddingBottom: 4,
   },
   noData: {

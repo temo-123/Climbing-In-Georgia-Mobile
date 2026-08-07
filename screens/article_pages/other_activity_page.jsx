@@ -8,10 +8,10 @@ import Preloader from "../../components/Preloader";
 import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
 
-import api, { corsUrl } from "../../utils/api";
+import api, { corsUrl, API_BASE_URL, IMG_BASES } from "../../utils/api";
 import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
 
-const IMG_BASE = "https://climbing.ge/public/images/other_img/";
+const IMG_BASE = IMG_BASES.other;
 
 export default function App({ route }) {
   const { locale } = useLocale();
@@ -22,7 +22,7 @@ export default function App({ route }) {
 
   useEffect(() => {
     setLoading(true);
-    api.get(corsUrl(`https://climbing.ge/api/get_article/get_locale_article_on_page/other/${locale}/` + route.params))
+    api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/other/${locale}/` + route.params))
       .then(({ data }) => {
         setGlobalOtherData(data);
         setLocaleOtherData(data.locale_data || {});

@@ -4,6 +4,7 @@ import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawe
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../utils/LocaleContext';
 import { useAuth } from '../utils/AuthContext';
+import { COLORS } from '../assets/styles/styles';
 
 export default function CustomDrawerContent(props) {
   const { t } = useTranslation();
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
   },
   appTagline: {
     fontSize: 12,
-    color: '#279fbb',
+    color: COLORS.primary,
     fontWeight: '500',
     marginTop: 2,
   },
@@ -124,15 +125,15 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
   },
   btnActive: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
   },
   btnText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#279fbb',
+    color: COLORS.primary,
   },
   btnTextActive: {
     color: '#fff',
@@ -150,12 +151,12 @@ const styles = StyleSheet.create({
   },
   profileLink: {
     fontSize: 12,
-    color: '#279fbb',
+    color: COLORS.primary,
     fontWeight: '600',
     marginBottom: 12,
   },
   logoutBtn: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 8,
     paddingVertical: 9,
     alignItems: 'center',
@@ -167,13 +168,13 @@ const styles = StyleSheet.create({
   },
   loginBtn: {
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 8,
     paddingVertical: 9,
     alignItems: 'center',
   },
   loginBtnText: {
-    color: '#279fbb',
+    color: COLORS.primary,
     fontWeight: '600',
     fontSize: 14,
   },

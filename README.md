@@ -229,6 +229,7 @@ assets/
   icon.png / splash.png         — app icons
 docs/
   AUTH.md                       — full authentication documentation
+  CI_CD.md                      — EAS build & Play Store submit pipeline
 ```
 
 ---
@@ -277,11 +278,13 @@ The EAS cloud build takes approximately 5–10 minutes. A download link is provi
 
 Use `production-apk` when you need a `.apk` of the same release you submitted to Google Play (e.g. to share outside the Play Store) — it reuses the production build config but skips the automatic version bump so it doesn't drift from the `.aab` you already submitted.
 
+The above can also be run automatically from GitHub Actions (manual trigger, optional auto-submit to the Play Store internal testing track) — see [`docs/CI_CD.md`](docs/CI_CD.md).
+
 ---
 
 ## Version
 
-**1.2.7**
+**1.2.9**
 
 ---
 

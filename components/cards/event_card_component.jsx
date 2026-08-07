@@ -2,14 +2,15 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import CachedImage from '../CachedImage';
-import { imgUri } from '../../utils/api';
+import { imgUri, IMG_BASES } from '../../utils/api';
+import { COLORS } from '../../assets/styles/styles';
 
 export default function outdoorCard({cardData}) {
   const navigation = useNavigation();
   return (
     <TouchableOpacity style={styles.article_card} onPress={() => navigation.navigate('event_page', cardData.global_event.id)}>
       <View style={styles.article_card_image_view}>
-        <CachedImage uri={imgUri("https://climbing.ge/public/images/event_img/", cardData.global_event.image)} style={styles.article_card_image} contentFit="contain" />
+        <CachedImage uri={imgUri(IMG_BASES.event, cardData.global_event.image)} style={styles.article_card_image} contentFit="contain" />
       </View>
       <View style={styles.article_card_text}>
         <View style={styles.event_datas}>
@@ -44,7 +45,7 @@ const styles = StyleSheet.create({
 
     borderWidth: 1.5,
     borderRadius: 10,
-    borderColor: "#279fbb",
+    borderColor: COLORS.primary,
 
     flexDirection: 'row',
   },
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
     // alignItems: 'center',
     borderWidth: 1.5,
     borderRadius: 5,
-    borderColor: "#279fbb",
+    borderColor: COLORS.primary,
 
     margin: 4,
     // padding: 4,
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
     // alignItems: 'center',
     borderWidth: 1.5,
     borderRadius: 5,
-    borderColor: "#279fbb",
+    borderColor: COLORS.primary,
 
     margin: 4,
     // padding: 4,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import api, { corsUrl } from '../../utils/api';
+import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { useSiteDescription } from '../../utils/useSiteData';
 import { useLocale } from '../../utils/LocaleContext';
 import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
@@ -28,7 +28,7 @@ export default function App() {
     setLoading(true);
     setIsOffline(false);
     setNoCache(false);
-    api.get(corsUrl(`https://climbing.ge/api/get_article/get_locale_articles/ice/${locale}`))
+    api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_articles/ice/${locale}`))
       .then(({ data }) => {
         setData(data);
         saveOfflineData(OFFLINE_KEYS.ice, data);

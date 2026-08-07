@@ -27,6 +27,13 @@
     "other_title": "Other Activity In Georgia",
     "events_title": "Events & Competitions"
   },
+  "filter": {
+    "all": "All",
+    "other_region": "Other",
+    "other_massif": "Other",
+    "sort_default": "Default order",
+    "sort_az": "A → Z"
+  },
   "empty": {
     "outdoor": "No outdoor spots found.\nCheck back soon!",
     "indoor": "No indoor gyms found.\nCheck back soon!",
@@ -63,6 +70,11 @@
   },
   "banner": {
     "offline": "Offline mode — showing cached data"
+  },
+  "embed": {
+    "map_offline": "Map isn't available offline",
+    "weather_offline": "Weather isn't available offline",
+    "offline": "This content isn't available offline"
   },
   "error": {
     "offline_title": "You are offline",

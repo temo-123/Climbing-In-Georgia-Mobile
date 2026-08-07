@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCloudXmark } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
+import { COLORS } from '../assets/styles/styles';
 
 export default function OfflineError() {
   const { t } = useTranslation();
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   highlight: {
-    color: '#279fbb',
+    color: COLORS.primary,
     fontWeight: '600',
   },
 });

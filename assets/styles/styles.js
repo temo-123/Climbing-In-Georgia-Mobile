@@ -1,5 +1,11 @@
 import { StyleSheet } from 'react-native'
 
+// Single source of truth for the app's theme color — was hardcoded as
+// '#279fbb' independently in dozens of files.
+export const COLORS = {
+  primary: '#279fbb',
+}
+
 export const gStyle = StyleSheet.create({
     main_container: {
         flex: 1,

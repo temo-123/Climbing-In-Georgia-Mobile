@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { subscribeToQueue, syncQueue, discardQueuedAscent } from '../utils/ascentQueue';
+import { COLORS } from '../assets/styles/styles';
 
 function queuedAtFromId(_id) {
   const ms = Number(String(_id).split('_')[0]);
@@ -133,14 +134,14 @@ const styles = StyleSheet.create({
   text: { fontSize: 12, color: '#7a5200', flexShrink: 1, fontWeight: '600' },
   syncBtn: {
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
     minWidth: 72,
     alignItems: 'center',
   },
-  syncBtnText: { fontSize: 12, color: '#279fbb', fontWeight: '700' },
+  syncBtnText: { fontSize: 12, color: COLORS.primary, fontWeight: '700' },
   errorText: { fontSize: 11, color: '#b9770e' },
   toggleText: { fontSize: 12, color: '#1a6f85', fontWeight: '700', textDecorationLine: 'underline' },
   list: { gap: 8, marginTop: 4 },
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
   },
   rowMain: { flex: 1, gap: 2 },
   rowName: { fontSize: 13, fontWeight: '700', color: '#333' },
-  rowSummit: { fontSize: 12, color: '#279fbb', fontWeight: '600', marginTop: 1 },
+  rowSummit: { fontSize: 12, color: COLORS.primary, fontWeight: '600', marginTop: 1 },
   rowMeta: { fontSize: 11, color: '#888' },
   rowError: { fontSize: 11, color: '#b9770e', marginTop: 2 },
   removeBtn: {

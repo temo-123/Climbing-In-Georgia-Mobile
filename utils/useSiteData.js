@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api, { corsUrl } from './api';
+import api, { corsUrl, API_BASE_URL } from './api';
 import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from './offlineStorage';
 import { useLocale } from './LocaleContext';
 
@@ -11,7 +11,7 @@ function getSiteData(locale) {
   if (_caches[locale]) return Promise.resolve(_caches[locale]);
   if (!_promises[locale]) {
     _promises[locale] = api
-      .get(corsUrl(`https://climbing.ge/api/get_site_data/get_site_locale_data_for_site/${locale}`))
+      .get(corsUrl(`${API_BASE_URL}/get_site_data/get_site_locale_data_for_site/${locale}`))
       .then(({ data }) => {
         _caches[locale] = data;
         saveOfflineData(OFFLINE_KEYS.site_data, data);

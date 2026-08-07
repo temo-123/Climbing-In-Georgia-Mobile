@@ -124,6 +124,25 @@ export async function downloadImages(urls, onProgress) {
   return done;
 }
 
+const IMG_SRC_RE = /(<img[^>]+src=["'])([^"']+)(["'])/gi;
+
+// Rewrites every <img src="..."> in an HTML string (article/massif rich
+// text, not the header/gallery images which have their own dedicated
+// fields) to its locally cached file URI where one exists, so inline body
+// images still render while offline instead of silently failing to load.
+export async function resolveHtmlImageUris(html) {
+  if (!html || typeof html !== 'string') return html;
+  const urls = [...new Set([...html.matchAll(IMG_SRC_RE)].map((m) => m[2]))];
+  if (urls.length === 0) return html;
+
+  const resolvedMap = {};
+  for (const url of urls) {
+    resolvedMap[url] = await resolveImageUri(url);
+  }
+
+  return html.replace(IMG_SRC_RE, (full, pre, url, post) => pre + (resolvedMap[url] || url) + post);
+}
+
 // Remove all cached images and the URL map.
 export async function clearImageCache() {
   _map = {};

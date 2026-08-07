@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api, { corsUrl, imgUri } from './api';
+import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from './api';
 import { downloadImages } from './imageCache';
 
 export const OFFLINE_KEYS = {
@@ -14,10 +14,28 @@ export const OFFLINE_KEYS = {
   download_time:'@offline_download_time',
 };
 
-const GALLERY_BASE    = 'https://climbing.ge/public/images/article_gallery_img/';
-const SECTOR_IMG_BASE = 'https://climbing.ge/public/images/sector_img/';
-const LOCAL_IMG_BASE  = 'https://climbing.ge/public/images/sector_local_img/';
-const ASCENT_PHOTO_BASE = 'https://climbing.ge/public/images/summit_ascents_img/';
+const GALLERY_BASE    = IMG_BASES.gallery;
+const SECTOR_IMG_BASE = IMG_BASES.sector;
+const LOCAL_IMG_BASE  = IMG_BASES.sectorLocal;
+const ASCENT_PHOTO_BASE = IMG_BASES.summitAscent;
+const ROUTE_DESC_IMG_BASE = IMG_BASES.mountRouteDescription;
+
+const HTML_IMG_SRC_RE = /<img[^>]+src=["']([^"']+)["']/gi;
+
+// Pulls out <img src="..."> URLs embedded in rich-text HTML fields (article
+// body, "how to get", massif description, etc.) so they get downloaded
+// alongside the header/gallery images that already have dedicated fields —
+// otherwise inline body images just never load once offline.
+function extractHtmlImageUrls(...htmlStrings) {
+  const urls = [];
+  for (const html of htmlStrings) {
+    if (!html || typeof html !== 'string') continue;
+    for (const match of html.matchAll(HTML_IMG_SRC_RE)) {
+      urls.push(match[1]);
+    }
+  }
+  return urls;
+}
 
 // Backstop against a request that never settles. Racing a plain setTimeout
 // against the request (as this used to do) only stops *our* code from
@@ -44,14 +62,14 @@ async function withTimeout(requestFn, ms, label) {
 
 function buildListEndpoints(locale) {
   return [
-    { key: OFFLINE_KEYS.outdoor,     url: `https://climbing.ge/api/get_article/get_locale_articles/outdoor/${locale}`,     label: 'Outdoor Spots' },
-    { key: OFFLINE_KEYS.ice,         url: `https://climbing.ge/api/get_article/get_locale_articles/ice/${locale}`,         label: 'Ice Climbing' },
-    { key: OFFLINE_KEYS.indoor,      url: `https://climbing.ge/api/get_article/get_locale_articles/indoor/${locale}`,      label: 'Indoor Gyms' },
-    { key: OFFLINE_KEYS.mount_route, url: `https://climbing.ge/api/get_article/get_locale_articles/mount_route/${locale}`, label: 'Mountain Routes' },
-    { key: OFFLINE_KEYS.other,       url: `https://climbing.ge/api/get_article/get_locale_articles/other/${locale}`,       label: 'Other Activities' },
-    { key: OFFLINE_KEYS.events,      url: `https://climbing.ge/api/get_event/get_event_on_site_list/${locale}`,            label: 'Events' },
-    { key: OFFLINE_KEYS.site_data,   url: `https://climbing.ge/api/get_site_data/get_site_locale_data_for_site/${locale}`, label: 'Site Data' },
-    { key: OFFLINE_KEYS.summits,     url: `https://climbing.ge/api/summit/list`,                                           label: 'Summits' },
+    { key: OFFLINE_KEYS.outdoor,     url: `${API_BASE_URL}/get_article/get_locale_articles/outdoor/${locale}`,     label: 'Outdoor Spots' },
+    { key: OFFLINE_KEYS.ice,         url: `${API_BASE_URL}/get_article/get_locale_articles/ice/${locale}`,         label: 'Ice Climbing' },
+    { key: OFFLINE_KEYS.indoor,      url: `${API_BASE_URL}/get_article/get_locale_articles/indoor/${locale}`,      label: 'Indoor Gyms' },
+    { key: OFFLINE_KEYS.mount_route, url: `${API_BASE_URL}/get_article/get_locale_articles/mount_route/${locale}`, label: 'Mountain Routes' },
+    { key: OFFLINE_KEYS.other,       url: `${API_BASE_URL}/get_article/get_locale_articles/other/${locale}`,       label: 'Other Activities' },
+    { key: OFFLINE_KEYS.events,      url: `${API_BASE_URL}/get_event/get_event_on_site_list/${locale}`,            label: 'Events' },
+    { key: OFFLINE_KEYS.site_data,   url: `${API_BASE_URL}/get_site_data/get_site_locale_data_for_site/${locale}`, label: 'Site Data' },
+    { key: OFFLINE_KEYS.summits,     url: `${API_BASE_URL}/summit/list`,                                           label: 'Summits' },
   ];
 }
 
@@ -60,8 +78,8 @@ function buildArticleConfigs(locale) {
     {
       listKey:    OFFLINE_KEYS.outdoor,
       type:       'outdoor',
-      imgBase:    'https://climbing.ge/public/images/outdoor_img/',
-      detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/outdoor/${locale}/${key}`,
+      imgBase:    IMG_BASES.outdoor,
+      detailUrl:  (key) => `${API_BASE_URL}/get_article/get_locale_article_on_page/outdoor/${locale}/${key}`,
       getKey:     (item) => item.global_data?.url_title,
       getId:      (item) => item.global_data?.id,
       getImage:   (item) => item.global_data?.image,
@@ -70,8 +88,8 @@ function buildArticleConfigs(locale) {
     {
       listKey:    OFFLINE_KEYS.ice,
       type:       'ice',
-      imgBase:    'https://climbing.ge/public/images/ice_img/',
-      detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/ice/${locale}/${key}`,
+      imgBase:    IMG_BASES.ice,
+      detailUrl:  (key) => `${API_BASE_URL}/get_article/get_locale_article_on_page/ice/${locale}/${key}`,
       getKey:     (item) => item.global_data?.url_title,
       getId:      (item) => item.global_data?.id,
       getImage:   (item) => item.global_data?.image,
@@ -80,8 +98,8 @@ function buildArticleConfigs(locale) {
     {
       listKey:    OFFLINE_KEYS.indoor,
       type:       'indoor',
-      imgBase:    'https://climbing.ge/public/images/indoor_img/',
-      detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/indoor/${locale}/${key}`,
+      imgBase:    IMG_BASES.indoor,
+      detailUrl:  (key) => `${API_BASE_URL}/get_article/get_locale_article_on_page/indoor/${locale}/${key}`,
       getKey:     (item) => item.global_data?.url_title,
       getId:      (item) => null,
       getImage:   (item) => item.global_data?.image,
@@ -90,18 +108,19 @@ function buildArticleConfigs(locale) {
     {
       listKey:    OFFLINE_KEYS.mount_route,
       type:       'mount_route',
-      imgBase:    'https://climbing.ge/public/images/mount_route_img/',
-      detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/mount_route/${locale}/${key}`,
+      imgBase:    IMG_BASES.mountRoute,
+      detailUrl:  (key) => `${API_BASE_URL}/get_article/get_locale_article_on_page/mount_route/${locale}/${key}`,
       getKey:     (item) => item.global_data?.url_title,
       getId:      (item) => item.global_data?.id,
       getImage:   (item) => item.global_data?.image,
       hasSectors: true,
+      hasMassive: true,
     },
     {
       listKey:    OFFLINE_KEYS.other,
       type:       'other',
-      imgBase:    'https://climbing.ge/public/images/other_img/',
-      detailUrl:  (key) => `https://climbing.ge/api/get_article/get_locale_article_on_page/other/${locale}/${key}`,
+      imgBase:    IMG_BASES.other,
+      detailUrl:  (key) => `${API_BASE_URL}/get_article/get_locale_article_on_page/other/${locale}/${key}`,
       getKey:     (item) => item.global_data?.url_title,
       getId:      (item) => null,
       getImage:   (item) => item.global_data?.image,
@@ -110,8 +129,8 @@ function buildArticleConfigs(locale) {
     {
       listKey:    OFFLINE_KEYS.events,
       type:       'event',
-      imgBase:    'https://climbing.ge/public/images/event_img/',
-      detailUrl:  (key) => `https://climbing.ge/api/get_event/get_event_on_site_page/${locale}/${key}`,
+      imgBase:    IMG_BASES.event,
+      detailUrl:  (key) => `${API_BASE_URL}/get_event/get_event_on_site_page/${locale}/${key}`,
       getKey:     (item) => item.global_event?.id?.toString(),
       getId:      (item) => null,
       getImage:   (item) => item.global_event?.image,
@@ -155,6 +174,47 @@ export async function saveSectorsData(articleId, data) {
 
 export async function loadSectorsData(articleId) {
   return loadOfflineData(`@sectors_${articleId}`);
+}
+
+// --- Mountain route description-photo list cache ---
+
+export async function saveRouteImagesData(articleId, data) {
+  await saveOfflineData(`@route_images_${articleId}`, data);
+}
+
+export async function loadRouteImagesData(articleId) {
+  return loadOfflineData(`@route_images_${articleId}`);
+}
+
+// --- Mountain massif detail cache ---
+
+export async function saveMassiveData(locale, articleId, data) {
+  await saveOfflineData(`@massive_${locale}_${articleId}`, data);
+}
+
+export async function loadMassiveData(locale, articleId) {
+  return loadOfflineData(`@massive_${locale}_${articleId}`);
+}
+
+// --- Region/massif-grouped list cache (region & massif filter UI) ---
+// Separate from OFFLINE_KEYS.outdoor/mount_route (the flat lists used
+// elsewhere) since this is the grouped shape the filter UI needs — same
+// articles, reorganized by region/mountain massif, per locale.
+
+export async function saveOutdoorByRegionData(locale, data) {
+  await saveOfflineData(`@outdoor_by_region_${locale}`, data);
+}
+
+export async function loadOutdoorByRegionData(locale) {
+  return loadOfflineData(`@outdoor_by_region_${locale}`);
+}
+
+export async function saveMountRoutesByMassifData(locale, data) {
+  await saveOfflineData(`@mount_routes_by_massif_${locale}`, data);
+}
+
+export async function loadMountRoutesByMassifData(locale) {
+  return loadOfflineData(`@mount_routes_by_massif_${locale}`);
 }
 
 // --- Summit detail/routes/ascents cache ---
@@ -226,6 +286,10 @@ export async function downloadAllData(locale = 'en', onProgress) {
   let articleFailed = 0;
   let sectorsCompleted = 0;
   let sectorsFailed = 0;
+  let massiveCompleted = 0;
+  let massiveFailed = 0;
+  let routeImagesCompleted = 0;
+  let routeImagesFailed = 0;
   let summitsCompleted = 0;
   let summitsFailed = 0;
   let imagesCompleted = 0;
@@ -237,6 +301,8 @@ export async function downloadAllData(locale = 'en', onProgress) {
   let summitRoutesFailed = 0;
   let summitAscentsCompleted = 0;
   let summitAscentsFailed = 0;
+  let groupedListsCompleted = 0;
+  let groupedListsFailed = 0;
 
   const LIST_ENDPOINTS = buildListEndpoints(locale);
   const ARTICLE_CONFIGS = buildArticleConfigs(locale);
@@ -264,6 +330,29 @@ export async function downloadAllData(locale = 'en', onProgress) {
       });
     }
     if (onProgress) onProgress({ currentLabel: ep.label, phase: 'lists' });
+  }
+
+  // Phase 1.5: Region/massif-grouped lists — powers the filter UI on the
+  // outdoor and mountain-route list screens while offline.
+  const GROUPED_ENDPOINTS = [
+    { label: 'Outdoor by Region', url: `${API_BASE_URL}/get_outdoor/get_spots_by_regions/${locale}`, save: saveOutdoorByRegionData },
+    { label: 'Mount Routes by Massif', url: `${API_BASE_URL}/get_mount_route/get_mount_routes_by_maunt/${locale}`, save: saveMountRoutesByMassifData },
+  ];
+  for (const ep of GROUPED_ENDPOINTS) {
+    if (onProgress) onProgress({ currentLabel: ep.label, phase: 'grouped_lists' });
+    try {
+      const { data } = await withTimeout(
+        (signal) => api.get(corsUrl(ep.url), { signal }), 20000, ep.label,
+      );
+      await ep.save(locale, data);
+      groupedListsCompleted++;
+    } catch (err) {
+      groupedListsFailed++;
+      debugErrors.push({
+        phase: 'grouped-list', label: ep.label, url: ep.url,
+        message: err?.message, status: err?.response?.status, data: err?.response?.data,
+      });
+    }
   }
 
   // Collect card thumbnail images from all lists
@@ -300,8 +389,36 @@ export async function downloadAllData(locale = 'en', onProgress) {
         for (const g of (data.gallery_images || [])) {
           if (g.image) allImageUrls.push(imgUri(GALLERY_BASE, g.image));
         }
+
+        const ld = data.locale_data || {};
+        const gi = data.general_info || {};
+        allImageUrls.push(...extractHtmlImageUrls(
+          ld.text, ld.how_get, ld.best_time, ld.what_need, ld.info, ld.route, ld.routes,
+          gi.best_time?.text, gi.what_need_info?.text, gi.info_block?.text, gi.routes_info?.text,
+        ));
       } catch (_) {
         articleFailed++;
+      }
+
+      if (config.type === 'mount_route' && articleId) {
+        if (onProgress) onProgress({ currentLabel: `Route photos: ${urlKey}`, phase: 'route_images' });
+        try {
+          const { data } = await withTimeout(
+            (signal) => api.get(corsUrl(
+              `${API_BASE_URL}/get_mount_route/get_mount_routes_images/${articleId}`
+            ), { signal }),
+            20000, `route_images:${urlKey}`,
+          );
+          if (Array.isArray(data)) {
+            await saveRouteImagesData(articleId, data);
+            routeImagesCompleted++;
+            for (const img of data) {
+              if (img.image) allImageUrls.push(imgUri(ROUTE_DESC_IMG_BASE, img.image));
+            }
+          }
+        } catch (_) {
+          routeImagesFailed++;
+        }
       }
 
       if (config.hasSectors && articleId) {
@@ -309,7 +426,7 @@ export async function downloadAllData(locale = 'en', onProgress) {
         try {
           const { data } = await withTimeout(
             (signal) => api.get(corsUrl(
-              `https://climbing.ge/api/get_sector/get_sector_and_routes/${articleId}`
+              `${API_BASE_URL}/get_sector/get_sector_and_routes/${articleId}`
             ), { signal }),
             20000, `sectors:${urlKey}`,
           );
@@ -318,6 +435,27 @@ export async function downloadAllData(locale = 'en', onProgress) {
           allImageUrls.push(...collectSectorImageUrls(data));
         } catch (_) {
           sectorsFailed++;
+        }
+      }
+
+      if (config.hasMassive && articleId) {
+        if (onProgress) onProgress({ currentLabel: `Massif: ${urlKey}`, phase: 'massive' });
+        try {
+          const { data } = await withTimeout(
+            (signal) => api.get(corsUrl(
+              `${API_BASE_URL}/get_mount/on_page/${locale}/${articleId}`
+            ), { signal }),
+            20000, `massive:${urlKey}`,
+          );
+          await saveMassiveData(locale, articleId, data);
+          massiveCompleted++;
+
+          const mld = data.locale_data || {};
+          allImageUrls.push(...extractHtmlImageUrls(
+            mld.description, mld.text, mld.best_time, mld.how_get,
+          ));
+        } catch (_) {
+          massiveFailed++;
         }
       }
     }
@@ -336,7 +474,7 @@ export async function downloadAllData(locale = 'en', onProgress) {
       if (onProgress) onProgress({ currentLabel: `Summit: ${summit.url_title}`, phase: 'summits' });
       try {
         const { data } = await withTimeout(
-          (signal) => api.get(corsUrl(`https://climbing.ge/api/summit/show/${summit.url_title}`), { signal }),
+          (signal) => api.get(corsUrl(`${API_BASE_URL}/summit/show/${summit.url_title}`), { signal }),
           20000, summit.url_title,
         );
         await saveSummitData(summit.url_title, data);
@@ -345,7 +483,7 @@ export async function downloadAllData(locale = 'en', onProgress) {
         summitsFailed++;
         debugErrors.push({
           phase: 'summit-detail', label: summit.url_title,
-          url: `https://climbing.ge/api/summit/show/${summit.url_title}`,
+          url: `${API_BASE_URL}/summit/show/${summit.url_title}`,
           message: err?.message, status: err?.response?.status, data: err?.response?.data,
         });
       }
@@ -353,7 +491,7 @@ export async function downloadAllData(locale = 'en', onProgress) {
       if (summit.id != null) {
         try {
           const { data } = await withTimeout(
-            (signal) => api.get(corsUrl(`https://climbing.ge/api/summit/routes/${summit.id}`), { signal }),
+            (signal) => api.get(corsUrl(`${API_BASE_URL}/summit/routes/${summit.id}`), { signal }),
             20000, `routes:${summit.url_title}`,
           );
           await saveSummitRoutesData(summit.id, data);
@@ -362,7 +500,7 @@ export async function downloadAllData(locale = 'en', onProgress) {
           summitRoutesFailed++;
           debugErrors.push({
             phase: 'summit-routes', label: summit.url_title,
-            url: `https://climbing.ge/api/summit/routes/${summit.id}`,
+            url: `${API_BASE_URL}/summit/routes/${summit.id}`,
             message: err?.message, status: err?.response?.status, data: err?.response?.data,
           });
         }
@@ -370,7 +508,7 @@ export async function downloadAllData(locale = 'en', onProgress) {
 
       try {
         const { data } = await withTimeout(
-          (signal) => api.get(corsUrl(`https://climbing.ge/api/summit/ascents/${summit.url_title}`), { signal }),
+          (signal) => api.get(corsUrl(`${API_BASE_URL}/summit/ascents/${summit.url_title}`), { signal }),
           20000, `ascents:${summit.url_title}`,
         );
         await saveSummitAscentsData(summit.url_title, data);
@@ -383,7 +521,7 @@ export async function downloadAllData(locale = 'en', onProgress) {
         summitAscentsFailed++;
         debugErrors.push({
           phase: 'summit-ascents', label: summit.url_title,
-          url: `https://climbing.ge/api/summit/ascents/${summit.url_title}`,
+          url: `${API_BASE_URL}/summit/ascents/${summit.url_title}`,
           message: err?.message, status: err?.response?.status, data: err?.response?.data,
         });
       }
@@ -403,7 +541,8 @@ export async function downloadAllData(locale = 'en', onProgress) {
   }
 
   const totalCompleted = listCompleted + articleCompleted + sectorsCompleted
-    + summitsCompleted + summitRoutesCompleted + summitAscentsCompleted;
+    + massiveCompleted + routeImagesCompleted + groupedListsCompleted + summitsCompleted
+    + summitRoutesCompleted + summitAscentsCompleted;
   if (totalCompleted > 0) {
     await saveOfflineData(OFFLINE_KEYS.download_time, new Date().toISOString());
   }
@@ -412,13 +551,16 @@ export async function downloadAllData(locale = 'en', onProgress) {
     listCompleted, listFailed,
     articleCompleted, articleFailed,
     sectorsCompleted, sectorsFailed,
+    massiveCompleted, massiveFailed,
+    routeImagesCompleted, routeImagesFailed,
+    groupedListsCompleted, groupedListsFailed,
     summitsCompleted, summitsFailed,
     summitRoutesCompleted, summitRoutesFailed,
     summitAscentsCompleted, summitAscentsFailed,
     imagesCompleted,
     completed: totalCompleted,
-    failed: listFailed + articleFailed + sectorsFailed
-      + summitsFailed + summitRoutesFailed + summitAscentsFailed,
+    failed: listFailed + articleFailed + sectorsFailed + massiveFailed + routeImagesFailed
+      + groupedListsFailed + summitsFailed + summitRoutesFailed + summitAscentsFailed,
     debugErrors, // [TEMP DEBUG] remove once the summit download failure is diagnosed
   };
 }

@@ -8,11 +8,11 @@ import SectorInfoBar from "./items/sector_info_bar";
 import ImageViewerModal from "../../ImageViewerModal";
 import CachedImage from "../../CachedImage";
 import { gStyle } from "../../../assets/styles/styles";
-import api, { corsUrl, imgUri } from "../../../utils/api";
+import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from "../../../utils/api";
 import { loadSectorsData, saveSectorsData } from "../../../utils/offlineStorage";
 
-const SECTOR_IMG_BASE = "https://climbing.ge/public/images/sector_img/";
-const LOCAL_IMG_BASE  = "https://climbing.ge/public/images/sector_local_img/";
+const SECTOR_IMG_BASE = IMG_BASES.sector;
+const LOCAL_IMG_BASE  = IMG_BASES.sectorLocal;
 
 function SectorItem({ item, onImagePress }) {
   const sector = item.sector;
@@ -55,7 +55,7 @@ export default function SpotSectors({ article_id, onImagePress }) {
 
   useEffect(() => {
     if (!article_id) { setLoading(false); return; }
-    api.get(corsUrl("https://climbing.ge/api/get_sector/get_sector_and_routes/" + article_id))
+    api.get(corsUrl(`${API_BASE_URL}/get_sector/get_sector_and_routes/${article_id}`))
       .then(({ data }) => {
         setSectors(data);
         saveSectorsData(article_id, data);

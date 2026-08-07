@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../utils/AuthContext';
+import { COLORS } from '../../assets/styles/styles';
 
 function MenuItem({ icon, label, onPress, danger }) {
   return (
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: '#f4f6f8' },
   container: { paddingBottom: 32 },
   header: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     alignItems: 'center',
     paddingTop: 36,
     paddingBottom: 32,

@@ -11,13 +11,13 @@ import CachedImage from "../../components/CachedImage";
 import Preloader from "../../components/Preloader";
 import { gStyle } from "../../assets/styles/styles";
 
-import api, { corsUrl, imgUri } from "../../utils/api";
+import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from "../../utils/api";
 import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
 import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
 
-const GALLERY_BASE = "https://climbing.ge/public/images/article_gallery_img/";
-const IMG_BASE = "https://climbing.ge/public/images/outdoor_img/";
+const GALLERY_BASE = IMG_BASES.gallery;
+const IMG_BASE = IMG_BASES.outdoor;
 
 export default function App({ route }) {
   const { t } = useTranslation();
@@ -31,7 +31,7 @@ export default function App({ route }) {
 
   useEffect(() => {
     setLoading(true);
-    api.get(corsUrl(`https://climbing.ge/api/get_article/get_locale_article_on_page/outdoor/${locale}/` + route.params))
+    api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/outdoor/${locale}/` + route.params))
       .then(({ data }) => {
         setGlobalOutdoorData(data);
         setLocaleOutdoorData(data.locale_data || {});

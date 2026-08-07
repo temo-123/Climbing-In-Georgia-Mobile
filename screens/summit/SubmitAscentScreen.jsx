@@ -9,13 +9,14 @@ import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import * as Network from 'expo-network';
 import { useAuth } from '../../utils/AuthContext';
-import api, { corsUrl } from '../../utils/api';
+import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { queueAscent, describeError } from '../../utils/ascentQueue';
 import { withRecaptchaRetry, isRecaptchaFailure } from '../../utils/recaptcha';
 import { loadSummitData, loadSummitRoutesData } from '../../utils/offlineStorage';
 import { compressImageIfNeeded } from '../../utils/imageCompress';
+import { COLORS } from '../../assets/styles/styles';
 
-const API = 'https://climbing.ge/api/summit';
+const API = `${API_BASE_URL}/summit`;
 // Matches the backend's own Haversine check (SummitPublicController::submit_ascent) exactly,
 // so the client-side "verified" hint never disagrees with what actually gets saved.
 const GPS_VERIFY_THRESHOLD_METERS = 20;
@@ -391,7 +392,7 @@ export default function SubmitAscentScreen({ route, navigation }) {
           activeOpacity={0.8}
         >
           {gpsLoading
-            ? <ActivityIndicator color="#279fbb" />
+            ? <ActivityIndicator color={COLORS.primary} />
             : <Text style={[
                 styles.gpsBtnText,
                 !!coords && styles.gpsBtnTextActive,
@@ -418,7 +419,7 @@ export default function SubmitAscentScreen({ route, navigation }) {
         <Text style={styles.sectionTitle}>{t('summit.photo')}</Text>
         {compressingPhoto ? (
           <View style={styles.photoCompressingBox}>
-            <ActivityIndicator color="#279fbb" />
+            <ActivityIndicator color={COLORS.primary} />
             <Text style={styles.photoCompressingText}>{t('summit.compressing_photo')}</Text>
           </View>
         ) : imageUri ? (
@@ -462,10 +463,10 @@ const styles = StyleSheet.create({
   offlineBannerText: { color: '#fff', fontSize: 13, fontWeight: '600', textAlign: 'center' },
   successContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: '#fff' },
   successIcon: { fontSize: 72, marginBottom: 20 },
-  successTitle: { fontSize: 22, fontWeight: '800', color: '#279fbb', textAlign: 'center', marginBottom: 8 },
+  successTitle: { fontSize: 22, fontWeight: '800', color: COLORS.primary, textAlign: 'center', marginBottom: 8 },
   successSub: { fontSize: 15, color: '#555', textAlign: 'center', marginBottom: 36 },
   queuedDetailText: { fontSize: 12, color: '#999', textAlign: 'center', marginTop: -24, marginBottom: 24, fontFamily: 'monospace' },
-  doneBtn: { backgroundColor: '#279fbb', borderRadius: 12, paddingVertical: 14, paddingHorizontal: 40 },
+  doneBtn: { backgroundColor: COLORS.primary, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 40 },
   doneBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   summitBanner: {
     backgroundColor: '#e8f6fa',
@@ -477,14 +478,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   summitBannerIcon: { fontSize: 28 },
-  summitBannerTitle: { fontSize: 17, fontWeight: '700', color: '#279fbb', flex: 1 },
-  sectionTitle: { fontSize: 14, fontWeight: '700', color: '#279fbb', marginBottom: 10, marginTop: 4 },
+  summitBannerTitle: { fontSize: 17, fontWeight: '700', color: COLORS.primary, flex: 1 },
+  sectionTitle: { fontSize: 14, fontWeight: '700', color: COLORS.primary, marginBottom: 10, marginTop: 4 },
   label: { fontSize: 13, color: '#666', marginBottom: 8, fontWeight: '600' },
   loggedInInfoBox: { backgroundColor: '#e8f6fa', borderRadius: 10, padding: 12, marginBottom: 12 },
   loggedInInfoText: { fontSize: 13, color: '#1a6f85' },
   input: {
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -496,17 +497,17 @@ const styles = StyleSheet.create({
   routeList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   routeOption: {
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 7,
   },
-  routeOptionActive: { backgroundColor: '#279fbb' },
-  routeOptionText: { fontSize: 13, color: '#279fbb', fontWeight: '600' },
+  routeOptionActive: { backgroundColor: COLORS.primary },
+  routeOptionText: { fontSize: 13, color: COLORS.primary, fontWeight: '600' },
   routeOptionTextActive: { color: '#fff' },
   gpsBtn: {
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 10,
     paddingVertical: 13,
     alignItems: 'center',
@@ -514,36 +515,36 @@ const styles = StyleSheet.create({
   },
   gpsBtnActive: { backgroundColor: '#e8f6fa', borderColor: '#1a8aa8' },
   gpsBtnWarn: { backgroundColor: '#fdf3e3', borderColor: '#f39c12' },
-  gpsBtnText: { fontSize: 14, color: '#279fbb', fontWeight: '600' },
+  gpsBtnText: { fontSize: 14, color: COLORS.primary, fontWeight: '600' },
   gpsBtnTextActive: { color: '#1a8aa8' },
   gpsBtnTextWarn: { color: '#b9770e' },
   gpsStatus: { fontSize: 12, fontWeight: '600', marginTop: -14, marginBottom: 6, textAlign: 'center' },
   gpsStatusOk: { color: '#1e8449' },
   gpsStatusWarn: { color: '#b9770e' },
   gpsRetryBtn: { alignSelf: 'center', paddingVertical: 4, paddingHorizontal: 10, marginBottom: 20 },
-  gpsRetryText: { fontSize: 13, color: '#279fbb', fontWeight: '700' },
+  gpsRetryText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
   photoCompressingBox: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 10,
     paddingVertical: 16,
     marginBottom: 20,
   },
-  photoCompressingText: { fontSize: 13, color: '#279fbb', fontWeight: '600' },
+  photoCompressingText: { fontSize: 13, color: COLORS.primary, fontWeight: '600' },
   photoBtnRow: { flexDirection: 'row', gap: 10, marginBottom: 20 },
   photoBtn: {
     flex: 1,
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
   },
-  photoBtnText: { fontSize: 13, color: '#279fbb', fontWeight: '600' },
+  photoBtnText: { fontSize: 13, color: COLORS.primary, fontWeight: '600' },
   photoPreviewWrap: { marginBottom: 20 },
   // resizeMode="contain" can letterbox (image aspect ratio rarely matches the
   // box exactly) — a neutral background makes that look intentional.
@@ -564,9 +565,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 12,
   },
-  dateDisplayText: { fontSize: 15, color: '#279fbb', fontWeight: '700' },
+  dateDisplayText: { fontSize: 15, color: COLORS.primary, fontWeight: '700' },
   submitBtn: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',

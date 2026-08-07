@@ -1,0 +1,63 @@
+name: EAS Build & Submit (Android)
+
+# Manual only — click "Run workflow" in the Actions tab when you want a
+# release built. Builds both artifacts every run: an .aab for the Play
+# Store (production profile) and a standalone .apk (production-apk
+# profile, same version, for direct/internal distribution outside the
+# store). See CLAUDE.md's "Build Android (EAS cloud build)" section for
+# the equivalent local commands.
+on:
+  workflow_dispatch:
+    inputs:
+      submit_to_play_store:
+        description: 'Submit the .aab to Play Store (internal testing track) after it builds'
+        type: boolean
+        default: true
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eas-build-android
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup EAS CLI
+        uses: expo/expo-github-action@v9
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+          packager: npm
+
+      - name: Write Google Play service account key
+        if: inputs.submit_to_play_store
+        run: echo '${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_KEY }}' > google-play-service-account.json
+
+      - name: Build .aab for Play Store
+        run: >
+          eas build --platform android --profile production --non-interactive --wait
+          ${{ inputs.submit_to_play_store && '--auto-submit-with-profile production' || '' }}
+
+      - name: Build .apk (direct-install build)
+        run: eas build --platform android --profile production-apk --non-interactive --wait
+
+      - name: Remove service account key
+        if: always()
+        run: rm -f google-play-service-account.json

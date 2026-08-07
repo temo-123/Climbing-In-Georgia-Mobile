@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import RenderHtml from 'react-native-render-html';
+import { COLORS } from '../assets/styles/styles';
 
 const descriptionTagsStyles = {
   body: { fontSize: 13, color: '#555', textAlign: 'center', lineHeight: 20 },
@@ -41,7 +42,7 @@ const styles = StyleSheet.create({
   accent: {
     flex: 1,
     height: 2,
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 2,
     opacity: 0.5,
   },

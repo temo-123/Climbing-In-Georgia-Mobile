@@ -4,9 +4,14 @@ import {
   ActivityIndicator, Dimensions,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import api from '../../utils/api';
+import api, { API_BASE_URL } from '../../utils/api';
+import { saveOfflineData, loadOfflineData } from '../../utils/offlineStorage';
+import OfflineBanner from '../../components/OfflineBanner';
+import OfflineError from '../../components/OfflineError';
+import { COLORS } from '../../assets/styles/styles';
 
-const API = 'https://climbing.ge/api';
+const API = API_BASE_URL;
+const CACHE_KEY = '@my_favorites_cache';
 const TABS = ['areas', 'events'];
 
 function AreaCard({ item }) {
@@ -34,18 +39,30 @@ export default function UserFavoritesScreen({ route }) {
   const [areas, setAreas] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [isOffline, setIsOffline] = useState(false);
+  const [noCache, setNoCache] = useState(false);
 
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      api.get(`${API}/get_faworite/get_faworite_outdoor_region`).catch(() => ({ data: [] })),
-      api.get(`${API}/get_faworite/get_interested_events`).catch(() => ({ data: [] })),
+      api.get(`${API}/get_faworite/get_faworite_outdoor_region`),
+      api.get(`${API}/get_faworite/get_interested_events`),
     ]).then(([a, e]) => {
-      setAreas(Array.isArray(a.data) ? a.data : a.data?.data ?? []);
-      setEvents(Array.isArray(e.data) ? e.data : e.data?.data ?? []);
-    }).catch(() => setError(t('auth.generic_error')))
-      .finally(() => setLoading(false));
+      const areasData = Array.isArray(a.data) ? a.data : a.data?.data ?? [];
+      const eventsData = Array.isArray(e.data) ? e.data : e.data?.data ?? [];
+      setAreas(areasData);
+      setEvents(eventsData);
+      saveOfflineData(CACHE_KEY, { areas: areasData, events: eventsData });
+    }).catch(async () => {
+      const cached = await loadOfflineData(CACHE_KEY);
+      if (cached && (cached.areas?.length > 0 || cached.events?.length > 0)) {
+        setAreas(cached.areas ?? []);
+        setEvents(cached.events ?? []);
+        setIsOffline(true);
+      } else {
+        setNoCache(true);
+      }
+    }).finally(() => setLoading(false));
   }, []);
 
   const tabLabels = {
@@ -57,8 +74,11 @@ export default function UserFavoritesScreen({ route }) {
   const CardComponent = { areas: AreaCard, events: EventCard }[activeTab];
   const emptyKey = { areas: 'user.no_favorite_areas', events: 'user.no_interested_events' }[activeTab];
 
+  if (noCache) return <OfflineError />;
+
   return (
     <View style={styles.container}>
+      {isOffline ? <OfflineBanner /> : null}
       <View style={styles.tabs}>
         {TABS.map(tab => (
           <TouchableOpacity
@@ -75,9 +95,7 @@ export default function UserFavoritesScreen({ route }) {
       </View>
 
       {loading ? (
-        <View style={styles.center}><ActivityIndicator size="large" color="#279fbb" /></View>
-      ) : error ? (
-        <View style={styles.center}><Text style={styles.errorText}>{error}</Text></View>
+        <View style={styles.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>
       ) : activeData.length === 0 ? (
         <View style={styles.center}><Text style={styles.emptyText}>{t(emptyKey)}</Text></View>
       ) : (
@@ -99,9 +117,9 @@ const styles = StyleSheet.create({
     flex: 1, paddingVertical: 13, alignItems: 'center',
     borderBottomWidth: 2, borderBottomColor: 'transparent',
   },
-  tabActive: { borderBottomColor: '#279fbb' },
+  tabActive: { borderBottomColor: COLORS.primary },
   tabText: { fontSize: 11, color: '#888', fontWeight: '600', textAlign: 'center' },
-  tabTextActive: { color: '#279fbb' },
+  tabTextActive: { color: COLORS.primary },
   list: { padding: 16 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   card: {
@@ -110,7 +128,6 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 15, fontWeight: '600', color: '#222', marginBottom: 4 },
   cardSub: { fontSize: 12, color: '#888' },
-  price: { fontSize: 15, fontWeight: '700', color: '#279fbb', marginTop: 4 },
+  price: { fontSize: 15, fontWeight: '700', color: COLORS.primary, marginTop: 4 },
   emptyText: { color: '#888', fontSize: 15 },
-  errorText: { color: '#e74c3c', fontSize: 14 },
 });

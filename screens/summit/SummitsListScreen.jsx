@@ -4,14 +4,15 @@ import {
   ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import api, { corsUrl } from '../../utils/api';
+import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { useLocale } from '../../utils/LocaleContext';
 import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
 import PendingAscentsBanner from '../../components/PendingAscentsBanner';
+import { COLORS } from '../../assets/styles/styles';
 
-const API = 'https://climbing.ge/api/summit';
+const API = `${API_BASE_URL}/summit`;
 
 function SummitCard({ item, navigation, t, locale }) {
   // The API doesn't send a locale-specific response — it sends both `title`
@@ -96,7 +97,7 @@ export default function SummitsListScreen({ navigation }) {
 
   useEffect(() => { load(); }, []);
 
-  if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#279fbb" /></View>;
+  if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>;
   if (noCache) return <OfflineError />;
 
   return (
@@ -125,7 +126,7 @@ export default function SummitsListScreen({ navigation }) {
         keyExtractor={item => String(item.id)}
         renderItem={({ item }) => <SummitCard item={item} navigation={navigation} t={t} locale={locale} />}
         contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(true)} colors={['#279fbb']} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(true)} colors={[COLORS.primary]} />}
         ListEmptyComponent={<View style={styles.center}><Text style={styles.emptyText}>{t('summit.no_summits')}</Text></View>}
       />
     </View>
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   offlineHintText: { fontSize: 12, color: '#1a6f85', flexShrink: 1 },
-  offlineHintLink: { fontSize: 12, color: '#279fbb', fontWeight: '700', textDecorationLine: 'underline' },
+  offlineHintLink: { fontSize: 12, color: COLORS.primary, fontWeight: '700', textDecorationLine: 'underline' },
   // Extra bottom room so the last card never ends up under the floating
   // "Support Us" button (rendered globally in App.js, bottom-right).
   list: { padding: 16, paddingTop: 8, paddingBottom: 120 },
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
   qrBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     margin: 16,
     marginBottom: 8,
     borderRadius: 12,
@@ -190,9 +191,9 @@ const styles = StyleSheet.create({
   cardInfo: { flex: 1 },
   title: { fontSize: 16, fontWeight: '700', color: '#1a1a1a', marginBottom: 2 },
   kaTitle: { fontSize: 13, color: '#555', marginBottom: 2 },
-  region: { fontSize: 12, color: '#279fbb', fontWeight: '600' },
+  region: { fontSize: 12, color: COLORS.primary, fontWeight: '600' },
   heightBadge: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -206,15 +207,15 @@ const styles = StyleSheet.create({
   detailBtn: {
     flex: 1,
     borderWidth: 1.5,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     borderRadius: 8,
     paddingVertical: 9,
     alignItems: 'center',
   },
-  detailBtnText: { color: '#279fbb', fontWeight: '600', fontSize: 13 },
+  detailBtnText: { color: COLORS.primary, fontWeight: '600', fontSize: 13 },
   ascentBtn: {
     flex: 1,
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 8,
     paddingVertical: 9,
     alignItems: 'center',

@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocale } from '../utils/LocaleContext';
 import { downloadAllData, getLastDownloadTime } from '../utils/offlineStorage';
 import PageFooter from '../components/PageFooter';
+import { COLORS } from '../assets/styles/styles';
 
 export default function OfflineDownloadScreen() {
   const { t } = useTranslation();
@@ -51,7 +52,7 @@ export default function OfflineDownloadScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.iconBox}>
-        <FontAwesomeIcon icon={faCloudArrowDown} size={58} color="#279fbb" />
+        <FontAwesomeIcon icon={faCloudArrowDown} size={58} color={COLORS.primary} />
       </View>
 
       <Text style={styles.title}>{t('offline_screen.title')}</Text>
@@ -61,7 +62,7 @@ export default function OfflineDownloadScreen() {
         <FontAwesomeIcon
           icon={lastDownload ? faDatabase : faWifi}
           size={16}
-          color={lastDownload ? '#279fbb' : '#999'}
+          color={lastDownload ? COLORS.primary : '#999'}
         />
         <Text style={[styles.infoText, !lastDownload && styles.infoTextMuted]}>
           {lastDownload
@@ -84,7 +85,7 @@ export default function OfflineDownloadScreen() {
 
       {isDownloading && (
         <View style={styles.progressBox}>
-          <ActivityIndicator color="#279fbb" style={styles.progressSpinner} />
+          <ActivityIndicator color={COLORS.primary} style={styles.progressSpinner} />
           <Text style={styles.progressLabel}>{currentLabel}</Text>
         </View>
       )}
@@ -178,10 +179,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     width: '100%',
   },
-  infoText: { fontSize: 14, color: '#279fbb', flex: 1 },
+  infoText: { fontSize: 14, color: COLORS.primary, flex: 1 },
   infoTextMuted: { color: '#999' },
   button: {
-    backgroundColor: '#279fbb',
+    backgroundColor: COLORS.primary,
     borderRadius: 14,
     paddingVertical: 16,
     width: '100%',

@@ -2,7 +2,8 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import CachedImage from '../CachedImage';
-import { imgUri } from '../../utils/api';
+import { imgUri, IMG_BASES } from '../../utils/api';
+import { COLORS } from '../../assets/styles/styles';
 
 function fmtTime(t) {
   // "08:00:00" → "08:00"
@@ -24,7 +25,7 @@ export default function IndoorCard({ cardData }) {
     >
       <View style={styles.imageView}>
         <CachedImage
-          uri={imgUri("https://climbing.ge/public/images/indoor_img/", gd.image)}
+          uri={imgUri(IMG_BASES.indoor, gd.image)}
           style={styles.image}
           contentFit="cover"
         />
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1.5,
     borderRadius: 10,
-    borderColor: '#279fbb',
+    borderColor: COLORS.primary,
     flexDirection: 'row',
   },
   imageView: {

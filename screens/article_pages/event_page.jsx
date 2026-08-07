@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, ScrollView } from "react-native";
 import { useLocale } from '../../utils/LocaleContext';
-import api, { corsUrl } from "../../utils/api";
+import api, { corsUrl, API_BASE_URL, IMG_BASES } from "../../utils/api";
 import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
 
 import ArticleBlock from "../../components/article/articl_block";
@@ -10,7 +10,7 @@ import Preloader from "../../components/Preloader";
 import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
 
-const IMG_BASE = "https://climbing.ge/public/images/event_img/";
+const IMG_BASE = IMG_BASES.event;
 
 export default function App({ route }) {
   const { locale } = useLocale();
@@ -24,7 +24,7 @@ export default function App({ route }) {
 
   useEffect(() => {
     setLoading(true);
-    api.get(corsUrl(`https://climbing.ge/api/get_event/get_event_on_site_page/${locale}/` + eventKey))
+    api.get(corsUrl(`${API_BASE_URL}/get_event/get_event_on_site_page/${locale}/` + eventKey))
       .then(({ data }) => {
         setGlobalEventData(data);
         setLocaleEventData(data.locale_data || {});
