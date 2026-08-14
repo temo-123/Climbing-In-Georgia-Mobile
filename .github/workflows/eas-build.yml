@@ -1,19 +1,17 @@
-name: EAS Build & Submit (Android)
+name: EAS Build (Android)
 
-# Manual only — click "Run workflow" in the Actions tab when you want a
-# release built. Builds both artifacts every run: an .aab for the Play
-# Store (production profile) and a standalone .apk (production-apk
+# Runs automatically on every push to master, and can also be run
+# manually from the Actions tab. Builds both artifacts every run: an
+# .aab (production profile) and a standalone .apk (production-apk
 # profile, same version, for direct/internal distribution outside the
-# store). See CLAUDE.md's "Build Android (EAS cloud build)" section for
-# the equivalent local commands.
+# store). Build only — nothing is submitted to the Play Store. See
+# CLAUDE.md's "Build Android (EAS cloud build)" section for the
+# equivalent local commands.
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
-    inputs:
-      submit_to_play_store:
-        description: 'Submit the .aab to Play Store (internal testing track) after it builds'
-        type: boolean
-        default: true
-        required: false
 
 permissions:
   contents: read
@@ -46,18 +44,8 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
           packager: npm
 
-      - name: Write Google Play service account key
-        if: inputs.submit_to_play_store
-        run: echo '${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_KEY }}' > google-play-service-account.json
-
-      - name: Build .aab for Play Store
-        run: >
-          eas build --platform android --profile production --non-interactive --wait
-          ${{ inputs.submit_to_play_store && '--auto-submit-with-profile production' || '' }}
+      - name: Build .aab
+        run: eas build --platform android --profile production --non-interactive --wait
 
       - name: Build .apk (direct-install build)
         run: eas build --platform android --profile production-apk --non-interactive --wait
-
-      - name: Remove service account key
-        if: always()
-        run: rm -f google-play-service-account.json
