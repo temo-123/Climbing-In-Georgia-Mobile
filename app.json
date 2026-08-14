@@ -20,7 +20,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "ge.climbing.app",
-      "buildNumber": "3",
+      "buildNumber": "10",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Used to view and attach climbing route photos.",
@@ -40,7 +40,7 @@
       },
       "package": "ge.climbing.app",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 8,
+      "versionCode": 10,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
