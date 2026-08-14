@@ -53,6 +53,7 @@
     "routes": "Routes",
     "about_us": "About us"
   },
+  
   "offline_screen": {
     "title": "Offline Mode",
     "subtitle": "Download all climbing data so you can browse the app without an internet connection.",
