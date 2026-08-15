@@ -93,12 +93,15 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
-  async function register(name, surname, email, password, passwordConfirmation) {
+  async function register(name, surname, email, country, city, phoneNumber, password, passwordConfirmation) {
     const res = await withRecaptchaRetry('register', (recaptcha_token) =>
       api.post(`${API_BASE}/register`, {
         name,
         surname,
         email,
+        country,
+        city,
+        phone_number: phoneNumber,
         password,
         password_confirmation: passwordConfirmation,
         recaptcha_token,

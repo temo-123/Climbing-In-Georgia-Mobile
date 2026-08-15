@@ -13,13 +13,16 @@ export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
   const [email, setEmail] = useState('');
+  const [country, setCountry] = useState('');
+  const [city, setCity] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   async function handleRegister() {
-    if (!name.trim() || !surname.trim() || !email.trim() || !password || !passwordConfirm) {
+    if (!name.trim() || !surname.trim() || !email.trim() || !country.trim() || !city.trim() || !phoneNumber.trim() || !password || !passwordConfirm) {
       setError(t('auth.fill_all_fields'));
       return;
     }
@@ -34,7 +37,7 @@ export default function RegisterScreen({ navigation }) {
     setError('');
     setLoading(true);
     try {
-      await register(name.trim(), surname.trim(), email.trim(), password, passwordConfirm);
+      await register(name.trim(), surname.trim(), email.trim(), country.trim(), city.trim(), phoneNumber.trim(), password, passwordConfirm);
       navigation.goBack();
     } catch (err) {
       if (!err.isAxiosError) {
@@ -88,6 +91,34 @@ export default function RegisterScreen({ navigation }) {
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder={t('auth.country')}
+          placeholderTextColor="#aaa"
+          value={country}
+          onChangeText={setCountry}
+          autoCapitalize="words"
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder={t('auth.city')}
+          placeholderTextColor="#aaa"
+          value={city}
+          onChangeText={setCity}
+          autoCapitalize="words"
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder={t('auth.phone_number')}
+          placeholderTextColor="#aaa"
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
+          keyboardType="phone-pad"
+          autoCapitalize="none"
         />
 
         <TextInput
