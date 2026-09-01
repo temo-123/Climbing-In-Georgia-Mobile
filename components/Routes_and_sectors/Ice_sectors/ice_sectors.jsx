@@ -15,11 +15,11 @@ export default function IceSectors({ article_id, onImagePress }) {
   const { t } = useTranslation();
   const [iceSectors, setIceSectors] = useState([]);
   const [isLoading, setLoading] = useState(true);
-  const [viewerUri, setViewerUri] = useState(null);
+  const [viewer, setViewer] = useState(null);
 
-  const handleImagePress = (uri) => {
-    if (onImagePress) onImagePress(uri);
-    else setViewerUri(uri);
+  const handleImagePress = (uris, idx) => {
+    if (onImagePress) onImagePress(uris, idx);
+    else setViewer({ uris, idx });
   };
 
   useEffect(() => {
@@ -53,22 +53,21 @@ export default function IceSectors({ article_id, onImagePress }) {
 
       {iceSectors.map((item, index) => {
         const sector = item.sector;
-        const images = item.sector_imgs || [];
         const routes = item.sport_routes || [];
+        const sectorImages = (item.sector_imgs || [])
+          .map((img, imgIdx) => ({ key: img.id || imgIdx, uri: imgUri(ICE_IMG_BASE, img.image) }))
+          .filter((img) => img.uri);
+        const sectorUris = sectorImages.map((img) => img.uri);
 
         return (
           <View key={sector?.id || index} style={styles.sectorBlock}>
             {sector?.name ? <Text style={gStyle.h3}>{sector.name}</Text> : null}
 
-            {images.map((img, imgIdx) => {
-              const uri = imgUri(ICE_IMG_BASE, img.image);
-              if (!uri) return null;
-              return (
-                <TouchableOpacity key={img.id || imgIdx} onPress={() => handleImagePress(uri)}>
-                  <CachedImage uri={uri} style={styles.sectorImage} contentFit="contain" />
-                </TouchableOpacity>
-              );
-            })}
+            {sectorImages.map((img, imgIdx) => (
+              <TouchableOpacity key={img.key} onPress={() => handleImagePress(sectorUris, imgIdx)}>
+                <CachedImage uri={img.uri} style={styles.sectorImage} contentFit="contain" />
+              </TouchableOpacity>
+            ))}
 
             <IceRoutesTable routes={routes} />
           </View>
@@ -77,9 +76,10 @@ export default function IceSectors({ article_id, onImagePress }) {
 
       {!onImagePress && (
         <ImageViewerModal
-          uri={viewerUri}
-          visible={viewerUri != null}
-          onClose={() => setViewerUri(null)}
+          uris={viewer?.uris}
+          initialIndex={viewer?.idx ?? 0}
+          visible={viewer != null}
+          onClose={() => setViewer(null)}
         />
       )}
     </View>

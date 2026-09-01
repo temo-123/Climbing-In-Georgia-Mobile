@@ -1,20 +1,34 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Modal, StyleSheet, TouchableOpacity, View, Text,
   FlatList, Dimensions,
 } from 'react-native';
 import Animated, {
-  useSharedValue, useAnimatedStyle, withSpring,
+  useSharedValue, useAnimatedStyle, withSpring, useAnimatedReaction,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import CachedImage from './CachedImage';
 
 const { width, height } = Dimensions.get('window');
 const IMG_HEIGHT = height * 0.85;
 
-function ZoomableImage({ uri }) {
+function ZoomableImage({ uri, onZoomChange }) {
   const scale = useSharedValue(1);
   const savedScale = useSharedValue(1);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const savedTranslateX = useSharedValue(0);
+  const savedTranslateY = useSharedValue(0);
+  const [panEnabled, setPanEnabled] = useState(false);
+
+  const clampTranslation = () => {
+    'worklet';
+    const maxX = Math.max(0, (width * scale.value - width) / 2);
+    const maxY = Math.max(0, (IMG_HEIGHT * scale.value - IMG_HEIGHT) / 2);
+    translateX.value = withSpring(Math.min(maxX, Math.max(-maxX, translateX.value)));
+    translateY.value = withSpring(Math.min(maxY, Math.max(-maxY, translateY.value)));
+  };
 
   const pinch = Gesture.Pinch()
     .onStart(() => { savedScale.value = scale.value; })
@@ -22,7 +36,27 @@ function ZoomableImage({ uri }) {
       scale.value = Math.max(1, Math.min(5, savedScale.value * e.scale));
     })
     .onEnd(() => {
-      if (scale.value < 1.15) scale.value = withSpring(1);
+      if (scale.value < 1.15) {
+        scale.value = withSpring(1);
+        translateX.value = withSpring(0);
+        translateY.value = withSpring(0);
+      } else {
+        clampTranslation();
+      }
+    });
+
+  const pan = Gesture.Pan()
+    .enabled(panEnabled)
+    .onStart(() => {
+      savedTranslateX.value = translateX.value;
+      savedTranslateY.value = translateY.value;
+    })
+    .onUpdate(e => {
+      translateX.value = savedTranslateX.value + e.translationX;
+      translateY.value = savedTranslateY.value + e.translationY;
+    })
+    .onEnd(() => {
+      clampTranslation();
     });
 
   const doubleTap = Gesture.Tap()
@@ -30,15 +64,31 @@ function ZoomableImage({ uri }) {
     .onEnd(() => {
       if (scale.value > 1) {
         scale.value = withSpring(1);
+        translateX.value = withSpring(0);
+        translateY.value = withSpring(0);
       } else {
         scale.value = withSpring(2.5);
       }
     });
 
-  const gesture = Gesture.Simultaneous(pinch, doubleTap);
+  useAnimatedReaction(
+    () => scale.value > 1.01,
+    (zoomed, prevZoomed) => {
+      if (zoomed !== prevZoomed) {
+        scheduleOnRN(setPanEnabled, zoomed);
+        if (onZoomChange) scheduleOnRN(onZoomChange, zoomed);
+      }
+    },
+  );
+
+  const gesture = Gesture.Simultaneous(pinch, pan, doubleTap);
 
   const animStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+      { scale: scale.value },
+    ],
   }));
 
   return (
@@ -55,11 +105,13 @@ function ZoomableImage({ uri }) {
 export default function ImageViewerModal({ uri, uris, initialIndex = 0, visible, onClose }) {
   const images = uris || (uri ? [uri] : []);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
   const listRef = useRef(null);
 
   useEffect(() => {
     if (!visible) return;
     setCurrentIndex(initialIndex);
+    setScrollEnabled(true);
     const timer = setTimeout(() => {
       if (listRef.current && images.length > 1) {
         listRef.current.scrollToIndex({ index: initialIndex, animated: false });
@@ -87,6 +139,7 @@ export default function ImageViewerModal({ uri, uris, initialIndex = 0, visible,
             data={images}
             horizontal
             pagingEnabled
+            scrollEnabled={scrollEnabled}
             showsHorizontalScrollIndicator={false}
             keyExtractor={(_, i) => i.toString()}
             initialScrollIndex={initialIndex}
@@ -95,7 +148,9 @@ export default function ImageViewerModal({ uri, uris, initialIndex = 0, visible,
               const idx = Math.round(e.nativeEvent.contentOffset.x / width);
               setCurrentIndex(idx);
             }}
-            renderItem={({ item }) => <ZoomableImage uri={item} />}
+            renderItem={({ item }) => (
+              <ZoomableImage uri={item} onZoomChange={zoomed => setScrollEnabled(!zoomed)} />
+            )}
           />
         </View>
       </GestureHandlerRootView>

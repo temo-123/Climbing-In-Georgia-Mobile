@@ -64,10 +64,8 @@ export default function App({ route }) {
     setViewer({ uris: galleryUris, idx: Math.max(0, idx) });
   }
 
-  function openSectorImage(uri) {
-    const idx = galleryUris.indexOf(uri);
-    if (idx >= 0) setViewer({ uris: galleryUris, idx });
-    else setViewer({ uris: [uri], idx: 0 });
+  function openSectorImage(uris, idx) {
+    setViewer({ uris, idx });
   }
 
   return (

@@ -28,11 +28,17 @@ export default function CachedImage({ uri, style, contentFit, ...props }) {
   }, [uri, src]);
 
   if (failed) {
-    return <Image source={NO_IMAGE} style={style} contentFit={contentFit} {...props} />;
+    // Keyed separately from the uri branch below: expo-image's Android prop
+    // setter caches a type-specific converter for `source` on first set, and
+    // swapping the same native view between a require() asset and a {uri}
+    // object crashes with "Cannot cast DynamicFromMap to Either<List<SourceMap>,
+    // SharedRef>". A distinct key forces a fresh view instead of a prop update.
+    return <Image key="placeholder" source={NO_IMAGE} style={style} contentFit={contentFit} {...props} />;
   }
 
   return (
     <Image
+      key="remote"
       source={{ uri: src }}
       style={style}
       contentFit={contentFit}

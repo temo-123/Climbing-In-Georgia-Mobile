@@ -22,5 +22,9 @@ export default function HtmlContent({ html, ...renderHtmlProps }) {
 
   if (!html) return null;
 
-  return <RenderHtml source={{ html: resolvedHtml }} {...renderHtmlProps} />;
+  // Embedded iframe src attributes are sometimes protocol-relative
+  // (e.g. "//if-cdn.com/..."). Without a baseUrl, RenderHtml/URI.js can't
+  // resolve a scheme, so the WebView gets handed a scheme-less URL and fails
+  // with net::ERR_INVALID_URL — passing baseUrl lets it resolve to https://.
+  return <RenderHtml source={{ html: resolvedHtml, baseUrl: 'https://climbing.ge/' }} {...renderHtmlProps} />;
 }

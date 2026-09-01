@@ -42,7 +42,7 @@ export default function EmbedBlock({ html, height = 280, padding = 32, type }) {
       <RenderHtml
         contentWidth={contentWidth}
         computeEmbeddedMaxWidth={(cw) => cw}
-        source={{ html }}
+        source={{ html, baseUrl: 'https://climbing.ge/' }}
         renderers={renderers}
         WebView={WebView}
         customHTMLElementModels={customHTMLElementModels}

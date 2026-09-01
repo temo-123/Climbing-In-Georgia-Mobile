@@ -16,9 +16,12 @@ const LOCAL_IMG_BASE  = IMG_BASES.sectorLocal;
 
 function SectorItem({ item, onImagePress }) {
   const sector = item.sector;
-  const images = item.sector_imgs || [];
   const sportRoutes = item.sport_routes || [];
   const mtps = item.mtps || [];
+  const sectorImages = (item.sector_imgs || [])
+    .map((img) => ({ key: img.id, uri: imgUri(SECTOR_IMG_BASE, img.image) }))
+    .filter((img) => img.uri);
+  const sectorUris = sectorImages.map((img) => img.uri);
 
   return (
     <View style={styles.sectorBlock}>
@@ -26,15 +29,11 @@ function SectorItem({ item, onImagePress }) {
 
       <SectorInfoBar sector={sector} />
 
-      {images.map((img) => {
-        const uri = imgUri(SECTOR_IMG_BASE, img.image);
-        if (!uri) return null;
-        return (
-          <TouchableOpacity key={img.id} onPress={() => onImagePress(uri)}>
-            <CachedImage uri={uri} style={styles.sectorImage} contentFit="contain" />
-          </TouchableOpacity>
-        );
-      })}
+      {sectorImages.map((img, idx) => (
+        <TouchableOpacity key={img.key} onPress={() => onImagePress(sectorUris, idx)}>
+          <CachedImage uri={img.uri} style={styles.sectorImage} contentFit="contain" />
+        </TouchableOpacity>
+      ))}
 
       {sportRoutes.length > 0 && <RoutesTable routes={sportRoutes} />}
       {mtps.length > 0 && <MultiPitchTab mtps={mtps} />}
@@ -46,11 +45,11 @@ export default function SpotSectors({ article_id, onImagePress }) {
   const { t } = useTranslation();
   const [sectors, setSectors] = useState([]);
   const [isLoading, setLoading] = useState(true);
-  const [viewerUri, setViewerUri] = useState(null);
+  const [viewer, setViewer] = useState(null);
 
-  const handleImagePress = (uri) => {
-    if (onImagePress) onImagePress(uri);
-    else setViewerUri(uri);
+  const handleImagePress = (uris, idx) => {
+    if (onImagePress) onImagePress(uris, idx);
+    else setViewer({ uris, idx });
   };
 
   useEffect(() => {
@@ -84,23 +83,23 @@ export default function SpotSectors({ article_id, onImagePress }) {
 
       {sectors.map((item, index) => {
         if (item.local_images) {
+          const localImages = (item.local_images || [])
+            .map((li) => ({ ...li, uri: imgUri(LOCAL_IMG_BASE, li.image) }))
+            .filter((li) => li.uri);
+          const localUris = localImages.map((li) => li.uri);
+
           return (
             <View key={index}>
-              {item.local_images.map((localImg) => {
-                const uri = imgUri(LOCAL_IMG_BASE, localImg.image);
-                return (
-                  <View key={localImg.id}>
-                    {localImg.title ? (
-                      <Text style={gStyle.h3}>{localImg.title}</Text>
-                    ) : null}
-                    {uri ? (
-                      <TouchableOpacity onPress={() => handleImagePress(uri)}>
-                        <CachedImage uri={uri} style={styles.sectorImage} contentFit="contain" />
-                      </TouchableOpacity>
-                    ) : null}
-                  </View>
-                );
-              })}
+              {localImages.map((localImg, idx) => (
+                <View key={localImg.id}>
+                  {localImg.title ? (
+                    <Text style={gStyle.h3}>{localImg.title}</Text>
+                  ) : null}
+                  <TouchableOpacity onPress={() => handleImagePress(localUris, idx)}>
+                    <CachedImage uri={localImg.uri} style={styles.sectorImage} contentFit="contain" />
+                  </TouchableOpacity>
+                </View>
+              ))}
               {(item.sectors || []).map((subItem, subIdx) => (
                 <SectorItem
                   key={subItem.sector?.id || subIdx}
@@ -123,9 +122,10 @@ export default function SpotSectors({ article_id, onImagePress }) {
 
       {!onImagePress && (
         <ImageViewerModal
-          uri={viewerUri}
-          visible={viewerUri != null}
-          onClose={() => setViewerUri(null)}
+          uris={viewer?.uris}
+          initialIndex={viewer?.idx ?? 0}
+          visible={viewer != null}
+          onClose={() => setViewer(null)}
         />
       )}
     </View>

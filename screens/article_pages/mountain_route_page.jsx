@@ -8,7 +8,7 @@ import CachedImage from "../../components/CachedImage";
 import ImageViewerModal from "../../components/ImageViewerModal";
 import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from "../../utils/api";
 import {
-  loadArticleData, saveArticleData, loadSectorsData, saveSectorsData,
+  loadArticleData, saveArticleData,
   loadRouteImagesData, saveRouteImagesData,
 } from "../../utils/offlineStorage";
 
@@ -23,32 +23,6 @@ import { gStyle } from "../../assets/styles/styles";
 const IMG_BASE           = IMG_BASES.mountRoute;
 const ROUTE_PHOTO_BASE   = IMG_BASES.mountRouteDescription;
 const GALLERY_BASE       = IMG_BASES.gallery;
-const SECTOR_IMG_BASE    = IMG_BASES.sector;
-const LOCAL_IMG_BASE     = IMG_BASES.sectorLocal;
-
-function extractSectorImageUris(sectorsData) {
-  const uris = [];
-  for (const item of (sectorsData || [])) {
-    if (item.local_images) {
-      for (const li of item.local_images) {
-        const uri = imgUri(LOCAL_IMG_BASE, li.image);
-        if (uri) uris.push(uri);
-      }
-      for (const sub of (item.sectors || [])) {
-        for (const si of (sub.sector_imgs || [])) {
-          const uri = imgUri(SECTOR_IMG_BASE, si.image);
-          if (uri) uris.push(uri);
-        }
-      }
-    } else {
-      for (const si of (item.sector_imgs || [])) {
-        const uri = imgUri(SECTOR_IMG_BASE, si.image);
-        if (uri) uris.push(uri);
-      }
-    }
-  }
-  return uris;
-}
 
 export default function MountainRoutePage({ route }) {
   const { t } = useTranslation();
@@ -61,7 +35,6 @@ export default function MountainRoutePage({ route }) {
   const [globalInfoData, setGlobalInfoData]   = useState({});
   const [isLoading, setLoading]               = useState(true);
   const [noCache, setNoCache]                 = useState(false);
-  const [sectorImageUris, setSectorImageUris] = useState([]);
   const [routeImages, setRouteImages]         = useState([]);
   const [viewer, setViewer]                   = useState(null);
 
@@ -92,16 +65,6 @@ export default function MountainRoutePage({ route }) {
     const articleId = globalData.global_data?.id;
     if (!articleId) return;
 
-    api.get(corsUrl(`${API_BASE_URL}/get_sector/get_sector_and_routes/${articleId}`))
-      .then(({ data }) => {
-        saveSectorsData(articleId, data);
-        setSectorImageUris(extractSectorImageUris(data));
-      })
-      .catch(async () => {
-        const cached = await loadSectorsData(articleId);
-        if (cached) setSectorImageUris(extractSectorImageUris(cached));
-      });
-
     api.get(corsUrl(`${API_BASE_URL}/get_mount_route/get_mount_routes_images/${articleId}`))
       .then(({ data }) => {
         if (Array.isArray(data)) {
@@ -122,15 +85,13 @@ export default function MountainRoutePage({ route }) {
     .map(img => imgUri(ROUTE_PHOTO_BASE, img.image))
     .filter(Boolean);
 
-  const articleGalleryUris = (globalData.gallery_images || [])
+  const galleryUris = (globalData.gallery_images || [])
     .map(img => imgUri(GALLERY_BASE, img.image))
     .filter(Boolean);
 
   const headerUri = globalData.global_data?.image
     ? imgUri(IMG_BASE, globalData.global_data.image)
     : routeImageUris[0] || null;
-
-  const galleryUris = [...articleGalleryUris, ...sectorImageUris];
 
   function openRoutePhoto(idx) {
     setViewer({ uris: routeImageUris, idx });
@@ -141,10 +102,8 @@ export default function MountainRoutePage({ route }) {
     setViewer({ uris: galleryUris, idx: Math.max(0, idx) });
   }
 
-  function openSectorImage(uri) {
-    const idx = galleryUris.indexOf(uri);
-    if (idx >= 0) setViewer({ uris: galleryUris, idx });
-    else setViewer({ uris: [uri], idx: 0 });
+  function openSectorImage(uris, idx) {
+    setViewer({ uris, idx });
   }
 
   return (
