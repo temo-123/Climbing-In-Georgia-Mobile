@@ -1,15 +1,14 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from "react-native";
+import { StyleSheet, ScrollView } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../utils/LocaleContext';
 
 import SpotSectors from "../../components/Routes_and_sectors/Sport_sector/spot_sectors";
 import ArticleBlock from "../../components/article/articl_block";
+import ArticleImageGrid from "../../components/article/ArticleImageGrid";
 import ImageViewerModal from "../../components/ImageViewerModal";
-import CachedImage from "../../components/CachedImage";
 import Preloader from "../../components/Preloader";
-import { gStyle } from "../../assets/styles/styles";
 
 import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from "../../utils/api";
 import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
@@ -59,9 +58,8 @@ export default function App({ route }) {
     .map(img => imgUri(GALLERY_BASE, img.image))
     .filter(Boolean);
 
-  function openGallery(uri) {
-    const idx = galleryUris.indexOf(uri);
-    setViewer({ uris: galleryUris, idx: Math.max(0, idx) });
+  function openGallery(idx) {
+    setViewer({ uris: galleryUris, idx });
   }
 
   function openSectorImage(uris, idx) {
@@ -82,22 +80,7 @@ export default function App({ route }) {
         onImagePress={openSectorImage}
       />
 
-      {galleryUris.length > 0 && (
-        <View style={styles.gallerySection}>
-          <Text style={gStyle.h2}>{t('article.gallery')}</Text>
-          <View style={styles.galleryGrid}>
-            {galleryUris.map((uri, idx) => (
-              <TouchableOpacity
-                key={idx}
-                style={styles.galleryItem}
-                onPress={() => openGallery(uri)}
-              >
-                <CachedImage uri={uri} style={styles.galleryThumb} contentFit="cover" />
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      )}
+      <ArticleImageGrid title={t('article.gallery')} uris={galleryUris} onPress={openGallery} />
 
       <ImageViewerModal
         uris={viewer?.uris}
@@ -114,8 +97,4 @@ export default function App({ route }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  gallerySection: { marginTop: 16, marginBottom: 24 },
-  galleryGrid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 },
-  galleryItem: { width: '33.33%', padding: 2 },
-  galleryThumb: { width: '100%', aspectRatio: 1, borderRadius: 4 },
 });

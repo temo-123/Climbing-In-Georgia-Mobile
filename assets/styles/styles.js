@@ -12,7 +12,8 @@ export const gStyle = StyleSheet.create({
         padding: 16,
     },
       h1: {
-      fontSize: 26
+      fontSize: 26,
+      marginTop: 12,
     },
     h2: {
       fontSize: 20

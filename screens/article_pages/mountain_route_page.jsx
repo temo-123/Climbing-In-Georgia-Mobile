@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from "react-native";
+import { StyleSheet, ScrollView } from "react-native";
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../utils/LocaleContext';
 
-import CachedImage from "../../components/CachedImage";
 import ImageViewerModal from "../../components/ImageViewerModal";
 import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from "../../utils/api";
 import {
@@ -14,11 +13,11 @@ import {
 
 import IceSectors from "../../components/Routes_and_sectors/Ice_sectors/ice_sectors";
 import ArticleBlock from "../../components/article/articl_block";
+import ArticleImageGrid from "../../components/article/ArticleImageGrid";
 import MassiveSection from "../../components/article/mount_masive/mount_masive_description_for_article_page_component";
 import Preloader from "../../components/Preloader";
 import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
-import { gStyle } from "../../assets/styles/styles";
 
 const IMG_BASE           = IMG_BASES.mountRoute;
 const ROUTE_PHOTO_BASE   = IMG_BASES.mountRouteDescription;
@@ -97,9 +96,8 @@ export default function MountainRoutePage({ route }) {
     setViewer({ uris: routeImageUris, idx });
   }
 
-  function openGalleryPhoto(uri) {
-    const idx = galleryUris.indexOf(uri);
-    setViewer({ uris: galleryUris, idx: Math.max(0, idx) });
+  function openGalleryPhoto(idx) {
+    setViewer({ uris: galleryUris, idx });
   }
 
   function openSectorImage(uris, idx) {
@@ -122,31 +120,14 @@ export default function MountainRoutePage({ route }) {
         ) : null}
       />
 
-      {routeImageUris.length > 0 && (
-        <View style={styles.section}>
-          <Text style={gStyle.h2}>{t('article.route_photos')}</Text>
-          <View style={styles.twoColGrid}>
-            {routeImageUris.map((uri, idx) => (
-              <TouchableOpacity key={idx} style={styles.twoColItem} onPress={() => openRoutePhoto(idx)}>
-                <CachedImage uri={uri} style={styles.twoColThumb} contentFit="cover" />
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      )}
+      <ArticleImageGrid
+        title={t('article.route_photos')}
+        uris={routeImageUris}
+        onPress={openRoutePhoto}
+        columns={2}
+      />
 
-      {galleryUris.length > 0 && (
-        <View style={styles.section}>
-          <Text style={gStyle.h2}>{t('article.photos')}</Text>
-          <View style={styles.galleryGrid}>
-            {galleryUris.map((uri, idx) => (
-              <TouchableOpacity key={idx} style={styles.galleryItem} onPress={() => openGalleryPhoto(uri)}>
-                <CachedImage uri={uri} style={styles.galleryThumb} contentFit="cover" />
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      )}
+      <ArticleImageGrid title={t('article.photos')} uris={galleryUris} onPress={openGalleryPhoto} />
 
       <IceSectors
         article_id={globalData.global_data?.id}
@@ -168,11 +149,4 @@ export default function MountainRoutePage({ route }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  section: { marginTop: 16, marginBottom: 8 },
-  twoColGrid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 },
-  twoColItem: { width: '50%', padding: 3 },
-  twoColThumb: { width: '100%', aspectRatio: 1, borderRadius: 6 },
-  galleryGrid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 },
-  galleryItem: { width: '33.33%', padding: 2 },
-  galleryThumb: { width: '100%', aspectRatio: 1, borderRadius: 4 },
 });

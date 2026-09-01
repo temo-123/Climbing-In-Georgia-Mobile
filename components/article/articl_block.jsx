@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import CachedImage from '../CachedImage';
 import EmbedBlock from '../EmbedBlock';
 import HtmlContent from '../HtmlContent';
+import ArticleListHeaderText from '../article_list_header_text_component';
 import { gStyle } from '../../assets/styles/styles';
 import { useTranslation } from 'react-i18next';
 
@@ -43,7 +44,7 @@ export default function articleBlock({ local_data, global_data, global_info_data
 
   return (
     <View style={styles.container}>
-      <Text style={gStyle.h1}>{local_data.title}</Text>
+      <ArticleListHeaderText title={local_data.title} />
 
       {(headerUri || (imgBase != null && global_data.image)) ? (
         <CachedImage
