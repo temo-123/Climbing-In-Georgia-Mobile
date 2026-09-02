@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../utils/AuthContext';
 import { COLORS } from '../../assets/styles/styles';
+import ClimberProfileContent from '../../components/user/ClimberProfileContent';
+import ClimberProfileModal from '../../components/user/ClimberProfileModal';
 
 function MenuItem({ icon, label, onPress, danger }) {
   return (
@@ -21,20 +23,35 @@ function SectionHeader({ title }) {
 export default function UserProfileScreen({ navigation }) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const [modalVisible, setModalVisible] = useState(false);
 
   if (!user) return null;
 
-  const initials = `${user.name?.[0] ?? ''}${user.surname?.[0] ?? ''}`.toUpperCase();
+  async function handleLogout() {
+    await logout();
+    navigation.navigate('HomeDrawer', { screen: 'home' });
+  }
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{initials}</Text>
-        </View>
-        <Text style={styles.name}>{user.name} {user.surname}</Text>
-        <Text style={styles.email}>{user.email}</Text>
+      <View style={styles.profileCard}>
+        <ClimberProfileContent
+          userId={user.id}
+          hideActivity
+          onAvatarPress={() => setModalVisible(true)}
+          onOpenClimbersList={() => navigation.navigate('climbers_list')}
+        />
       </View>
+
+      <ClimberProfileModal
+        visible={modalVisible}
+        userId={user.id}
+        onClose={() => setModalVisible(false)}
+        onViewFullProfile={(id) => {
+          setModalVisible(false);
+          navigation.navigate('climber_profile', { userId: id });
+        }}
+      />
 
       <View style={styles.card}>
         <SectionHeader title={t('user.section_account')} />
@@ -84,7 +101,7 @@ export default function UserProfileScreen({ navigation }) {
         <MenuItem
           icon="🚪"
           label={t('auth.logout')}
-          onPress={logout}
+          onPress={handleLogout}
           danger
         />
       </View>
@@ -95,43 +112,14 @@ export default function UserProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: '#f4f6f8' },
   container: { paddingBottom: 32 },
-  header: {
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    paddingTop: 36,
-    paddingBottom: 32,
-    paddingHorizontal: 24,
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    borderWidth: 2,
-    borderColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-  avatarText: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  email: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.85)',
+  profileCard: {
+    backgroundColor: '#fff',
+    paddingVertical: 20,
+    marginBottom: 8,
   },
   card: {
     backgroundColor: '#fff',
     marginHorizontal: 16,
-    marginTop: -16,
     borderRadius: 16,
     paddingVertical: 8,
     elevation: 3,

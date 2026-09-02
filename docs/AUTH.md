@@ -19,7 +19,7 @@ Documentation for the login/register/auth flow in the Climbing In Georgia React 
 
 ## Overview
 
-Auth is **optional** — users can browse all climbing content without an account. Login/Register are accessible from the side drawer. When authenticated, the drawer shows the user's name, email, and a Logout button.
+Auth is **optional** — users can browse all climbing content without an account. Login/Register are accessible from the side drawer. When authenticated, the drawer header shows the user's avatar and a "Hi {name}" greeting (tapping the avatar opens the full profile screen); Logout lives in the profile screen's menu, not the drawer — see [`docs/CLIMBER_PROFILE.md`](CLIMBER_PROFILE.md) for the profile screen itself.
 
 Backend: Laravel 11 + Laravel Sanctum (token-based auth).  
 Token lifetime: 7 days (configurable via `SANCTUM_TOKEN_EXPIRATION`).
@@ -34,8 +34,8 @@ App.js
        └── LocaleProvider
             └── Navigation
                  ├── Drawer (always visible)
-                 │    └── "Login / Register" button → navigate('login')
-                 │    └── User info + Logout (when authenticated)
+                 │    └── "Login / Register" button (guest) → navigate('login')
+                 │    └── Avatar + "Hi {name}" → navigate('user_profile') (authenticated)
                  ├── login           → screens/auth/LoginScreen.jsx
                  ├── register        → screens/auth/RegisterScreen.jsx
                  ├── forgot_password → screens/auth/ForgotPasswordScreen.jsx
@@ -210,7 +210,7 @@ setIsLoading(false) → app renders
 ### Logout
 
 ```
-User taps "Logout" in drawer
+User taps "Logout" in the My Profile screen menu (screens/user/UserProfileScreen.jsx)
         ↓
 POST /api/logout  (revokes token server-side)
         ↓
@@ -218,7 +218,9 @@ AsyncStorage.removeItem('@auth_token')
 Delete Authorization header from axios
 setUser(null), setToken(null)
         ↓
-Drawer updates: shows "Login / Register" button
+navigation.navigate('HomeDrawer', { screen: 'home' })  — returns to the home screen
+        ↓
+Drawer header updates: shows the app icon + "Login / Register" button again
 ```
 
 ### Register
@@ -239,13 +241,13 @@ navigation.goBack()
 
 | File | Purpose |
 |------|---------|
-| `utils/AuthContext.js` | React context — `user`, `token`, `isLoading` state + `login`, `logout`, `register`, `forgotPassword` functions |
+| `utils/AuthContext.js` | React context — `user`, `token`, `isLoading` state + `login`, `logout`, `register`, `forgotPassword`, `refreshUser` functions |
 | `utils/rsaEncrypt.js` | `encryptPassword(plaintext)` — RSA-2048 PKCS1v1_5 encryption using node-forge |
 | `screens/auth/LoginScreen.jsx` | Login form UI (email + password) |
 | `screens/auth/RegisterScreen.jsx` | Register form UI (name, surname, email, password, confirm) |
 | `screens/auth/ForgotPasswordScreen.jsx` | Forgot password form + success state |
 | `navigation/Navigation.jsx` | Adds `login`, `register`, `forgot_password` to the stack navigator |
-| `navigation/CustomDrawerContent.jsx` | Shows user info + Logout or Login/Register button |
+| `navigation/CustomDrawerContent.jsx` | Drawer header — avatar + "Hi {name}" (authenticated, tap → `user_profile`) or app icon + Login/Register button (guest) |
 | `App.js` | Wraps app in `<AuthProvider>` |
 
 ---

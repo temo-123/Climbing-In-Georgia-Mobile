@@ -5,17 +5,24 @@ import api, { API_BASE_URL } from '../../utils/api';
 import { saveOfflineData, loadOfflineData } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
+import WriteOnWebsiteButton from '../../components/user/WriteOnWebsiteButton';
 import { COLORS } from '../../assets/styles/styles';
 
 const API = API_BASE_URL;
 const CACHE_KEY = '@my_comments_cache';
 
 function CommentCard({ item }) {
+  // get_user_comments() nests the actual comment/article data one level
+  // deep: { id, comment: <Comment model>, locale_article, global_article }.
+  const text = item.comment?.text ?? item.comment ?? item.content ?? '—';
+  const date = item.comment?.created_at ?? item.created_at;
   return (
     <View style={styles.card}>
-      <Text style={styles.articleTitle} numberOfLines={1}>{item.article?.title ?? item.article_title ?? '—'}</Text>
-      <Text style={styles.comment} numberOfLines={4}>{item.comment ?? item.content ?? '—'}</Text>
-      <Text style={styles.date}>{item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</Text>
+      <Text style={styles.articleTitle} numberOfLines={1}>
+        {item.locale_article?.title ?? item.global_article?.title ?? item.article?.title ?? item.article_title ?? '—'}
+      </Text>
+      <Text style={styles.comment} numberOfLines={4}>{typeof text === 'string' ? text : '—'}</Text>
+      <Text style={styles.date}>{date ? new Date(date).toLocaleDateString() : ''}</Text>
     </View>
   );
 }
@@ -28,7 +35,7 @@ export default function UserCommentsScreen() {
   const [noCache, setNoCache] = useState(false);
 
   useEffect(() => {
-    api.get(`${API}/get_guide_comment/get_user_comments`)
+    api.get(`${API}/get_article/get_guide_comment/get_user_comments`)
       .then(res => {
         const list = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
         setData(list);
@@ -48,7 +55,15 @@ export default function UserCommentsScreen() {
 
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>;
   if (noCache) return <OfflineError />;
-  if (!data.length) return <View style={styles.center}><Text style={styles.emptyText}>{t('user.no_comments')}</Text></View>;
+
+  if (!data.length) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.emptyText}>{t('user.no_comments')}</Text>
+        <WriteOnWebsiteButton labelKey="user.write_comment_message" />
+      </View>
+    );
+  }
 
   return (
     <FlatList
@@ -56,7 +71,12 @@ export default function UserCommentsScreen() {
       keyExtractor={(item, i) => String(item.id ?? i)}
       renderItem={({ item }) => <CommentCard item={item} />}
       contentContainerStyle={styles.list}
-      ListHeaderComponent={isOffline ? <OfflineBanner /> : null}
+      ListHeaderComponent={
+        <>
+          {isOffline ? <OfflineBanner /> : null}
+          <WriteOnWebsiteButton labelKey="user.write_comment_message" />
+        </>
+      }
     />
   );
 }

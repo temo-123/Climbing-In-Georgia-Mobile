@@ -5,48 +5,59 @@ import { useTranslation } from 'react-i18next';
 import { useLocale } from '../utils/LocaleContext';
 import { useAuth } from '../utils/AuthContext';
 import { COLORS } from '../assets/styles/styles';
+import { IMG_BASES, imgUri } from '../utils/api';
+
+function initialsOf(user) {
+  return `${user?.name?.[0] ?? ''}${user?.surname?.[0] ?? ''}`.toUpperCase();
+}
 
 export default function CustomDrawerContent(props) {
   const { t } = useTranslation();
   const { locale, setLocale } = useLocale();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+
+  const avatarUri = user?.image ? imgUri(IMG_BASES.userProfile, user.image) : null;
 
   return (
     <DrawerContentScrollView {...props}>
       <View style={styles.logoSection}>
-        <Image
-          source={require('../assets/icon.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <Text style={styles.appName}>Climb Georgia</Text>
-        <Text style={styles.appTagline}>climbing.ge</Text>
+        {user ? (
+          <TouchableOpacity onPress={() => props.navigation.navigate('user_profile')} activeOpacity={0.8}>
+            {avatarUri ? (
+              <Image source={{ uri: avatarUri }} style={styles.avatar} />
+            ) : (
+              <View style={styles.avatarFallback}><Text style={styles.avatarFallbackText}>{initialsOf(user)}</Text></View>
+            )}
+          </TouchableOpacity>
+        ) : (
+          <Image
+            source={require('../assets/icon.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        )}
+        {!!user && <Text style={styles.greeting}>{t('nav.hi_user', { name: user.name })}</Text>}
+        <Text style={styles.appName}>{t('nav.welcome_message')}</Text>
+        <Text style={styles.appTagline}>{t('nav.powered_by')}</Text>
       </View>
 
       <DrawerItemList {...props} />
 
       <View style={styles.section}>
         {user ? (
-          <>
-            <TouchableOpacity onPress={() => props.navigation.navigate('user_profile')} activeOpacity={0.7}>
-              <Text style={styles.userName}>{user.name} {user.surname}</Text>
-              <Text style={styles.userEmail}>{user.email}</Text>
-              <Text style={styles.profileLink}>{t('auth.profile')} ›</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.logoutBtn} onPress={logout} activeOpacity={0.8}>
-              <Text style={styles.logoutBtnText}>{t('auth.logout')}</Text>
-            </TouchableOpacity>
-          </>
+          <TouchableOpacity onPress={() => props.navigation.navigate('user_profile')} activeOpacity={0.7}>
+            <Text style={styles.userName}>{user.name} {user.surname}</Text>
+            <Text style={styles.userEmail}>{user.email}</Text>
+            <Text style={styles.profileLink}>{t('auth.profile')} ›</Text>
+          </TouchableOpacity>
         ) : (
-          <>
-            <TouchableOpacity
-              style={styles.loginBtn}
-              onPress={() => props.navigation.navigate('login')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.loginBtnText}>{t('auth.nav_login')}</Text>
-            </TouchableOpacity>
-          </>
+          <TouchableOpacity
+            style={styles.loginBtn}
+            onPress={() => props.navigation.navigate('login')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.loginBtnText}>{t('auth.nav_login')}</Text>
+          </TouchableOpacity>
         )}
       </View>
 
@@ -88,9 +99,38 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 10,
   },
-  appName: {
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    marginBottom: 10,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+  },
+  avatarFallback: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    marginBottom: 10,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarFallbackText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  greeting: {
     fontSize: 15,
     fontWeight: '700',
+    color: COLORS.primary,
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  appName: {
+    fontSize: 13,
+    fontWeight: '600',
     color: '#1a1a1a',
     textAlign: 'center',
     letterSpacing: 0.2,
@@ -154,17 +194,6 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '600',
     marginBottom: 12,
-  },
-  logoutBtn: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 8,
-    paddingVertical: 9,
-    alignItems: 'center',
-  },
-  logoutBtnText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 14,
   },
   loginBtn: {
     borderWidth: 1.5,

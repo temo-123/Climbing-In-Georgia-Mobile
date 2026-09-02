@@ -24,6 +24,7 @@ export const IMG_BASES = {
   sector: PUBLIC_IMAGES_BASE + 'sector_img/',
   sectorLocal: PUBLIC_IMAGES_BASE + 'sector_local_img/',
   summitAscent: PUBLIC_IMAGES_BASE + 'summit_ascents_img/',
+  userProfile: PUBLIC_IMAGES_BASE + 'user_profil_img/',
 };
 
 export function corsUrl(url) {

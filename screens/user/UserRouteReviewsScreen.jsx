@@ -5,6 +5,7 @@ import api, { API_BASE_URL } from '../../utils/api';
 import { saveOfflineData, loadOfflineData } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
+import WriteOnWebsiteButton from '../../components/user/WriteOnWebsiteButton';
 import { COLORS } from '../../assets/styles/styles';
 
 const API = API_BASE_URL;
@@ -25,15 +26,19 @@ function gradeColor(grade) {
 }
 
 function ReviewCard({ item }) {
-  const grade = item.grade ?? item.route?.grade_fr ?? item.route?.grade ?? null;
+  // get_user_review() / get_user_mtp_reviews() both nest the actual review
+  // under a "review" key: { review: <Sport_route_review|Mtp_review>, route|mtp }.
+  const grade = item.grade ?? item.route?.grade ?? null;
+  const text = item.review?.text ?? item.comment ?? null;
+  const date = item.review?.created_at ?? item.created_at;
   return (
     <View style={styles.card}>
       <View style={styles.cardTop}>
-        <Text style={styles.routeName} numberOfLines={1}>{item.route?.name ?? item.route_name ?? '—'}</Text>
+        <Text style={styles.routeName} numberOfLines={1}>{item.route?.name ?? item.mtp?.name ?? item.route_name ?? '—'}</Text>
         {grade && <View style={[styles.gradeBadge, { backgroundColor: gradeColor(grade) }]}><Text style={styles.gradeText}>{grade}</Text></View>}
       </View>
-      {!!item.comment && <Text style={styles.comment} numberOfLines={4}>{item.comment}</Text>}
-      <Text style={styles.date}>{item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</Text>
+      {!!text && <Text style={styles.comment} numberOfLines={4}>{text}</Text>}
+      <Text style={styles.date}>{date ? new Date(date).toLocaleDateString() : ''}</Text>
     </View>
   );
 }
@@ -47,7 +52,7 @@ export default function UserRouteReviewsScreen() {
 
   useEffect(() => {
     Promise.all([
-      api.get(`${API}/get_route_review/get_user_review`),
+      api.get(`${API}/get_route/get_route_review/get_user_review`),
       api.get(`${API}/get_mtp_review/get_user_mtp_reviews`),
     ]).then(([routes, mtp]) => {
       const routeData = Array.isArray(routes.data) ? routes.data : routes.data?.data ?? [];
@@ -68,15 +73,28 @@ export default function UserRouteReviewsScreen() {
 
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>;
   if (noCache) return <OfflineError />;
-  if (!data.length) return <View style={styles.center}><Text style={styles.emptyText}>{t('user.no_reviews')}</Text></View>;
+
+  if (!data.length) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.emptyText}>{t('user.no_reviews')}</Text>
+        <WriteOnWebsiteButton labelKey="user.write_review_message" />
+      </View>
+    );
+  }
 
   return (
     <FlatList
       data={data}
-      keyExtractor={(item, i) => String(item.id ?? i)}
+      keyExtractor={(item, i) => String(item.id ?? item.review?.id ?? i)}
       renderItem={({ item }) => <ReviewCard item={item} />}
       contentContainerStyle={styles.list}
-      ListHeaderComponent={isOffline ? <OfflineBanner /> : null}
+      ListHeaderComponent={
+        <>
+          {isOffline ? <OfflineBanner /> : null}
+          <WriteOnWebsiteButton labelKey="user.write_review_message" />
+        </>
+      }
     />
   );
 }

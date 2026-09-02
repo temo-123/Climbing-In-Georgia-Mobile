@@ -17,7 +17,7 @@ function AscentCard({ item }) {
         <Text style={styles.summitName}>{item.summit?.title ?? item.summit_title ?? item.title ?? '—'}</Text>
         {item.summit?.height && <Text style={styles.height}>{item.summit.height} m</Text>}
       </View>
-      {!!item.note && <Text style={styles.note} numberOfLines={3}>{item.note}</Text>}
+      {!!(item.comment ?? item.note) && <Text style={styles.note} numberOfLines={3}>{item.comment ?? item.note}</Text>}
       <Text style={styles.date}>
         {item.ascent_date
           ? new Date(item.ascent_date).toLocaleDateString()
@@ -37,7 +37,7 @@ export default function UserAscentsScreen() {
   const [noCache, setNoCache] = useState(false);
 
   useEffect(() => {
-    api.get(`${API}/my_ascents`)
+    api.get(`${API}/summit/my_ascents`)
       .then(res => {
         const list = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
         setData(list);

@@ -52,17 +52,22 @@ A logbook system for mountaineering summits:
 
 ### User Account
 
-Authentication is optional — all content is freely accessible without an account. When logged in, the side drawer shows the user's name and email and provides access to:
+Authentication is optional — all content is freely accessible without an account. When logged in, the drawer header shows the user's avatar and a "Hi {name}" greeting (tapping it opens the profile screen).
 
 | Screen | Description |
 |--------|-------------|
-| **My Profile** | Edit name, surname, email; change password |
-| **Options** | Account settings |
+| **My Profile** | Own climber profile summary — avatar, followers/following, points, 4-axis radar chart of activity — plus the account menu below (tapping the avatar opens a modal with the full detail, including recent activity) |
+| **Options** | Avatar upload, read-only profile summary with an "Edit" modal (name/surname/email/country/city/phone/bio), unlimited "My Links" list, "Change Password" modal |
 | **My Ascents** | History of recorded summit ascents |
 | **My Comments** | Comments left on articles |
-| **My Route Reviews** | Reviews submitted for individual routes |
-| **My Donations** | Donation history |
-| **Favorites** | Saved outdoor areas, products, and interested events |
+| **My Route Reviews** | Reviews submitted for routes and multi-pitch routes |
+| **My Donations** | Donation history *(currently always empty — no backend endpoint exists yet for this, see [`docs/CLIMBER_PROFILE.md`](docs/CLIMBER_PROFILE.md#known-backend-issues))* |
+| **Favorites** | Saved outdoor areas and interested events |
+| **Climbers Directory** | Searchable, sortable ("A-Z" / "Top Active") directory of every climber, reached from the "All climbers" link on the profile screen |
+
+#### Climber Profile
+
+Every user — logged in or not — has a public climber profile (mirrors the equivalent climbing.ge website feature): avatar, bio, unlimited "extra links", follower/following counts, a computed "points" score, and a radar chart across route reviews / MTP reviews / ascents / comments. Users can follow each other; following someone emails them a notification (server-side). Full documentation, including the exact API contract and known backend bugs, is in [`docs/CLIMBER_PROFILE.md`](docs/CLIMBER_PROFILE.md).
 
 ### Offline Mode
 
@@ -127,7 +132,9 @@ App.js
                       ├── user_comments
                       ├── user_route_reviews
                       ├── user_donations
-                      └── user_favorites
+                      ├── user_favorites
+                      ├── climbers_list      — directory of all climbers
+                      └── climber_profile    — one climber's full profile (params: userId)
 ```
 
 ---
@@ -141,16 +148,21 @@ Base URL: `https://climbing.ge/api/`
 | `GET /get_article/get_locale_articles/{type}/en` | List screen data (`type`: outdoor, indoor, ice, mountain_routes, other_activities, events) |
 | `GET /get_article/get_locale_article_on_page/{type}/en/{url_title}` | Article detail page |
 | `GET /get_sector/get_sector_and_routes/{article_id}` | Sectors and routes for sport and ice articles |
-| `GET /summit` | Summit list |
-| `GET /summit/{url_title}` | Summit detail + ascent list |
-| `POST /summit/{id}/ascent` | Record a new ascent (auth required) |
+| `GET /summit/list` | Summit list |
+| `GET /summit/show/{url_title}` | Summit detail |
+| `GET /summit/ascents/{url_title}` | Ascent list for a summit |
+| `POST /summit/ascent/{summit_id}` | Record a new ascent (auth required) |
+| `GET /summit/my_ascents` | Own ascent history (auth required) |
+| `GET /get_climber_profile/{user_id}` | Public climber profile — points, followers, radar-chart stats, recent activity |
+| `GET /get_climber_profile/list` | Public climbers directory (paginated, searchable, sortable) |
+| `POST /set_user_follow/follow/{user_id}` / `DELETE .../unfollow/{user_id}` | Follow / unfollow another climber (auth required) |
 | `POST /login` | Login (RSA-encrypted password) |
 | `POST /register` | Register new user |
 | `POST /logout` | Revoke token |
 | `GET /auth_user` | Get authenticated user + permissions |
 | `POST /password/send_forget_mail` | Send password reset email |
 
-See [`docs/AUTH.md`](docs/AUTH.md) for full authentication documentation including RSA password encryption details.
+See [`docs/AUTH.md`](docs/AUTH.md) for full authentication documentation including RSA password encryption details, and [`docs/CLIMBER_PROFILE.md`](docs/CLIMBER_PROFILE.md) for the full climber-profile/follow/avatar-upload/extra-links API contract.
 
 ---
 
@@ -171,6 +183,8 @@ See [`docs/AUTH.md`](docs/AUTH.md) for full authentication documentation includi
 | node-forge | ^1.4.0 | RSA-2048 password encryption (login) |
 | react-native-render-html | ^6.3.4 | Render HTML article body content |
 | react-native-reanimated-table | ^0.0.2 | Route grade tables |
+| react-native-svg | 15.12.1 | Inline-SVG radar chart on climber profiles |
+| expo-image-picker | ~17.0.11 | Avatar photo picker + ascent-proof photo capture |
 | FontAwesome | ^6.3 | Icons throughout the app |
 
 ---
@@ -195,13 +209,24 @@ screens/
   user/                         — UserProfileScreen, UserOptionsScreen,
                                   UserAscentsScreen, UserCommentsScreen,
                                   UserRouteReviewsScreen, UserDonationsScreen,
-                                  UserFavoritesScreen
+                                  UserFavoritesScreen, ClimbersListScreen,
+                                  ClimberProfileScreen
 components/
   cards/                        — card components for every list category
   article/                      — article header, general info, mountain massif blocks
   Routes_and_sectors/
     Sport_sector/               — sport/boulder sector renderer (Type A + B)
     Ice_sectors/                — ice sector renderer
+  user/                         — see docs/CLIMBER_PROFILE.md for the full breakdown
+    ClimberProfileContent.jsx   — fetches + renders one climber's profile (shared)
+    ClimberProfileModal.jsx     — quick-view modal
+    ClimberCard.jsx             — directory grid card
+    RadarStatsChart.jsx         — inline-SVG 4-axis activity chart
+    UserLinksManager.jsx        — unlimited "extra links" CRUD
+    FormModal.jsx               — shared bottom-sheet form-modal chrome
+    EditProfileModal.jsx        — profile-info edit modal
+    ChangePasswordModal.jsx     — password-change modal
+    WriteOnWebsiteButton.jsx    — "not supported in-app yet" CTA
   CachedImage.jsx               — image with offline fallback
   ImageViewerModal.jsx          — full-screen image viewer
   EmbedBlock.jsx                — embedded iframe/video blocks
@@ -211,8 +236,8 @@ components/
   Preloader.jsx                 — loading spinner
   PageFooter.jsx                — "Powered by climbing.ge" footer
 utils/
-  api.js                        — axios instance, corsUrl(), imgUri()
-  AuthContext.js                — user/token state + login/logout/register actions
+  api.js                        — axios instance, corsUrl(), imgUri(), IMG_BASES
+  AuthContext.js                — user/token state + login/logout/register/refreshUser actions
   LocaleContext.js              — active locale state (EN/KA)
   i18n.js                       — i18next initialisation
   offlineStorage.js             — AsyncStorage read/write helpers
@@ -230,6 +255,7 @@ assets/
 docs/
   AUTH.md                       — full authentication documentation
   CI_CD.md                      — EAS build & Play Store submit pipeline
+  CLIMBER_PROFILE.md            — climber profile / follow / avatar / extra-links feature
 ```
 
 ---
@@ -284,7 +310,7 @@ The above can also be run automatically from GitHub Actions (manual trigger, opt
 
 ## Version
 
-**1.2.9**
+**1.2.17**
 
 ---
 

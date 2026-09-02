@@ -16,6 +16,7 @@ const AuthContext = createContext({
   logout: async () => {},
   register: async () => {},
   forgotPassword: async () => {},
+  refreshUser: async () => {},
 });
 
 export function AuthProvider({ children }) {
@@ -121,8 +122,17 @@ export function AuthProvider({ children }) {
     return res.data;
   }
 
+  // Re-fetches the authenticated user (e.g. after a profile/avatar edit) and
+  // refreshes the cache used to instant-fill the UI on next launch.
+  async function refreshUser() {
+    const res = await api.get(`${API_BASE}/auth_user`);
+    setUser(res.data);
+    await AsyncStorage.setItem(AUTH_USER_CACHE_KEY, JSON.stringify(res.data));
+    return res.data;
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout, register, forgotPassword }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, logout, register, forgotPassword, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -23,6 +23,8 @@ import UserRouteReviewsScreen from '../screens/user/UserRouteReviewsScreen';
 import UserAscentsScreen from '../screens/user/UserAscentsScreen';
 import UserDonationsScreen from '../screens/user/UserDonationsScreen';
 import UserFavoritesScreen from '../screens/user/UserFavoritesScreen';
+import ClimbersListScreen from '../screens/user/ClimbersListScreen';
+import ClimberProfileScreen from '../screens/user/ClimberProfileScreen';
 
 import SummitDetailScreen from '../screens/summit/SummitDetailScreen';
 import SubmitAscentScreen from '../screens/summit/SubmitAscentScreen';
@@ -119,6 +121,14 @@ export const Navigation = () => {
         <Stack.Screen name="user_favorites"
           component={UserFavoritesScreen}
           options={{ title: t('user.favorites'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="climbers_list"
+          component={ClimbersListScreen}
+          options={{ title: t('user.climbers'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="climber_profile"
+          component={ClimberProfileScreen}
+          options={{ title: t('user.climber_profile'), headerStyle, headerTintColor, headerTitleStyle }}
         />
         <Stack.Screen name="summit_detail"
           component={SummitDetailScreen}
