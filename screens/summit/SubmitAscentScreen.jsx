@@ -7,8 +7,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
-import * as Network from 'expo-network';
 import { useAuth } from '../../utils/AuthContext';
+import { useNetwork } from '../../utils/NetworkContext';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { queueAscent, describeError } from '../../utils/ascentQueue';
 import { withRecaptchaRetry, isRecaptchaFailure } from '../../utils/recaptcha';
@@ -34,6 +34,9 @@ function haversineMeters(a, b) {
 export default function SubmitAscentScreen({ route, navigation }) {
   const { t } = useTranslation();
   const { user } = useAuth();
+  // Shared connectivity state rather than a one-shot read at mount, so the
+  // offline banner disappears the moment signal actually comes back.
+  const { isOffline } = useNetwork();
   const { summit_id, url_title, title } = route.params;
 
   const ascentDate = new Date().toISOString().split('T')[0];
@@ -56,7 +59,6 @@ export default function SubmitAscentScreen({ route, navigation }) {
   const [queuedDetail, setQueuedDetail] = useState('');
   const [imageUri, setImageUri] = useState(null);
   const [compressingPhoto, setCompressingPhoto] = useState(false);
-  const [isOffline, setIsOffline] = useState(false);
 
   function applySummitCoords(summitData) {
     const { latitude, longitude } = summitData || {};
@@ -65,13 +67,20 @@ export default function SubmitAscentScreen({ route, navigation }) {
     }
   }
 
+  // AuthContext restores the cached user from AsyncStorage asynchronously, so
+  // on a cold start this screen can mount before `user` exists and the initial
+  // useState values above stay empty. Back-fill them once the account details
+  // arrive — only into still-empty fields, so a guest's own typing is never
+  // overwritten. This is what guarantees an ascent queued offline carries
+  // valid climber identity to the server when it finally syncs.
   useEffect(() => {
-    Network.getNetworkStateAsync().then(state => {
-      // isInternetReachable does its own active probe and is unreliable (false
-      // negatives on some carriers/DNS setups) — isConnected (link is up) is the
-      // trustworthy signal. Actual reachability is proven by the request itself.
-      setIsOffline(!state.isConnected);
-    });
+    if (!user) return;
+    setName(prev => prev || user.name || '');
+    setSurname(prev => prev || user.surname || '');
+    setEmail(prev => prev || user.email || '');
+  }, [user?.id, user?.name, user?.surname, user?.email]);
+
+  useEffect(() => {
     api.get(corsUrl(`${API}/routes/${summit_id}`))
       .then(res => setRoutes(Array.isArray(res.data) ? res.data : []))
       .catch(async () => {
@@ -208,13 +217,26 @@ export default function SubmitAscentScreen({ route, navigation }) {
       }
     }
 
-    // Always attempt the real submission first — Network.getNetworkStateAsync()
-    // reports link-layer state ("Wi-Fi/cellular is up"), not proof the request
-    // will actually succeed. Gating on it beforehand meant a stale or wrong
-    // "not connected" read could send a genuinely-online submission straight
-    // to the offline queue without ever trying — which is exactly what made
-    // online submissions look like they were being "treated as offline".
-    // Real failure (below) is the only trustworthy signal now.
+    // `isOffline` here comes from the live NetworkContext listener, not a
+    // one-off read taken when this screen happened to mount — so unlike the
+    // stale mount-time snapshot this screen used to gate on (see the removed
+    // isOffline state above), it reflects the connection state at the actual
+    // moment "Submit" was pressed. Trust it to skip straight to the queue:
+    // the alternative is a genuinely offline climber waiting out up to 15
+    // seconds of a doomed reCAPTCHA WebView round trip (no signal at all, so
+    // the page can never load) before landing on the same "saved offline"
+    // screen anyway — which read as "ascent registration doesn't work
+    // offline" even though it eventually queued correctly.
+    if (isOffline) {
+      await queueAndFinish('network', new Error(t('summit.no_connection_detail')));
+      setLoading(false);
+      return;
+    }
+
+    // Not reporting offline — attempt the real submission. isConnected can
+    // still be a false positive (link up, route to the internet actually
+    // broken) — a genuine failure below is what catches that case and queues
+    // it just the same, under the same 'network' reason.
     try {
       await withRecaptchaRetry('make_ascent', async (recaptcha_token) => {
         const payloadWithCaptcha = { ...ascentPayload, recaptcha_token };

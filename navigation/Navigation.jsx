@@ -31,9 +31,24 @@ import SubmitAscentScreen from '../screens/summit/SubmitAscentScreen';
 import QRScannerScreen from '../screens/summit/QRScannerScreen';
 
 import DrawerNavigator from './DrawerNavigator';
+import withOfflineGuard from '../components/user/withOfflineGuard';
 import { COLORS } from '../assets/styles/styles';
 
 const Stack = createNativeStackNavigator();
+
+// The whole user panel is server-backed and has no offline fallback, so while
+// the device is offline these render a "not available offline" notice instead
+// of mounting screens whose every request is guaranteed to fail. Wrapped once
+// at module level so the screen identity stays stable across re-renders.
+const OfflineGuardedUserProfileScreen = withOfflineGuard(UserProfileScreen);
+const OfflineGuardedUserOptionsScreen = withOfflineGuard(UserOptionsScreen);
+const OfflineGuardedUserCommentsScreen = withOfflineGuard(UserCommentsScreen);
+const OfflineGuardedUserRouteReviewsScreen = withOfflineGuard(UserRouteReviewsScreen);
+const OfflineGuardedUserAscentsScreen = withOfflineGuard(UserAscentsScreen);
+const OfflineGuardedUserDonationsScreen = withOfflineGuard(UserDonationsScreen);
+const OfflineGuardedUserFavoritesScreen = withOfflineGuard(UserFavoritesScreen);
+const OfflineGuardedClimbersListScreen = withOfflineGuard(ClimbersListScreen);
+const OfflineGuardedClimberProfileScreen = withOfflineGuard(ClimberProfileScreen);
 
 const headerStyle = { backgroundColor: COLORS.primary };
 const headerTintColor = '#fff';
@@ -95,39 +110,39 @@ export const Navigation = () => {
           options={{ title: t('auth.forgot_password_title'), headerStyle, headerTintColor, headerTitleStyle }}
         />
         <Stack.Screen name="user_profile"
-          component={UserProfileScreen}
+          component={OfflineGuardedUserProfileScreen}
           options={{ title: t('user.profile'), headerStyle, headerTintColor, headerTitleStyle }}
         />
         <Stack.Screen name="user_options"
-          component={UserOptionsScreen}
+          component={OfflineGuardedUserOptionsScreen}
           options={{ title: t('user.options'), headerStyle, headerTintColor, headerTitleStyle }}
         />
         <Stack.Screen name="user_comments"
-          component={UserCommentsScreen}
+          component={OfflineGuardedUserCommentsScreen}
           options={{ title: t('user.my_comments'), headerStyle, headerTintColor, headerTitleStyle }}
         />
         <Stack.Screen name="user_route_reviews"
-          component={UserRouteReviewsScreen}
+          component={OfflineGuardedUserRouteReviewsScreen}
           options={{ title: t('user.my_route_reviews'), headerStyle, headerTintColor, headerTitleStyle }}
         />
         <Stack.Screen name="user_ascents"
-          component={UserAscentsScreen}
+          component={OfflineGuardedUserAscentsScreen}
           options={{ title: t('user.my_ascents'), headerStyle, headerTintColor, headerTitleStyle }}
         />
         <Stack.Screen name="user_donations"
-          component={UserDonationsScreen}
+          component={OfflineGuardedUserDonationsScreen}
           options={{ title: t('user.my_donations'), headerStyle, headerTintColor, headerTitleStyle }}
         />
         <Stack.Screen name="user_favorites"
-          component={UserFavoritesScreen}
+          component={OfflineGuardedUserFavoritesScreen}
           options={{ title: t('user.favorites'), headerStyle, headerTintColor, headerTitleStyle }}
         />
         <Stack.Screen name="climbers_list"
-          component={ClimbersListScreen}
+          component={OfflineGuardedClimbersListScreen}
           options={{ title: t('user.climbers'), headerStyle, headerTintColor, headerTitleStyle }}
         />
         <Stack.Screen name="climber_profile"
-          component={ClimberProfileScreen}
+          component={OfflineGuardedClimberProfileScreen}
           options={{ title: t('user.climber_profile'), headerStyle, headerTintColor, headerTitleStyle }}
         />
         <Stack.Screen name="summit_detail"

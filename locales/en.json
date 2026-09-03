@@ -12,7 +12,8 @@
     "offline": "Offline Mode",
     "welcome_message": "Welcome to Climb Georgia mobile app",
     "powered_by": "Powered by climbing.ge",
-    "hi_user": "Hi {{name}}"
+    "hi_user": "Hi {{name}}",
+    "offline_indicator": "You are in offline mode"
   },
   "page": {
     "indoor_gym": "Indoor Gym",
@@ -192,6 +193,9 @@
     "nav_login": "Login / Register"
   },
   "user": {
+    "offline_panel_title": "User panel is not available offline",
+    "offline_panel_message": "Your profile, activity and settings are loaded from the server, so this section only works with an internet connection.",
+    "offline_panel_hint": "You stay signed in. Ascents you record while offline are saved on your device with your account details and uploaded automatically once you are back online.",
     "profile": "My Profile",
     "options": "Options",
     "my_comments": "My Comments",
@@ -329,6 +333,7 @@
     "sync_partial_failure": "{{failed}} of {{total}} failed to upload — will retry automatically",
     "last_sync_error": "Last attempt failed: {{error}}",
     "reason_network": "Waiting for a connection",
+    "no_connection_detail": "No internet connection detected on this device.",
     "reason_recaptcha_score": "Couldn't be verified yet — will retry",
     "reason_recaptcha_unavailable": "Verification unavailable — will retry",
     "show_details": "Show waiting ascents",

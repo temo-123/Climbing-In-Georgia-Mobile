@@ -1,9 +1,12 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faWifi } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../utils/LocaleContext';
 import { useAuth } from '../utils/AuthContext';
+import { useNetwork } from '../utils/NetworkContext';
 import { COLORS } from '../assets/styles/styles';
 import { IMG_BASES, imgUri } from '../utils/api';
 
@@ -15,6 +18,7 @@ export default function CustomDrawerContent(props) {
   const { t } = useTranslation();
   const { locale, setLocale } = useLocale();
   const { user } = useAuth();
+  const { isOffline } = useNetwork();
 
   const avatarUri = user?.image ? imgUri(IMG_BASES.userProfile, user.image) : null;
 
@@ -37,6 +41,15 @@ export default function CustomDrawerContent(props) {
           />
         )}
         {!!user && <Text style={styles.greeting}>{t('nav.hi_user', { name: user.name })}</Text>}
+        {/* Offline indicator sits right under the avatar/greeting and is shown
+            to logged-in and logged-out users alike — it says something about
+            the device, not about the account. */}
+        {isOffline && (
+          <View style={styles.offlineChip}>
+            <FontAwesomeIcon icon={faWifi} size={11} color="#7a5c00" />
+            <Text style={styles.offlineChipText}>{t('nav.offline_indicator')}</Text>
+          </View>
+        )}
         <Text style={styles.appName}>{t('nav.welcome_message')}</Text>
         <Text style={styles.appTagline}>{t('nav.powered_by')}</Text>
       </View>
@@ -120,6 +133,23 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  offlineChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#fff3cd',
+    borderWidth: 1,
+    borderColor: '#ffc107',
+    borderRadius: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    marginBottom: 6,
+  },
+  offlineChipText: {
+    fontSize: 11,
+    color: '#7a5c00',
+    fontWeight: '600',
   },
   greeting: {
     fontSize: 15,

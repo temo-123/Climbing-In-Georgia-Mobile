@@ -7,6 +7,7 @@ import * as Network from 'expo-network';
 
 import { Navigation } from './navigation/Navigation.jsx';
 import { LocaleProvider } from './utils/LocaleContext';
+import { NetworkProvider } from './utils/NetworkContext';
 import { AuthProvider } from './utils/AuthContext';
 import { getQueue, syncQueue } from './utils/ascentQueue';
 import { RecaptchaHost } from './utils/recaptcha';
@@ -69,11 +70,13 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <LocaleProvider>
-          <AuthProvider>
-            <RecaptchaHost />
-            <Navigation />
-            <DonationButton />
-          </AuthProvider>
+          <NetworkProvider>
+            <AuthProvider>
+              <RecaptchaHost />
+              <Navigation />
+              <DonationButton />
+            </AuthProvider>
+          </NetworkProvider>
         </LocaleProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
