@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { StyleSheet, View, FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { useSiteDescription } from '../../utils/useSiteData';
 import { useLocale } from '../../utils/LocaleContext';
+import { useNetwork } from '../../utils/NetworkContext';
 import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
 
 import EventCard from "../../components/cards/event_card_component";
@@ -34,6 +35,7 @@ function monthLabel(key, locale) {
 export default function App() {
   const { t } = useTranslation();
   const { locale } = useLocale();
+  const { isOffline: deviceOffline } = useNetwork();
   const [event_data, setData] = useState([]);
   const [isLoading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
@@ -41,7 +43,7 @@ export default function App() {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const description = useSiteDescription('events');
 
-  useEffect(() => {
+  function load() {
     setLoading(true);
     setIsOffline(false);
     setNoCache(false);
@@ -62,7 +64,17 @@ export default function App() {
         }
         setLoading(false);
       });
-  }, [locale]);
+  }
+
+  useEffect(() => { load(); }, [locale]);
+
+  // Refetch the moment the device reconnects, so a stale "showing cached
+  // data" banner doesn't linger after connectivity actually comes back.
+  const wasDeviceOffline = useRef(deviceOffline);
+  useEffect(() => {
+    if (wasDeviceOffline.current && !deviceOffline) load();
+    wasDeviceOffline.current = deviceOffline;
+  }, [deviceOffline]);
 
   const monthOptions = useMemo(() => {
     const seen = new Map();

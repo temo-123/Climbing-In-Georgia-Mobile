@@ -5,6 +5,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import api, { API_BASE_URL } from '../../utils/api';
+import { useNetwork } from '../../utils/NetworkContext';
 import { saveOfflineData, loadOfflineData } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
@@ -19,6 +20,7 @@ const SEARCH_DEBOUNCE_MS = 350;
 export default function ClimbersListScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation();
+  const { isOffline: deviceOffline } = useNetwork();
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('name');
   const [data, setData] = useState([]);
@@ -67,6 +69,14 @@ export default function ClimbersListScreen() {
     return () => clearTimeout(debounceRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, sort]);
+
+  // Refetch the moment the device reconnects, so a stale "showing cached
+  // data" banner doesn't linger after connectivity actually comes back.
+  const wasDeviceOffline = useRef(deviceOffline);
+  useEffect(() => {
+    if (wasDeviceOffline.current && !deviceOffline) fetchPage(1);
+    wasDeviceOffline.current = deviceOffline;
+  }, [deviceOffline, fetchPage]);
 
   function loadMore() {
     if (loadingMore || loading || page >= lastPage) return;

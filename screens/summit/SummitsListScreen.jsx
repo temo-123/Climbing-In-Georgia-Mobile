@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
   ActivityIndicator, RefreshControl,
@@ -6,6 +6,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { useLocale } from '../../utils/LocaleContext';
+import { useNetwork } from '../../utils/NetworkContext';
 import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
@@ -67,6 +68,7 @@ function SummitCard({ item, navigation, t, locale }) {
 export default function SummitsListScreen({ navigation }) {
   const { t } = useTranslation();
   const { locale } = useLocale();
+  const { isOffline: deviceOffline } = useNetwork();
   const [summits, setSummits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -96,6 +98,17 @@ export default function SummitsListScreen({ navigation }) {
   }
 
   useEffect(() => { load(); }, []);
+
+  // This screen's own `isOffline` (cached-data banner) only gets set/cleared
+  // inside load()'s then/catch, so once connectivity actually drops it stays
+  // stuck showing cached data even after the device reconnects — nothing
+  // otherwise re-runs load() to prove the server is reachable again. Refetch
+  // the moment the app-wide connectivity flag flips back to online.
+  const wasDeviceOffline = useRef(deviceOffline);
+  useEffect(() => {
+    if (wasDeviceOffline.current && !deviceOffline) load(true);
+    wasDeviceOffline.current = deviceOffline;
+  }, [deviceOffline]);
 
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>;
   if (noCache) return <OfflineError />;

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api, { API_BASE_URL } from '../../utils/api';
+import { useNetwork } from '../../utils/NetworkContext';
 import { saveOfflineData, loadOfflineData } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
@@ -29,12 +30,13 @@ function CommentCard({ item }) {
 
 export default function UserCommentsScreen() {
   const { t } = useTranslation();
+  const { isOffline: deviceOffline } = useNetwork();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
   const [noCache, setNoCache] = useState(false);
 
-  useEffect(() => {
+  function load() {
     api.get(`${API}/get_article/get_guide_comment/get_user_comments`)
       .then(res => {
         const list = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
@@ -51,7 +53,17 @@ export default function UserCommentsScreen() {
         }
       })
       .finally(() => setLoading(false));
-  }, []);
+  }
+
+  useEffect(() => { load(); }, []);
+
+  // Refetch the moment the device reconnects, so a stale "showing cached
+  // data" banner doesn't linger after connectivity actually comes back.
+  const wasDeviceOffline = useRef(deviceOffline);
+  useEffect(() => {
+    if (wasDeviceOffline.current && !deviceOffline) load();
+    wasDeviceOffline.current = deviceOffline;
+  }, [deviceOffline]);
 
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>;
   if (noCache) return <OfflineError />;

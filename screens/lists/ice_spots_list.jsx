@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { useSiteDescription } from '../../utils/useSiteData';
 import { useLocale } from '../../utils/LocaleContext';
+import { useNetwork } from '../../utils/NetworkContext';
 import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
 
 import IceCard from "../../components/cards/ice_card_component";
@@ -18,13 +19,14 @@ import PageFooter from "../../components/PageFooter";
 export default function App() {
   const { t } = useTranslation();
   const { locale } = useLocale();
+  const { isOffline: deviceOffline } = useNetwork();
   const [ice_data, setData] = useState([]);
   const [isLoading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
   const [noCache, setNoCache] = useState(false);
   const description = useSiteDescription('ice');
 
-  useEffect(() => {
+  function load() {
     setLoading(true);
     setIsOffline(false);
     setNoCache(false);
@@ -44,7 +46,17 @@ export default function App() {
         }
         setLoading(false);
       });
-  }, [locale]);
+  }
+
+  useEffect(() => { load(); }, [locale]);
+
+  // Refetch the moment the device reconnects, so a stale "showing cached
+  // data" banner doesn't linger after connectivity actually comes back.
+  const wasDeviceOffline = useRef(deviceOffline);
+  useEffect(() => {
+    if (wasDeviceOffline.current && !deviceOffline) load();
+    wasDeviceOffline.current = deviceOffline;
+  }, [deviceOffline]);
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;

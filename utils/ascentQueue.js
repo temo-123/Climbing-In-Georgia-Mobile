@@ -1,9 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
-import * as FileSystem from 'expo-file-system/legacy';
 import api, { corsUrl, API_BASE_URL } from './api';
 import i18n from './i18n';
 import { withRecaptchaRetry } from './recaptcha';
+import { resolvePhotoUri, deletePersistedPhoto } from './imageCompress';
 
 const IS_EXPO_GO = Constants.appOwnership === 'expo';
 
@@ -65,7 +65,10 @@ async function removeFromQueue(id) {
 // upload, this one needs to notify subscribers since it doesn't happen as
 // part of a syncQueue() pass (which notifies once at the end on its own).
 export async function discardQueuedAscent(id) {
+  const queue = await getQueue();
+  const item = queue.find(q => q._id === id);
   await removeFromQueue(id);
+  if (item?.image_uri) deletePersistedPhoto(item.image_uri);
   await notifyListeners();
 }
 
@@ -109,44 +112,52 @@ export function syncQueue() {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// A queued item can sit on the device across many app sessions before it
-// finally gets a chance to sync — long enough for Android to reclaim the
-// ImagePicker temp/cache file its photo pointed at. Uploading a FormData part
-// backed by a file that no longer exists fails at the transport layer (shows
-// up to the user as a bare "Network Error", indistinguishable from a real
-// connectivity problem) instead of a clean, fixable error. Check first and
-// degrade to submitting without the photo rather than losing the whole ascent.
-async function resolvePhotoUri(image_uri) {
-  if (!image_uri) return null;
-  try {
-    const info = await FileSystem.getInfoAsync(image_uri);
-    return info.exists ? image_uri : null;
-  } catch {
-    return null;
-  }
-}
-
 async function uploadOne(item) {
   const { summit_id, image_uri, url_title, summit_title, queue_reason, ...fields } = item;
   const photoUri = await resolvePhotoUri(image_uri);
   return withRecaptchaRetry('make_ascent', async (recaptcha_token) => {
     const fieldsWithCaptcha = { ...fields, recaptcha_token };
-    if (photoUri) {
-      const fd = new FormData();
-      Object.entries(fieldsWithCaptcha).forEach(([k, v]) => {
-        if (v == null) return;
-        fd.append(k, typeof v === 'boolean' ? (v ? '1' : '0') : String(v));
-      });
-      const ext = (photoUri.split('.').pop() || 'jpg').toLowerCase();
-      // Field name must be "photo" — the backend reads $request->file('photo').
-      fd.append('photo', { uri: photoUri, name: `ascent.${ext}`, type: `image/${ext === 'jpg' ? 'jpeg' : ext}` });
-      // Do not set Content-Type manually — RN/axios must generate the multipart boundary itself.
-      // Longer timeout than the shared default — see SubmitAscentScreen.jsx.
-      return api.post(corsUrl(`${API}/ascent/${summit_id}`), fd, { timeout: 60000 });
+    if (!photoUri) {
+      // Also reached when a photo was queued but its local file is gone —
+      // the ascent itself still uploads, just without the photo.
+      return api.post(corsUrl(`${API}/ascent/${summit_id}`), fieldsWithCaptcha, { timeout: 30000 });
     }
-    // Also reached when a photo was queued but its local file is gone — the
-    // ascent itself still uploads, just without the photo.
-    return api.post(corsUrl(`${API}/ascent/${summit_id}`), fieldsWithCaptcha, { timeout: 30000 });
+
+    const fd = new FormData();
+    Object.entries(fieldsWithCaptcha).forEach(([k, v]) => {
+      if (v == null) return;
+      fd.append(k, typeof v === 'boolean' ? (v ? '1' : '0') : String(v));
+    });
+    const ext = (photoUri.split('.').pop() || 'jpg').toLowerCase();
+    // Field name must be "photo" — the backend reads $request->file('photo').
+    fd.append('photo', { uri: photoUri, name: `ascent.${ext}`, type: `image/${ext === 'jpg' ? 'jpeg' : ext}` });
+    // Do not set Content-Type manually — RN/axios must generate the multipart boundary itself.
+    // Longer timeout than the shared default — see SubmitAscentScreen.jsx.
+    try {
+      return await api.post(corsUrl(`${API}/ascent/${summit_id}`), fd, { timeout: 60000 });
+    } catch (photoErr) {
+      if (photoErr?.isAxiosError && !photoErr.response) {
+        // The photo attachment itself is what's failing at the transport
+        // level — uploadWithRetry's backoff below only helps a *connection*
+        // that isn't ready yet, and retrying the exact same oversized/bad
+        // attachment will fail identically every time, leaving the whole
+        // ascent stuck in the queue forever. Drop the photo and submit the
+        // ascent on its own instead — see SubmitAscentScreen.jsx's live
+        // submit path for the same fallback.
+        // TEMP DIAGNOSTIC — see the matching comment in SubmitAscentScreen.jsx
+        // about pulling the real native error out of err.request, since
+        // axios's own "Network Error" wrapper discards it.
+        const rawXhr = photoErr.request;
+        console.warn('[ascent photo sync] transport failure, dropping photo:', {
+          message: photoErr.message,
+          code: photoErr.code,
+          name: photoErr.name,
+          native: rawXhr?.responseText || rawXhr?._response || rawXhr?.response || '(none)',
+        });
+        return api.post(corsUrl(`${API}/ascent/${summit_id}`), fieldsWithCaptcha, { timeout: 30000 });
+      }
+      throw photoErr;
+    }
   });
 }
 
@@ -154,15 +165,21 @@ async function uploadOne(item) {
 // connection that isn't fully usable yet (see the App.js reconnect-debounce
 // comment) — retry a genuine transport-level failure a couple of times in
 // place before giving up and asking the user to tap "Sync Now" again.
+// Real-world reconnects (exiting airplane mode, a cell tower handoff) can
+// leave the device reporting "connected" for 10-20+ seconds before a route
+// to the internet actually works — the previous 3-attempt/4.5s-total budget
+// gave up well before that, which is what made a perfectly fine connection
+// look like a permanent sync failure. Exponential backoff capped at 8s per
+// gap gives ~22s of total runway to ride that out.
 async function uploadWithRetry(item) {
-  const MAX_ATTEMPTS = 3;
+  const MAX_ATTEMPTS = 5;
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       return await uploadOne(item);
     } catch (err) {
       const isTransportFailure = err?.isAxiosError && !err.response;
       if (attempt === MAX_ATTEMPTS || !isTransportFailure) throw err;
-      await sleep(1500 * attempt);
+      await sleep(Math.min(2000 * 2 ** (attempt - 1), 8000));
     }
   }
 }
@@ -179,6 +196,7 @@ async function runSync() {
     try {
       await uploadWithRetry(uploadItem);
       await removeFromQueue(_id);
+      if (uploadItem.image_uri) deletePersistedPhoto(uploadItem.image_uri);
       uploaded++;
     } catch (err) {
       failed++;

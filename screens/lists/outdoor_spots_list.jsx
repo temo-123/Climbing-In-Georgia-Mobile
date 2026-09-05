@@ -1,9 +1,10 @@
 import { StyleSheet, View, FlatList, TouchableOpacity, Text } from 'react-native';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { useSiteDescription } from '../../utils/useSiteData';
 import { useLocale } from '../../utils/LocaleContext';
+import { useNetwork } from '../../utils/NetworkContext';
 import { loadOutdoorByRegionData, saveOutdoorByRegionData } from '../../utils/offlineStorage';
 
 import OutdoorCard from "../../components/cards/outdoor_card_component";
@@ -24,6 +25,7 @@ const OTHER_REGION_KEY = '__other__';
 export default function App() {
   const { t } = useTranslation();
   const { locale } = useLocale();
+  const { isOffline: deviceOffline } = useNetwork();
   const [byRegion, setByRegion] = useState([]);
   const [isLoading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
@@ -33,7 +35,7 @@ export default function App() {
   const [sortAlpha, setSortAlpha] = useState(false);
   const description = useSiteDescription('outdoor');
 
-  useEffect(() => {
+  function load() {
     setLoading(true);
     setIsOffline(false);
     setNoCache(false);
@@ -54,7 +56,17 @@ export default function App() {
         }
         setLoading(false);
       });
-  }, [locale]);
+  }
+
+  useEffect(() => { load(); }, [locale]);
+
+  // Refetch the moment the device reconnects, so a stale "showing cached
+  // data" banner doesn't linger after connectivity actually comes back.
+  const wasDeviceOffline = useRef(deviceOffline);
+  useEffect(() => {
+    if (wasDeviceOffline.current && !deviceOffline) load();
+    wasDeviceOffline.current = deviceOffline;
+  }, [deviceOffline]);
 
   // Every spot, tagged with its region key, regardless of grouping — the
   // region filter chips narrow this down; "All" (selectedRegion === null)

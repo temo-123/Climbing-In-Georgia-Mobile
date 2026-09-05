@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
   ActivityIndicator, Dimensions,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api, { API_BASE_URL } from '../../utils/api';
+import { useNetwork } from '../../utils/NetworkContext';
 import { saveOfflineData, loadOfflineData } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
@@ -34,6 +35,7 @@ function EventCard({ item }) {
 
 export default function UserFavoritesScreen({ route }) {
   const { t } = useTranslation();
+  const { isOffline: deviceOffline } = useNetwork();
   const initialTab = route?.params?.tab ?? 'areas';
   const [activeTab, setActiveTab] = useState(initialTab);
   const [areas, setAreas] = useState([]);
@@ -42,7 +44,7 @@ export default function UserFavoritesScreen({ route }) {
   const [isOffline, setIsOffline] = useState(false);
   const [noCache, setNoCache] = useState(false);
 
-  useEffect(() => {
+  function load() {
     setLoading(true);
     Promise.all([
       api.get(`${API}/get_faworite/get_faworite_outdoor_region`),
@@ -63,7 +65,17 @@ export default function UserFavoritesScreen({ route }) {
         setNoCache(true);
       }
     }).finally(() => setLoading(false));
-  }, []);
+  }
+
+  useEffect(() => { load(); }, []);
+
+  // Refetch the moment the device reconnects, so a stale "showing cached
+  // data" banner doesn't linger after connectivity actually comes back.
+  const wasDeviceOffline = useRef(deviceOffline);
+  useEffect(() => {
+    if (wasDeviceOffline.current && !deviceOffline) load();
+    wasDeviceOffline.current = deviceOffline;
+  }, [deviceOffline]);
 
   const tabLabels = {
     areas: t('user.favorite_areas'),

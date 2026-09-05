@@ -318,6 +318,7 @@
     "choose_from_gallery": "გალერიიდან არჩევა",
     "remove_photo": "ფოტოს წაშლა",
     "gallery_permission": "ფოტოს მისართავად გალერიაზე წვდომა საჭიროა.",
+    "photo_upload_failed_note": "თქვენი ასვლა დაფიქსირდა, მაგრამ ფოტოს ატვირთვა ვერ მოხერხდა და არ დაერთო.",
     "sync_notification_title": "🎉 გილოცავთ!",
     "sync_notification_body_one": "{{count}} მწვერვალის ასვლა ატვირთულია.",
     "sync_notification_body": "{{count}} მწვერვალის ასვლა ატვირთულია.",

@@ -319,6 +319,7 @@
     "choose_from_gallery": "Choose from Gallery",
     "remove_photo": "Remove Photo",
     "gallery_permission": "Gallery access is required to attach a photo.",
+    "photo_upload_failed_note": "Your ascent was recorded, but the photo couldn't be uploaded and was not attached.",
     "sync_notification_title": "🎉 Congratulations!",
     "sync_notification_body_one": "{{count}} summit ascent uploaded.",
     "sync_notification_body": "{{count}} summit ascents uploaded.",

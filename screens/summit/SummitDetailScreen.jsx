@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
   ActivityIndicator, FlatList, Modal, Image,
@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from '../../utils/api';
 import { useLocale } from '../../utils/LocaleContext';
+import { useNetwork } from '../../utils/NetworkContext';
 import { loadSummitData, loadSummitAscentsData } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
@@ -116,6 +117,7 @@ function AscentDetailsModal({ ascent, onClose, t }) {
 export default function SummitDetailScreen({ route, navigation }) {
   const { t } = useTranslation();
   const { locale } = useLocale();
+  const { isOffline: deviceOffline } = useNetwork();
   const { url_title, title } = route.params;
   const [summit, setSummit] = useState(null);
   const [ascents, setAscents] = useState([]);
@@ -125,40 +127,48 @@ export default function SummitDetailScreen({ route, navigation }) {
   const [selectedAscent, setSelectedAscent] = useState(null);
   const isFirstLoad = useRef(true);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (isFirstLoad.current) setLoading(true);
-      setIsOffline(false);
-      setNoCache(false);
-      Promise.all([
-        api.get(corsUrl(`${API}/show/${url_title}`)),
-        api.get(corsUrl(`${API}/ascents/${url_title}`)),
-      ]).then(([s, a]) => {
-        setSummit(s.data);
-        const data = a.data?.ascents ?? a.data ?? [];
+  const load = useCallback(() => {
+    if (isFirstLoad.current) setLoading(true);
+    setIsOffline(false);
+    setNoCache(false);
+    Promise.all([
+      api.get(corsUrl(`${API}/show/${url_title}`)),
+      api.get(corsUrl(`${API}/ascents/${url_title}`)),
+    ]).then(([s, a]) => {
+      setSummit(s.data);
+      const data = a.data?.ascents ?? a.data ?? [];
+      setAscents(Array.isArray(data) ? data : []);
+    }).catch(async () => {
+      // Offline (or the request failed) — fall back to whatever the Offline
+      // Mode download cached. Ascent history is a best-effort "last seen"
+      // snapshot here (it's inherently live/social data), but the summit's
+      // own info is what actually matters for reaching "Record Ascent".
+      const cachedSummit = await loadSummitData(url_title);
+      if (cachedSummit) {
+        setSummit(cachedSummit);
+        const cachedAscents = await loadSummitAscentsData(url_title);
+        const data = cachedAscents?.ascents ?? cachedAscents ?? [];
         setAscents(Array.isArray(data) ? data : []);
-      }).catch(async () => {
-        // Offline (or the request failed) — fall back to whatever the Offline
-        // Mode download cached. Ascent history is a best-effort "last seen"
-        // snapshot here (it's inherently live/social data), but the summit's
-        // own info is what actually matters for reaching "Record Ascent".
-        const cachedSummit = await loadSummitData(url_title);
-        if (cachedSummit) {
-          setSummit(cachedSummit);
-          const cachedAscents = await loadSummitAscentsData(url_title);
-          const data = cachedAscents?.ascents ?? cachedAscents ?? [];
-          setAscents(Array.isArray(data) ? data : []);
-          setIsOffline(true);
-        } else {
-          setNoCache(true);
-        }
-      })
-        .finally(() => {
-          setLoading(false);
-          isFirstLoad.current = false;
-        });
-    }, [url_title])
-  );
+        setIsOffline(true);
+      } else {
+        setNoCache(true);
+      }
+    })
+      .finally(() => {
+        setLoading(false);
+        isFirstLoad.current = false;
+      });
+  }, [url_title]);
+
+  useFocusEffect(load);
+
+  // Refetch the moment the device reconnects, so a stale "showing cached
+  // data" banner doesn't linger after connectivity actually comes back.
+  const wasDeviceOffline = useRef(deviceOffline);
+  useEffect(() => {
+    if (wasDeviceOffline.current && !deviceOffline) load();
+    wasDeviceOffline.current = deviceOffline;
+  }, [deviceOffline, load]);
 
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>;
   if (noCache || !summit) return <OfflineError />;
