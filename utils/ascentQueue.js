@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 import api, { corsUrl, API_BASE_URL } from './api';
 import i18n from './i18n';
 import { withRecaptchaRetry } from './recaptcha';
-import { resolvePhotoUri, deletePersistedPhoto } from './imageCompress';
+import { resolvePhotoUri, deletePersistedPhoto, readPhotoAsBase64 } from './imageCompress';
 
 const IS_EXPO_GO = Constants.appOwnership === 'expo';
 
@@ -115,46 +115,31 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function uploadOne(item) {
   const { summit_id, image_uri, url_title, summit_title, queue_reason, ...fields } = item;
   const photoUri = await resolvePhotoUri(image_uri);
+  // Sent as base64 inside the same plain JSON body as everything else, not
+  // as a multipart/form-data file part — see the matching comment in
+  // SubmitAscentScreen.jsx for why: some networks/on-device software (VPNs,
+  // firewalls, "security" apps proxying all traffic) reject multipart
+  // bodies specifically while leaving plain JSON untouched.
+  const photoBase64 = photoUri ? await readPhotoAsBase64(photoUri) : null;
+  const photoExt = photoUri ? (photoUri.split('.').pop() || 'jpg').toLowerCase() : null;
   return withRecaptchaRetry('make_ascent', async (recaptcha_token) => {
-    const fieldsWithCaptcha = { ...fields, recaptcha_token };
-    if (!photoUri) {
-      // Also reached when a photo was queued but its local file is gone —
-      // the ascent itself still uploads, just without the photo.
-      return api.post(corsUrl(`${API}/ascent/${summit_id}`), fieldsWithCaptcha, { timeout: 30000 });
-    }
-
-    const fd = new FormData();
-    Object.entries(fieldsWithCaptcha).forEach(([k, v]) => {
-      if (v == null) return;
-      fd.append(k, typeof v === 'boolean' ? (v ? '1' : '0') : String(v));
-    });
-    const ext = (photoUri.split('.').pop() || 'jpg').toLowerCase();
-    // Field name must be "photo" — the backend reads $request->file('photo').
-    fd.append('photo', { uri: photoUri, name: `ascent.${ext}`, type: `image/${ext === 'jpg' ? 'jpeg' : ext}` });
-    // Do not set Content-Type manually — RN/axios must generate the multipart boundary itself.
-    // Longer timeout than the shared default — see SubmitAscentScreen.jsx.
+    const fieldsWithCaptcha = {
+      ...fields,
+      recaptcha_token,
+      // Also reached with no photo fields when the queued photo's local
+      // file has since gone missing — the ascent itself still uploads.
+      ...(photoBase64 ? { photo_base64: photoBase64, photo_ext: photoExt } : {}),
+    };
     try {
-      return await api.post(corsUrl(`${API}/ascent/${summit_id}`), fd, { timeout: 60000 });
+      return await api.post(corsUrl(`${API}/ascent/${summit_id}`), fieldsWithCaptcha, { timeout: 60000 });
     } catch (photoErr) {
-      if (photoErr?.isAxiosError && !photoErr.response) {
-        // The photo attachment itself is what's failing at the transport
-        // level — uploadWithRetry's backoff below only helps a *connection*
-        // that isn't ready yet, and retrying the exact same oversized/bad
-        // attachment will fail identically every time, leaving the whole
-        // ascent stuck in the queue forever. Drop the photo and submit the
-        // ascent on its own instead — see SubmitAscentScreen.jsx's live
-        // submit path for the same fallback.
-        // TEMP DIAGNOSTIC — see the matching comment in SubmitAscentScreen.jsx
-        // about pulling the real native error out of err.request, since
-        // axios's own "Network Error" wrapper discards it.
-        const rawXhr = photoErr.request;
-        console.warn('[ascent photo sync] transport failure, dropping photo:', {
-          message: photoErr.message,
-          code: photoErr.code,
-          name: photoErr.name,
-          native: rawXhr?.responseText || rawXhr?._response || rawXhr?.response || '(none)',
-        });
-        return api.post(corsUrl(`${API}/ascent/${summit_id}`), fieldsWithCaptcha, { timeout: 30000 });
+      if (photoBase64 && photoErr?.isAxiosError && !photoErr.response) {
+        // Rather than leave the whole ascent stuck in the queue forever
+        // over its attachment, drop the photo and submit the ascent on its
+        // own instead — see SubmitAscentScreen.jsx's live submit path for
+        // the same fallback.
+        const { photo_base64, photo_ext, ...withoutPhoto } = fieldsWithCaptcha;
+        return api.post(corsUrl(`${API}/ascent/${summit_id}`), withoutPhoto, { timeout: 30000 });
       }
       throw photoErr;
     }

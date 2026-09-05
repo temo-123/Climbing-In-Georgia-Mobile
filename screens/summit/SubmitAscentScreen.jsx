@@ -7,14 +7,13 @@ import {
 import { useTranslation } from 'react-i18next';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system/legacy';
 import { useAuth } from '../../utils/AuthContext';
 import { useNetwork } from '../../utils/NetworkContext';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { queueAscent, describeError } from '../../utils/ascentQueue';
 import { withRecaptchaRetry, isRecaptchaFailure } from '../../utils/recaptcha';
 import { loadSummitData, loadSummitRoutesData } from '../../utils/offlineStorage';
-import { persistPickedPhoto, resolvePhotoUri, deletePersistedPhoto } from '../../utils/imageCompress';
+import { persistPickedPhoto, resolvePhotoUri, deletePersistedPhoto, readPhotoAsBase64 } from '../../utils/imageCompress';
 import { COLORS } from '../../assets/styles/styles';
 
 const API = `${API_BASE_URL}/summit`;
@@ -62,7 +61,6 @@ export default function SubmitAscentScreen({ route, navigation }) {
   const [compressingPhoto, setCompressingPhoto] = useState(false);
   const [photoDropped, setPhotoDropped] = useState(false);
   const [photoDropError, setPhotoDropError] = useState('');
-  const [photoDebugInfo, setPhotoDebugInfo] = useState('');
 
   function applySummitCoords(summitData) {
     const { latitude, longitude } = summitData || {};
@@ -179,7 +177,6 @@ export default function SubmitAscentScreen({ route, navigation }) {
     setLoading(true);
     setPhotoDropped(false);
     setPhotoDropError('');
-    setPhotoDebugInfo('');
 
     // Field names must match SummitPublicController::submit_ascent exactly:
     // user_latitude/user_longitude (not latitude/longitude), article_id (not route_id).
@@ -249,83 +246,46 @@ export default function SubmitAscentScreen({ route, navigation }) {
     // so a photo whose backing file has genuinely gone missing degrades to
     // "submit without it" consistently across every recaptcha retry attempt,
     // matching the same check the background queue's uploadOne() runs before
-    // its own multipart build — see persistPickedPhoto's comment for why this
-    // file can go missing even on this immediate (non-queued) path.
+    // its own read — see persistPickedPhoto's comment for why this file can
+    // go missing even on this immediate (non-queued) path.
     const photoUri = await resolvePhotoUri(imageUri);
-
-    // TEMP DIAGNOSTIC — unconditional, shown even on a plain success, since
-    // every failure mode tried so far (transport error, backend conversion
-    // bug) has been ruled out one at a time while the photo still never
-    // makes it into the ascent record. This answers the one question none
-    // of those ruled out: did the app even believe it had a photo to send
-    // in the first place. Remove once resolved.
-    const rawInfo = imageUri ? await FileSystem.getInfoAsync(imageUri, { size: true }).catch(e => ({ error: e.message })) : null;
-    setPhotoDebugInfo(
-      `imageUri set: ${!!imageUri} | resolvePhotoUri: ${photoUri ? 'ok' : 'NULL (file missing)'} | `
-      + `raw file exists: ${rawInfo ? (rawInfo.exists ?? `err: ${rawInfo.error}`) : 'n/a'} | `
-      + `raw size: ${rawInfo?.size ? Math.round(rawInfo.size / 1024) + 'KB' : 'n/a'}`
-    );
+    // Sent as base64 inside the same plain JSON body as everything else,
+    // not as a multipart/form-data file part — some networks and on-device
+    // software (VPNs, firewalls, "security" apps that proxy all traffic to
+    // inspect it) reject or corrupt multipart bodies specifically while
+    // leaving plain JSON/urlencoded POSTs untouched. A confirmed real-world
+    // case: one test device consistently failed every photo-attached
+    // multipart request with a native error of literally
+    // "multipart != application/x-www-form-urlencoded" — some interceptor
+    // rejecting the Content-Type outright — while the exact same request
+    // with no photo (plain JSON) always succeeded. Switching to base64/JSON
+    // sidesteps that whole class of problem instead of trying to detect or
+    // work around every possible interceptor. Backend counterpart: the
+    // ascent endpoint must accept `photo_base64`/`photo_ext` fields.
+    const photoBase64 = photoUri ? await readPhotoAsBase64(photoUri) : null;
+    const photoExt = photoUri ? (photoUri.split('.').pop() || 'jpg').toLowerCase() : null;
 
     try {
       await withRecaptchaRetry('make_ascent', async (recaptcha_token) => {
-        const payloadWithCaptcha = { ...ascentPayload, recaptcha_token };
-        if (!photoUri) {
-          return api.post(corsUrl(`${API}/ascent/${summit_id}`), payloadWithCaptcha);
-        }
-
-        const fd = new FormData();
-        Object.entries(payloadWithCaptcha).forEach(([k, v]) => {
-          if (v == null) return;
-          fd.append(k, typeof v === 'boolean' ? (v ? '1' : '0') : String(v));
-        });
-        const ext = (photoUri.split('.').pop() || 'jpg').toLowerCase();
-        // Field name must be "photo" — the backend reads $request->file('photo').
-        fd.append('photo', { uri: photoUri, name: `ascent.${ext}`, type: `image/${ext === 'jpg' ? 'jpeg' : ext}` });
-        // Do not set Content-Type manually — RN/axios must generate the multipart boundary itself.
-        // Longer timeout than the shared default (20s) — a full-resolution,
-        // uncropped photo can legitimately take longer to upload on a slow
-        // connection; the default was cutting uploads off as a false "network error".
+        const payloadWithCaptcha = {
+          ...ascentPayload,
+          recaptcha_token,
+          ...(photoBase64 ? { photo_base64: photoBase64, photo_ext: photoExt } : {}),
+        };
         try {
-          return await api.post(corsUrl(`${API}/ascent/${summit_id}`), fd, { timeout: 60000 });
+          return await api.post(corsUrl(`${API}/ascent/${summit_id}`), payloadWithCaptcha, { timeout: 60000 });
         } catch (photoErr) {
-          if (photoErr?.isAxiosError && !photoErr.response) {
-            // The *photo attachment itself* is what's failing at the
-            // transport level (too large for a size limit somewhere in the
-            // path, a rejected/malformed multipart part, etc) — every retry
-            // of the same request fails identically, so this is not a
-            // reconnect-timing issue uploadWithRetry-style backoff can fix.
-            // Rather than leave an otherwise-valid ascent permanently stuck
-            // over its attachment, fall back to submitting without the
-            // photo so the climber's ascent itself is never lost.
-            // TEMP DIAGNOSTIC — this fallback was silently swallowing the
-            // real cause of the photo upload failure (the ascent then
-            // "succeeds" with no photo and nothing in the backend log,
-            // since the request never actually reached the server). Surface
-            // it directly on the success screen — a Metro/logcat console
-            // isn't something the person testing this on-device can always
-            // get to — instead of vanishing. Remove once the transport
-            // failure itself is understood and fixed.
+          if (photoBase64 && photoErr?.isAxiosError && !photoErr.response) {
+            // The request still failed at the transport level even without
+            // multipart involved (a genuine connectivity blip, or a body
+            // this large still tripping something) — rather than leave an
+            // otherwise-valid ascent permanently stuck over its attachment,
+            // fall back to submitting without the photo so the climber's
+            // ascent itself is never lost.
             setPhotoDropped(true);
-            // axios's XHR adapter always reports plain "Network Error" for any
-            // connection-level failure — the *real* native message (from
-            // RN's XMLHttpRequest.js: `this._response = error` set straight
-            // from the native networking module, e.g. actual OkHttp/iOS
-            // NSURLSession error text) never reaches the "error" Event object
-            // it dispatches (a bare `new Event('error')` with no `.message`),
-            // so axios's `event.message` check always misses it and falls
-            // back to the generic string. The raw XMLHttpRequest instance is
-            // still attached as `err.request` though, and *its*
-            // responseText/_response holds that real native string — pull it
-            // out directly instead of accepting the generic wrapper.
-            const rawXhr = photoErr.request;
-            const nativeDetail = rawXhr?.responseText || rawXhr?._response || rawXhr?.response || '(none)';
-            FileSystem.getInfoAsync(photoUri, { size: true }).then((info) => {
-              const kb = info.exists && info.size ? `${Math.round(info.size / 1024)}KB` : 'unknown size';
-              setPhotoDropError(`${photoErr.name || 'Error'}: ${photoErr.message || 'unknown'} (code: ${photoErr.code || 'none'}, file: ${kb}) | native: ${nativeDetail}`);
-            }).catch(() => {
-              setPhotoDropError(`${photoErr.name || 'Error'}: ${photoErr.message || 'unknown'} (code: ${photoErr.code || 'none'}) | native: ${nativeDetail}`);
-            });
-            return api.post(corsUrl(`${API}/ascent/${summit_id}`), payloadWithCaptcha);
+            setPhotoDropError(`${photoErr.name || 'Error'}: ${photoErr.message || 'unknown'} (code: ${photoErr.code || 'none'})`);
+            const { photo_base64, photo_ext, ...withoutPhoto } = payloadWithCaptcha;
+            return api.post(corsUrl(`${API}/ascent/${summit_id}`), withoutPhoto);
           }
           throw photoErr;
         }
@@ -397,14 +357,9 @@ export default function SubmitAscentScreen({ route, navigation }) {
         {photoDropped && (
           <>
             <Text style={styles.queuedDetailText}>{t('summit.photo_upload_failed_note')}</Text>
-            {/* TEMP DIAGNOSTIC — remove once the transport failure is understood and fixed. */}
             {!!photoDropError && <Text selectable style={styles.queuedDetailText}>{photoDropError}</Text>}
           </>
         )}
-        {/* TEMP DIAGNOSTIC — shown unconditionally, even on a clean success,
-            to answer whether the app believed it had a photo to send at all.
-            Remove once the missing-photo mystery is resolved. */}
-        {!!photoDebugInfo && <Text selectable style={styles.queuedDetailText}>{photoDebugInfo}</Text>}
         <TouchableOpacity style={styles.doneBtn} onPress={() => navigation.goBack()} activeOpacity={0.85}>
           <Text style={styles.doneBtnText}>{t('summit.done')}</Text>
         </TouchableOpacity>

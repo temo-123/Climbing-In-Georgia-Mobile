@@ -60,7 +60,7 @@ All under `https://climbing.ge/api`.
 | `POST` | `/set_user_follow/follow/{user_id}` | Required | 422 if following yourself, 404 if target doesn't exist, idempotent |
 | `DELETE` | `/set_user_follow/unfollow/{user_id}` | Required | Idempotent |
 | `GET` | `/set_user_follow/follow_status/{user_id}` | Required | `{ following: bool, is_self: bool }` |
-| `POST` | `/user/user_image_update/{user_id}` | Required | Multipart. Field name **must** be `image` |
+| `POST` | `/user/user_image_update/{user_id}` | Required | Base64-in-JSON (`image_base64` + `image_ext`), not multipart — see [Avatar Upload](#avatar-upload) below |
 | `POST` | `/get_options/user_info_update/{user_id}` | Required | See [payload gotcha](#the-data--editing_data-payload-gotcha) below |
 | `GET` / `POST` / `PUT` / `DELETE` | `/user_site[/{id}]` | Required | Extra-links CRUD — see [Social Links vs. Extra Links](#social-links-vs-extra-links) |
 
@@ -115,7 +115,7 @@ Both are rendered on the public profile (`ClimberProfileContent.jsx`) — social
 
 ## Avatar Upload
 
-`screens/user/UserOptionsScreen.jsx` reuses the `expo-image-picker` pattern already established in `screens/summit/SubmitAscentScreen.jsx` (camera or gallery → `compressImageIfNeeded` → `FormData`). Field name must be `image`. After a successful upload (or profile edit), call `refreshUser()` from `AuthContext` — it re-fetches `GET /auth_user` and refreshes the cached user so the new avatar/data shows immediately everywhere (drawer header, profile screen) without needing an app restart.
+`screens/user/UserOptionsScreen.jsx` reuses the `expo-image-picker` pattern already established in `screens/summit/SubmitAscentScreen.jsx` (camera or gallery → `compressImageIfNeeded` → `readPhotoAsBase64`). Sent as `{ image_base64, image_ext }` in a plain JSON body, **not** `FormData`/multipart — see the root `CLAUDE.md`'s "Photo uploads: base64-in-JSON, not multipart" section for why. After a successful upload (or profile edit), call `refreshUser()` from `AuthContext` — it re-fetches `GET /auth_user` and refreshes the cached user so the new avatar/data shows immediately everywhere (drawer header, profile screen) without needing an app restart.
 
 Avatar images live under `public/images/user_profil_img/` (note the backend's typo: `profil`, not `profile`) — see `IMG_BASES.userProfile` in `utils/api.js`.
 

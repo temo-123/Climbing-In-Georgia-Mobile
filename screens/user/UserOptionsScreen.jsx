@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../utils/AuthContext';
 import api, { API_BASE_URL, IMG_BASES, imgUri } from '../../utils/api';
-import { compressImageIfNeeded } from '../../utils/imageCompress';
+import { compressImageIfNeeded, readPhotoAsBase64 } from '../../utils/imageCompress';
 import { COLORS } from '../../assets/styles/styles';
 import EditProfileModal from '../../components/user/EditProfileModal';
 import ChangePasswordModal from '../../components/user/ChangePasswordModal';
@@ -60,10 +60,13 @@ export default function UserOptionsScreen() {
       setAvatarUploading(true);
       const compressedUri = await compressImageIfNeeded(result.assets[0].uri);
       const ext = (compressedUri.split('.').pop() || 'jpg').toLowerCase();
-      const fd = new FormData();
-      // Field name must be "image" — the backend reads $request->file('image').
-      fd.append('image', { uri: compressedUri, name: `avatar.${ext}`, type: `image/${ext === 'jpg' ? 'jpeg' : ext}` });
-      await api.post(`${API}/user/user_image_update/${user.id}`, fd, { timeout: 60000 });
+      // Sent as base64 in a plain JSON body rather than multipart/form-data —
+      // see the matching comment in SubmitAscentScreen.jsx: some networks/
+      // on-device software reject or mangle multipart bodies specifically.
+      // Backend reads image_base64/image_ext (falls back to $request->file('image')
+      // if a client ever sends true multipart).
+      const image_base64 = await readPhotoAsBase64(compressedUri);
+      await api.post(`${API}/user/user_image_update/${user.id}`, { image_base64, image_ext: ext }, { timeout: 60000 });
       await refreshUser();
     } catch {
       Alert.alert(t('auth.generic_error'));

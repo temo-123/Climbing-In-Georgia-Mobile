@@ -123,3 +123,19 @@ export async function deletePersistedPhoto(uri) {
   if (!uri || !uri.startsWith(ASCENT_PHOTO_DIR)) return;
   await deleteQuietly(uri);
 }
+
+// Reads a photo as base64 for sending inside a plain JSON body instead of as
+// a multipart/form-data file part. Some networks/on-device software (VPNs,
+// firewalls, "security" apps that proxy all traffic to inspect it) reject or
+// mangle multipart bodies specifically while leaving plain JSON/urlencoded
+// POSTs untouched — switching a small, already-compressed photo to base64
+// sidesteps that whole class of problem instead of trying to detect or work
+// around every possible interceptor. Returns null (never throws) so callers
+// can fall back to submitting without the photo.
+export async function readPhotoAsBase64(uri) {
+  try {
+    return await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+  } catch {
+    return null;
+  }
+}
