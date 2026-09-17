@@ -1,10 +1,11 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, ScrollView } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../utils/LocaleContext';
 
 import SpotSectors from "../../components/Routes_and_sectors/Sport_sector/spot_sectors";
+import SpotRocksOverview from "../../components/Routes_and_sectors/SpotRocksOverview";
 import ArticleBlock from "../../components/article/articl_block";
 import ArticleImageGrid from "../../components/article/ArticleImageGrid";
 import ImageViewerModal from "../../components/ImageViewerModal";
@@ -12,6 +13,7 @@ import Preloader from "../../components/Preloader";
 
 import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from "../../utils/api";
 import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
+import { useRefetchOnReconnect } from "../../utils/useRefetchOnReconnect";
 import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
 
@@ -28,8 +30,7 @@ export default function App({ route }) {
   const [noCache, setNoCache] = useState(false);
   const [viewer, setViewer] = useState(null);
 
-  useEffect(() => {
-    setLoading(true);
+  const load = useCallback(() => {
     api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/outdoor/${locale}/` + route.params))
       .then(({ data }) => {
         setGlobalOutdoorData(data);
@@ -49,13 +50,16 @@ export default function App({ route }) {
         }
         setLoading(false);
       });
-  }, [locale]);
+  }, [locale, route.params]);
+
+  useEffect(() => { setLoading(true); load(); }, [load]);
+  useRefetchOnReconnect(load);
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;
 
   const galleryUris = (globalOutdoorData.gallery_images || [])
-    .map(img => imgUri(GALLERY_BASE, img.image))
+    .map(img => imgUri(GALLERY_BASE, img.image, img.updated_at))
     .filter(Boolean);
 
   function openGallery(idx) {
@@ -73,6 +77,11 @@ export default function App({ route }) {
         global_data={globalOutdoorData.global_data || {}}
         global_info_data={globalOutdoorInfoData}
         imgBase={IMG_BASE}
+      />
+
+      <SpotRocksOverview
+        article_id={globalOutdoorData.global_data?.id}
+        onImagePress={openSectorImage}
       />
 
       <SpotSectors

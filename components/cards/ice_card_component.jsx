@@ -36,7 +36,7 @@ export default function IceCard({ cardData }) {
     >
       <View style={styles.imageView}>
         <CachedImage
-          uri={imgUri(IMG_BASES.ice, gd.image)}
+          uri={imgUri(IMG_BASES.ice, gd.image, gd.updated_at)}
           style={styles.image}
           contentFit="cover"
         />

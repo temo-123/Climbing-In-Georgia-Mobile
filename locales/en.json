@@ -155,6 +155,9 @@
     "title": "Sectors",
     "loading": "Loading sectors..."
   },
+  "spot_rocks_block": {
+    "title": "Area Overview"
+  },
   "massive": {
     "label": "Mountain Massive",
     "no_data": "Detailed information about {{name}} is not available yet.",

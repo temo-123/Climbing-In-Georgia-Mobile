@@ -10,7 +10,7 @@ export default function outdoorCard({cardData}) {
   return (
     <TouchableOpacity style={styles.outdoor_article_card} onPress={() => navigation.navigate('mountain_route_page', { url_title: cardData.global_data.url_title, mount_masive: cardData.mount_masive })}>
       <View style={styles.outdoor_article_card_image_view}>
-        <CachedImage uri={imgUri(IMG_BASES.mountRoute, cardData.global_data.image)} style={styles.outdoor_article_card_image} contentFit="contain" />
+        <CachedImage uri={imgUri(IMG_BASES.mountRoute, cardData.global_data.image, cardData.global_data.updated_at)} style={styles.outdoor_article_card_image} contentFit="contain" />
       </View>
       <View style={styles.outdoor_article_card_text}>
         <Text style={styles.outdoor_article_card_title}>{cardData.locale_data.title}</Text>

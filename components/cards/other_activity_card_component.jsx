@@ -21,7 +21,7 @@ export default function outdoorCard({ cardData }) {
     >
       <View style={styles.outdoor_article_card_image_view}>
         <CachedImage
-          uri={imgUri(IMG_BASES.other, cardData.global_data.image)}
+          uri={imgUri(IMG_BASES.other, cardData.global_data.image, cardData.global_data.updated_at)}
           style={styles.outdoor_article_card_image}
           contentFit="contain"
         />

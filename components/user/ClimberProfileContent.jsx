@@ -95,7 +95,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
   }
 
   const { user, points_total, followers_count, following_count } = profile;
-  const avatarUri = user.image ? imgUri(IMG_BASES.userProfile, user.image) : null;
+  const avatarUri = user.image ? imgUri(IMG_BASES.userProfile, user.image, user.updated_at) : null;
   const socialEntries = Object.entries(user.social_links || {}).filter(([, v]) => !!v);
 
   const radarLabels = [t('user.route_reviews'), t('user.mtp_reviews'), t('user.ascents'), t('user.comments')];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { useTranslation } from 'react-i18next';
 
@@ -8,8 +8,33 @@ import CachedImage from "../../CachedImage";
 import { gStyle } from "../../../assets/styles/styles";
 import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from "../../../utils/api";
 import { loadSectorsData, saveSectorsData } from "../../../utils/offlineStorage";
+import { useRefetchOnReconnect } from "../../../utils/useRefetchOnReconnect";
 
 const ICE_IMG_BASE = IMG_BASES.sector;
+const LOCAL_IMG_BASE = IMG_BASES.sectorLocal;
+
+function IceSectorItem({ item, onImagePress }) {
+  const sector = item.sector;
+  const routes = item.sport_routes || [];
+  const sectorImages = (item.sector_imgs || [])
+    .map((img, imgIdx) => ({ key: img.id || imgIdx, uri: imgUri(ICE_IMG_BASE, img.image, img.updated_at) }))
+    .filter((img) => img.uri);
+  const sectorUris = sectorImages.map((img) => img.uri);
+
+  return (
+    <View style={styles.sectorBlock}>
+      {sector?.name ? <Text style={gStyle.h3}>{sector.name}</Text> : null}
+
+      {sectorImages.map((img, imgIdx) => (
+        <TouchableOpacity key={img.key} onPress={() => onImagePress(sectorUris, imgIdx)}>
+          <CachedImage uri={img.uri} style={styles.sectorImage} contentFit="contain" />
+        </TouchableOpacity>
+      ))}
+
+      <IceRoutesTable routes={routes} />
+    </View>
+  );
+}
 
 export default function IceSectors({ article_id, onImagePress }) {
   const { t } = useTranslation();
@@ -22,7 +47,7 @@ export default function IceSectors({ article_id, onImagePress }) {
     else setViewer({ uris, idx });
   };
 
-  useEffect(() => {
+  const load = useCallback(() => {
     if (!article_id) { setLoading(false); return; }
     api.get(corsUrl(`${API_BASE_URL}/get_sector/get_sector_and_routes/${article_id}`))
       .then(({ data }) => {
@@ -36,6 +61,9 @@ export default function IceSectors({ article_id, onImagePress }) {
         setLoading(false);
       });
   }, [article_id]);
+
+  useEffect(() => { setLoading(true); load(); }, [load]);
+  useRefetchOnReconnect(load);
 
   if (isLoading) {
     return (
@@ -52,25 +80,41 @@ export default function IceSectors({ article_id, onImagePress }) {
       <Text style={gStyle.h2}>{t('sectors_block.title')}</Text>
 
       {iceSectors.map((item, index) => {
-        const sector = item.sector;
-        const routes = item.sport_routes || [];
-        const sectorImages = (item.sector_imgs || [])
-          .map((img, imgIdx) => ({ key: img.id || imgIdx, uri: imgUri(ICE_IMG_BASE, img.image) }))
-          .filter((img) => img.uri);
-        const sectorUris = sectorImages.map((img) => img.uri);
+        if (item.local_images) {
+          const localImages = (item.local_images || [])
+            .map((li) => ({ ...li, uri: imgUri(LOCAL_IMG_BASE, li.image, li.updated_at) }))
+            .filter((li) => li.uri);
+          const localUris = localImages.map((li) => li.uri);
+
+          return (
+            <View key={index}>
+              {localImages.map((localImg, idx) => (
+                <View key={localImg.id}>
+                  {localImg.title ? (
+                    <Text style={gStyle.h3}>{localImg.title}</Text>
+                  ) : null}
+                  <TouchableOpacity onPress={() => handleImagePress(localUris, idx)}>
+                    <CachedImage uri={localImg.uri} style={styles.sectorImage} contentFit="contain" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+              {(item.sectors || []).map((subItem, subIdx) => (
+                <IceSectorItem
+                  key={subItem.sector?.id || subIdx}
+                  item={subItem}
+                  onImagePress={handleImagePress}
+                />
+              ))}
+            </View>
+          );
+        }
 
         return (
-          <View key={sector?.id || index} style={styles.sectorBlock}>
-            {sector?.name ? <Text style={gStyle.h3}>{sector.name}</Text> : null}
-
-            {sectorImages.map((img, imgIdx) => (
-              <TouchableOpacity key={img.key} onPress={() => handleImagePress(sectorUris, imgIdx)}>
-                <CachedImage uri={img.uri} style={styles.sectorImage} contentFit="contain" />
-              </TouchableOpacity>
-            ))}
-
-            <IceRoutesTable routes={routes} />
-          </View>
+          <IceSectorItem
+            key={item.sector?.id || index}
+            item={item}
+            onImagePress={handleImagePress}
+          />
         );
       })}
 

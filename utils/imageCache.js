@@ -43,6 +43,38 @@ function djb2Hash(str) {
   return hash.toString(16);
 }
 
+// Map entries used to be plain "url -> local path" strings. They're now
+// { path, version } so a re-download can tell whether the server's copy has
+// actually changed (see getRemoteVersion below) — but existing installs still
+// have the old string shape sitting in AsyncStorage, so every reader has to
+// accept both.
+function entryPath(entry) {
+  if (!entry) return null;
+  return typeof entry === 'string' ? entry : entry.path;
+}
+
+function entryVersion(entry) {
+  if (!entry || typeof entry === 'string') return null;
+  return entry.version || null;
+}
+
+// HEAD request to read the server's ETag/Last-Modified for a URL without
+// downloading its body, so an already-cached image can be checked for
+// staleness cheaply. Returns null if the server sends neither header (nothing
+// to compare against) or the request fails (e.g. offline).
+async function getRemoteVersion(url, ms) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    const res = await fetch(url, { method: 'HEAD', signal: controller.signal });
+    return res.headers.get('etag') || res.headers.get('last-modified') || null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function urlToLocalPath(url) {
   const ext = url.replace(/\?.*$/, '').split('.').pop().slice(0, 6) || 'img';
   return CACHE_DIR + djb2Hash(url) + '.' + ext;
@@ -76,7 +108,7 @@ async function persistMap() {
 export async function resolveImageUri(remoteUrl) {
   if (!remoteUrl) return remoteUrl;
   const map = await loadMap();
-  const localPath = map[remoteUrl];
+  const localPath = entryPath(map[remoteUrl]);
   if (!localPath) return remoteUrl;
   try {
     const info = await FileSystem.getInfoAsync(localPath);
@@ -85,7 +117,12 @@ export async function resolveImageUri(remoteUrl) {
   return remoteUrl;
 }
 
-// Download and locally cache an array of image URLs.
+// Download and locally cache an array of image URLs. A URL already cached
+// locally is re-downloaded when the server's ETag/Last-Modified for it has
+// changed since we last fetched it — otherwise a server-side edit that keeps
+// the same filename (so the same URL) would never reach the device, since the
+// old code only checked "does a local file already exist for this URL" and
+// treated that as good forever.
 // onProgress(done, total) is called after each image attempt.
 export async function downloadImages(urls, onProgress) {
   if (!urls || urls.length === 0) return 0;
@@ -98,18 +135,37 @@ export async function downloadImages(urls, onProgress) {
 
   for (const url of unique) {
     try {
-      if (map[url]) {
-        const info = await FileSystem.getInfoAsync(map[url]);
+      const existing = map[url];
+      const existingPath = entryPath(existing);
+      let skip = false;
+
+      if (existingPath) {
+        const info = await FileSystem.getInfoAsync(existingPath);
         if (info.exists) {
-          done++;
-          if (onProgress) onProgress(done, unique.length);
-          continue;
+          const knownVersion = entryVersion(existing);
+          const remoteVersion = await getRemoteVersion(url, 8000);
+          if (remoteVersion && knownVersion && remoteVersion === knownVersion) {
+            skip = true;
+          } else if (!remoteVersion) {
+            // Server sent no ETag/Last-Modified (or the HEAD request failed,
+            // e.g. no connectivity) — nothing to compare against, so keep the
+            // existing copy rather than re-downloading every sync.
+            skip = true;
+          }
         }
       }
-      const localPath = urlToLocalPath(url);
+
+      if (skip) {
+        done++;
+        if (onProgress) onProgress(done, unique.length);
+        continue;
+      }
+
+      const localPath = existingPath || urlToLocalPath(url);
       const result = await downloadWithTimeout(url, localPath, 20000);
       if (result.status === 200) {
-        map[url] = localPath;
+        const version = await getRemoteVersion(url, 8000);
+        map[url] = { path: localPath, version };
         changed = true;
       }
     } catch {}

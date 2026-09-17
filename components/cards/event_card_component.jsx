@@ -10,7 +10,7 @@ export default function outdoorCard({cardData}) {
   return (
     <TouchableOpacity style={styles.article_card} onPress={() => navigation.navigate('event_page', cardData.global_event.id)}>
       <View style={styles.article_card_image_view}>
-        <CachedImage uri={imgUri(IMG_BASES.event, cardData.global_event.image)} style={styles.article_card_image} contentFit="contain" />
+        <CachedImage uri={imgUri(IMG_BASES.event, cardData.global_event.image, cardData.global_event.updated_at)} style={styles.article_card_image} contentFit="contain" />
       </View>
       <View style={styles.article_card_text}>
         <View style={styles.event_datas}>

@@ -20,7 +20,7 @@ export default function CustomDrawerContent(props) {
   const { user } = useAuth();
   const { isOffline } = useNetwork();
 
-  const avatarUri = user?.image ? imgUri(IMG_BASES.userProfile, user.image) : null;
+  const avatarUri = user?.image ? imgUri(IMG_BASES.userProfile, user.image, user.updated_at) : null;
 
   return (
     <DrawerContentScrollView {...props}>

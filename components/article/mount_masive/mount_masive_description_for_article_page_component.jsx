@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -16,6 +16,7 @@ import EmbedBlock from "../../EmbedBlock";
 import HtmlContent from "../../HtmlContent";
 import { useLocale } from "../../../utils/LocaleContext";
 import { saveMassiveData, loadMassiveData } from "../../../utils/offlineStorage";
+import { useRefetchOnReconnect } from "../../../utils/useRefetchOnReconnect";
 import { COLORS } from '../../../assets/styles/styles';
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -35,19 +36,7 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
   const [fetched, setFetched] = useState(false);
   const { width } = useWindowDimensions();
 
-  useEffect(() => {
-    if (articleId) fetchData();
-  }, [articleId, locale]);
-
-  function toggle() {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    if (!open && !fetched) {
-      fetchData();
-    }
-    setOpen((v) => !v);
-  }
-
-  function fetchData() {
+  const fetchData = useCallback(() => {
     if (!articleId) return;
     setLoading(true);
     api
@@ -66,6 +55,25 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
         setLoading(false);
         setFetched(true);
       });
+  }, [articleId, locale]);
+
+  useEffect(() => {
+    if (articleId) fetchData();
+  }, [articleId, locale]);
+
+  // Only re-fetch on reconnect once the section has actually been loaded —
+  // it's lazy (collapsed sections never fetched at all shouldn't suddenly
+  // fire a request just because connectivity changed).
+  useRefetchOnReconnect(useCallback(() => {
+    if (fetched) fetchData();
+  }, [fetched, fetchData]));
+
+  function toggle() {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    if (!open && !fetched) {
+      fetchData();
+    }
+    setOpen((v) => !v);
   }
 
   const renderContent = () => {

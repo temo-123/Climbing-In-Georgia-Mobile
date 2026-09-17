@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { useTranslation } from 'react-i18next';
 
@@ -10,6 +10,7 @@ import CachedImage from "../../CachedImage";
 import { gStyle } from "../../../assets/styles/styles";
 import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from "../../../utils/api";
 import { loadSectorsData, saveSectorsData } from "../../../utils/offlineStorage";
+import { useRefetchOnReconnect } from "../../../utils/useRefetchOnReconnect";
 
 const SECTOR_IMG_BASE = IMG_BASES.sector;
 const LOCAL_IMG_BASE  = IMG_BASES.sectorLocal;
@@ -19,7 +20,7 @@ function SectorItem({ item, onImagePress }) {
   const sportRoutes = item.sport_routes || [];
   const mtps = item.mtps || [];
   const sectorImages = (item.sector_imgs || [])
-    .map((img) => ({ key: img.id, uri: imgUri(SECTOR_IMG_BASE, img.image) }))
+    .map((img) => ({ key: img.id, uri: imgUri(SECTOR_IMG_BASE, img.image, img.updated_at) }))
     .filter((img) => img.uri);
   const sectorUris = sectorImages.map((img) => img.uri);
 
@@ -52,7 +53,7 @@ export default function SpotSectors({ article_id, onImagePress }) {
     else setViewer({ uris, idx });
   };
 
-  useEffect(() => {
+  const load = useCallback(() => {
     if (!article_id) { setLoading(false); return; }
     api.get(corsUrl(`${API_BASE_URL}/get_sector/get_sector_and_routes/${article_id}`))
       .then(({ data }) => {
@@ -66,6 +67,9 @@ export default function SpotSectors({ article_id, onImagePress }) {
         setLoading(false);
       });
   }, [article_id]);
+
+  useEffect(() => { setLoading(true); load(); }, [load]);
+  useRefetchOnReconnect(load);
 
   if (isLoading) {
     return (
@@ -84,7 +88,7 @@ export default function SpotSectors({ article_id, onImagePress }) {
       {sectors.map((item, index) => {
         if (item.local_images) {
           const localImages = (item.local_images || [])
-            .map((li) => ({ ...li, uri: imgUri(LOCAL_IMG_BASE, li.image) }))
+            .map((li) => ({ ...li, uri: imgUri(LOCAL_IMG_BASE, li.image, li.updated_at) }))
             .filter((li) => li.uri);
           const localUris = localImages.map((li) => li.uri);
 

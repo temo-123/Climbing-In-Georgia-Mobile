@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, ScrollView } from "react-native";
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,7 @@ import {
   loadArticleData, saveArticleData,
   loadRouteImagesData, saveRouteImagesData,
 } from "../../utils/offlineStorage";
+import { useRefetchOnReconnect } from "../../utils/useRefetchOnReconnect";
 
 import IceSectors from "../../components/Routes_and_sectors/Ice_sectors/ice_sectors";
 import ArticleBlock from "../../components/article/articl_block";
@@ -37,8 +38,7 @@ export default function MountainRoutePage({ route }) {
   const [routeImages, setRouteImages]         = useState([]);
   const [viewer, setViewer]                   = useState(null);
 
-  useEffect(() => {
-    setLoading(true);
+  const loadArticle = useCallback(() => {
     api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/mount_route/${locale}/` + urlTitle))
       .then(({ data }) => {
         setGlobalData(data);
@@ -58,10 +58,14 @@ export default function MountainRoutePage({ route }) {
         }
         setLoading(false);
       });
-  }, [locale]);
+  }, [locale, urlTitle]);
 
-  useEffect(() => {
-    const articleId = globalData.global_data?.id;
+  useEffect(() => { setLoading(true); loadArticle(); }, [loadArticle]);
+  useRefetchOnReconnect(loadArticle);
+
+  const articleId = globalData.global_data?.id;
+
+  const loadRouteImages = useCallback(() => {
     if (!articleId) return;
 
     api.get(corsUrl(`${API_BASE_URL}/get_mount_route/get_mount_routes_images/${articleId}`))
@@ -75,21 +79,24 @@ export default function MountainRoutePage({ route }) {
         const cached = await loadRouteImagesData(articleId);
         if (Array.isArray(cached)) setRouteImages(cached);
       });
-  }, [globalData.global_data?.id]);
+  }, [articleId]);
+
+  useEffect(() => { loadRouteImages(); }, [loadRouteImages]);
+  useRefetchOnReconnect(loadRouteImages);
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;
 
   const routeImageUris = routeImages
-    .map(img => imgUri(ROUTE_PHOTO_BASE, img.image))
+    .map(img => imgUri(ROUTE_PHOTO_BASE, img.image, img.updated_at))
     .filter(Boolean);
 
   const galleryUris = (globalData.gallery_images || [])
-    .map(img => imgUri(GALLERY_BASE, img.image))
+    .map(img => imgUri(GALLERY_BASE, img.image, img.updated_at))
     .filter(Boolean);
 
   const headerUri = globalData.global_data?.image
-    ? imgUri(IMG_BASE, globalData.global_data.image)
+    ? imgUri(IMG_BASE, globalData.global_data.image, globalData.global_data.updated_at)
     : routeImageUris[0] || null;
 
   function openRoutePhoto(idx) {

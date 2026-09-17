@@ -19,6 +19,7 @@ const SECTOR_IMG_BASE = IMG_BASES.sector;
 const LOCAL_IMG_BASE  = IMG_BASES.sectorLocal;
 const ASCENT_PHOTO_BASE = IMG_BASES.summitAscent;
 const ROUTE_DESC_IMG_BASE = IMG_BASES.mountRouteDescription;
+const SPOT_ROCKS_IMG_BASE = IMG_BASES.spotRocks;
 
 const HTML_IMG_SRC_RE = /<img[^>]+src=["']([^"']+)["']/gi;
 
@@ -83,7 +84,9 @@ function buildArticleConfigs(locale) {
       getKey:     (item) => item.global_data?.url_title,
       getId:      (item) => item.global_data?.id,
       getImage:   (item) => item.global_data?.image,
+      getImageVersion: (item) => item.global_data?.updated_at,
       hasSectors: true,
+      hasSpotRocksImages: true,
     },
     {
       listKey:    OFFLINE_KEYS.ice,
@@ -93,7 +96,9 @@ function buildArticleConfigs(locale) {
       getKey:     (item) => item.global_data?.url_title,
       getId:      (item) => item.global_data?.id,
       getImage:   (item) => item.global_data?.image,
+      getImageVersion: (item) => item.global_data?.updated_at,
       hasSectors: true,
+      hasSpotRocksImages: true,
     },
     {
       listKey:    OFFLINE_KEYS.indoor,
@@ -103,6 +108,7 @@ function buildArticleConfigs(locale) {
       getKey:     (item) => item.global_data?.url_title,
       getId:      (item) => null,
       getImage:   (item) => item.global_data?.image,
+      getImageVersion: (item) => item.global_data?.updated_at,
       hasSectors: false,
     },
     {
@@ -113,6 +119,7 @@ function buildArticleConfigs(locale) {
       getKey:     (item) => item.global_data?.url_title,
       getId:      (item) => item.global_data?.id,
       getImage:   (item) => item.global_data?.image,
+      getImageVersion: (item) => item.global_data?.updated_at,
       hasSectors: true,
       hasMassive: true,
     },
@@ -124,6 +131,7 @@ function buildArticleConfigs(locale) {
       getKey:     (item) => item.global_data?.url_title,
       getId:      (item) => null,
       getImage:   (item) => item.global_data?.image,
+      getImageVersion: (item) => item.global_data?.updated_at,
       hasSectors: false,
     },
     {
@@ -134,6 +142,7 @@ function buildArticleConfigs(locale) {
       getKey:     (item) => item.global_event?.id?.toString(),
       getId:      (item) => null,
       getImage:   (item) => item.global_event?.image,
+      getImageVersion: (item) => item.global_event?.updated_at,
       hasSectors: false,
     },
   ];
@@ -174,6 +183,19 @@ export async function saveSectorsData(articleId, data) {
 
 export async function loadSectorsData(articleId) {
   return loadOfflineData(`@sectors_${articleId}`);
+}
+
+// --- Combined "spot rocks" overview image cache ---
+// The whole-crag overview photo (every sector's box/label/POI marker already
+// baked in server-side), separate from each sub-area's local_images and from
+// each sector's own topo image cached above.
+
+export async function saveSpotRocksImagesData(articleId, data) {
+  await saveOfflineData(`@spot_rocks_images_${articleId}`, data);
+}
+
+export async function loadSpotRocksImagesData(articleId) {
+  return loadOfflineData(`@spot_rocks_images_${articleId}`);
 }
 
 // --- Mountain route description-photo list cache ---
@@ -261,16 +283,16 @@ function collectSectorImageUrls(sectorsData) {
   for (const item of (sectorsData || [])) {
     if (item.local_images) {
       for (const li of item.local_images) {
-        if (li.image) urls.push(imgUri(LOCAL_IMG_BASE, li.image));
+        if (li.image) urls.push(imgUri(LOCAL_IMG_BASE, li.image, li.updated_at));
       }
       for (const sub of (item.sectors || [])) {
         for (const si of (sub.sector_imgs || [])) {
-          if (si.image) urls.push(imgUri(SECTOR_IMG_BASE, si.image));
+          if (si.image) urls.push(imgUri(SECTOR_IMG_BASE, si.image, si.updated_at));
         }
       }
     } else {
       for (const si of (item.sector_imgs || [])) {
-        if (si.image) urls.push(imgUri(SECTOR_IMG_BASE, si.image));
+        if (si.image) urls.push(imgUri(SECTOR_IMG_BASE, si.image, si.updated_at));
       }
     }
   }
@@ -286,6 +308,8 @@ export async function downloadAllData(locale = 'en', onProgress) {
   let articleFailed = 0;
   let sectorsCompleted = 0;
   let sectorsFailed = 0;
+  let spotRocksImagesCompleted = 0;
+  let spotRocksImagesFailed = 0;
   let massiveCompleted = 0;
   let massiveFailed = 0;
   let routeImagesCompleted = 0;
@@ -361,7 +385,7 @@ export async function downloadAllData(locale = 'en', onProgress) {
     if (!Array.isArray(list)) continue;
     for (const item of list) {
       const filename = config.getImage(item);
-      if (filename) allImageUrls.push(imgUri(config.imgBase, filename));
+      if (filename) allImageUrls.push(imgUri(config.imgBase, filename, config.getImageVersion?.(item)));
     }
   }
 
@@ -384,10 +408,11 @@ export async function downloadAllData(locale = 'en', onProgress) {
         articleCompleted++;
 
         const headerImg = data.global_data?.image || data.global_event?.image;
-        if (headerImg) allImageUrls.push(imgUri(config.imgBase, headerImg));
+        const headerImgVersion = data.global_data?.updated_at || data.global_event?.updated_at;
+        if (headerImg) allImageUrls.push(imgUri(config.imgBase, headerImg, headerImgVersion));
 
         for (const g of (data.gallery_images || [])) {
-          if (g.image) allImageUrls.push(imgUri(GALLERY_BASE, g.image));
+          if (g.image) allImageUrls.push(imgUri(GALLERY_BASE, g.image, g.updated_at));
         }
 
         const ld = data.locale_data || {};
@@ -413,7 +438,7 @@ export async function downloadAllData(locale = 'en', onProgress) {
             await saveRouteImagesData(articleId, data);
             routeImagesCompleted++;
             for (const img of data) {
-              if (img.image) allImageUrls.push(imgUri(ROUTE_DESC_IMG_BASE, img.image));
+              if (img.image) allImageUrls.push(imgUri(ROUTE_DESC_IMG_BASE, img.image, img.updated_at));
             }
           }
         } catch (_) {
@@ -435,6 +460,26 @@ export async function downloadAllData(locale = 'en', onProgress) {
           allImageUrls.push(...collectSectorImageUrls(data));
         } catch (_) {
           sectorsFailed++;
+        }
+      }
+
+      if (config.hasSpotRocksImages && articleId) {
+        if (onProgress) onProgress({ currentLabel: `Spot overview: ${urlKey}`, phase: 'spot_rocks_images' });
+        try {
+          const { data } = await withTimeout(
+            (signal) => api.get(corsUrl(
+              `${API_BASE_URL}/get_sector/get_spot_rocks_images/${articleId}`
+            ), { signal }),
+            20000, `spot_rocks_images:${urlKey}`,
+          );
+          const list = Array.isArray(data) ? data : [];
+          await saveSpotRocksImagesData(articleId, list);
+          spotRocksImagesCompleted++;
+          for (const img of list) {
+            if (img.image) allImageUrls.push(imgUri(SPOT_ROCKS_IMG_BASE, img.image, img.updated_at));
+          }
+        } catch (_) {
+          spotRocksImagesFailed++;
         }
       }
 
@@ -515,7 +560,7 @@ export async function downloadAllData(locale = 'en', onProgress) {
         summitAscentsCompleted++;
         const ascentList = data?.ascents ?? data ?? [];
         for (const ascent of (Array.isArray(ascentList) ? ascentList : [])) {
-          if (ascent.photo) allImageUrls.push(imgUri(ASCENT_PHOTO_BASE, ascent.photo));
+          if (ascent.photo) allImageUrls.push(imgUri(ASCENT_PHOTO_BASE, ascent.photo, ascent.updated_at));
         }
       } catch (err) {
         summitAscentsFailed++;
@@ -541,8 +586,8 @@ export async function downloadAllData(locale = 'en', onProgress) {
   }
 
   const totalCompleted = listCompleted + articleCompleted + sectorsCompleted
-    + massiveCompleted + routeImagesCompleted + groupedListsCompleted + summitsCompleted
-    + summitRoutesCompleted + summitAscentsCompleted;
+    + spotRocksImagesCompleted + massiveCompleted + routeImagesCompleted + groupedListsCompleted
+    + summitsCompleted + summitRoutesCompleted + summitAscentsCompleted;
   if (totalCompleted > 0) {
     await saveOfflineData(OFFLINE_KEYS.download_time, new Date().toISOString());
   }
@@ -551,6 +596,7 @@ export async function downloadAllData(locale = 'en', onProgress) {
     listCompleted, listFailed,
     articleCompleted, articleFailed,
     sectorsCompleted, sectorsFailed,
+    spotRocksImagesCompleted, spotRocksImagesFailed,
     massiveCompleted, massiveFailed,
     routeImagesCompleted, routeImagesFailed,
     groupedListsCompleted, groupedListsFailed,
@@ -559,8 +605,8 @@ export async function downloadAllData(locale = 'en', onProgress) {
     summitAscentsCompleted, summitAscentsFailed,
     imagesCompleted,
     completed: totalCompleted,
-    failed: listFailed + articleFailed + sectorsFailed + massiveFailed + routeImagesFailed
-      + groupedListsFailed + summitsFailed + summitRoutesFailed + summitAscentsFailed,
+    failed: listFailed + articleFailed + sectorsFailed + spotRocksImagesFailed + massiveFailed
+      + routeImagesFailed + groupedListsFailed + summitsFailed + summitRoutesFailed + summitAscentsFailed,
     debugErrors, // [TEMP DEBUG] remove once the summit download failure is diagnosed
   };
 }

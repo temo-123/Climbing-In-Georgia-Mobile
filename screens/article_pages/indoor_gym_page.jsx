@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, ScrollView } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocale } from '../../utils/LocaleContext';
 
 import ArticleBlock from "../../components/article/articl_block";
@@ -10,6 +10,7 @@ import PageFooter from "../../components/PageFooter";
 
 import api, { corsUrl, API_BASE_URL, IMG_BASES } from "../../utils/api";
 import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
+import { useRefetchOnReconnect } from "../../utils/useRefetchOnReconnect";
 
 const IMG_BASE = IMG_BASES.indoor;
 
@@ -21,8 +22,7 @@ export default function App({ route }) {
   const [isLoading, setLoading] = useState(true);
   const [noCache, setNoCache] = useState(false);
 
-  useEffect(() => {
-    setLoading(true);
+  const load = useCallback(() => {
     api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/indoor/${locale}/` + route.params))
       .then(({ data }) => {
         setGlobalIndoorData(data);
@@ -42,7 +42,10 @@ export default function App({ route }) {
         }
         setLoading(false);
       });
-  }, [locale]);
+  }, [locale, route.params]);
+
+  useEffect(() => { setLoading(true); load(); }, [load]);
+  useRefetchOnReconnect(load);
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;

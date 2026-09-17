@@ -48,7 +48,7 @@ export default function articleBlock({ local_data, global_data, global_info_data
 
       {(headerUri || (imgBase != null && global_data.image)) ? (
         <CachedImage
-          uri={headerUri || imgUri(imgBase, global_data.image)}
+          uri={headerUri || imgUri(imgBase, global_data.image, global_data.updated_at)}
           style={styles.headerImage}
           contentFit="cover"
         />

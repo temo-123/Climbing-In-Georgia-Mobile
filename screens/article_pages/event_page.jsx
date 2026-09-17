@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, ScrollView } from "react-native";
 import { useLocale } from '../../utils/LocaleContext';
 import api, { corsUrl, API_BASE_URL, IMG_BASES } from "../../utils/api";
 import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
+import { useRefetchOnReconnect } from "../../utils/useRefetchOnReconnect";
 
 import ArticleBlock from "../../components/article/articl_block";
 import Preloader from "../../components/Preloader";
@@ -22,8 +23,7 @@ export default function App({ route }) {
 
   const eventKey = route.params?.toString();
 
-  useEffect(() => {
-    setLoading(true);
+  const load = useCallback(() => {
     api.get(corsUrl(`${API_BASE_URL}/get_event/get_event_on_site_page/${locale}/` + eventKey))
       .then(({ data }) => {
         setGlobalEventData(data);
@@ -43,7 +43,10 @@ export default function App({ route }) {
         }
         setLoading(false);
       });
-  }, [locale]);
+  }, [locale, eventKey]);
+
+  useEffect(() => { setLoading(true); load(); }, [load]);
+  useRefetchOnReconnect(load);
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;

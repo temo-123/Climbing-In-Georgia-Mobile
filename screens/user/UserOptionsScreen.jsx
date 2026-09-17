@@ -85,7 +85,7 @@ export default function UserOptionsScreen() {
 
   if (!user) return null;
 
-  const avatarUri = user.image ? imgUri(IMG_BASES.userProfile, user.image) : null;
+  const avatarUri = user.image ? imgUri(IMG_BASES.userProfile, user.image, user.updated_at) : null;
 
   return (
     <>

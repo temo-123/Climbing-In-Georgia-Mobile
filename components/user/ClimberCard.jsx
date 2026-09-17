@@ -8,7 +8,7 @@ function initialsOf(item) {
 }
 
 export default function ClimberCard({ item, onPress }) {
-  const avatarUri = item.image ? imgUri(IMG_BASES.userProfile, item.image) : null;
+  const avatarUri = item.image ? imgUri(IMG_BASES.userProfile, item.image, item.updated_at) : null;
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.75}>
       {avatarUri ? (

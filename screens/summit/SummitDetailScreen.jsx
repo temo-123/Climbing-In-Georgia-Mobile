@@ -25,7 +25,7 @@ function PhotoThumbnail({ item, onPress }) {
   return (
     <TouchableOpacity style={styles.thumbWrap} onPress={() => onPress(item)} activeOpacity={0.8}>
       <Image
-        source={{ uri: imgUri(ASCENT_PHOTO_BASE, item.photo) }}
+        source={{ uri: imgUri(ASCENT_PHOTO_BASE, item.photo, item.updated_at) }}
         style={styles.thumbImage}
         resizeMode="cover"
       />
@@ -75,7 +75,7 @@ function AscentDetailsModal({ ascent, onClose, t }) {
 
               {!!ascent.photo && (
                 <Image
-                  source={{ uri: imgUri(ASCENT_PHOTO_BASE, ascent.photo) }}
+                  source={{ uri: imgUri(ASCENT_PHOTO_BASE, ascent.photo, ascent.updated_at) }}
                   style={styles.modalPhoto}
                   resizeMode="cover"
                 />

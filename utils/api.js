@@ -23,6 +23,7 @@ export const IMG_BASES = {
   gallery: PUBLIC_IMAGES_BASE + 'article_gallery_img/',
   sector: PUBLIC_IMAGES_BASE + 'sector_img/',
   sectorLocal: PUBLIC_IMAGES_BASE + 'sector_local_img/',
+  spotRocks: PUBLIC_IMAGES_BASE + 'spot_rocks_img/',
   summitAscent: PUBLIC_IMAGES_BASE + 'summit_ascents_img/',
   userProfile: PUBLIC_IMAGES_BASE + 'user_profil_img/',
 };
@@ -32,9 +33,20 @@ export function corsUrl(url) {
 }
 
 // API filenames contain { } which are invalid in URIs — encode them.
-export function imgUri(base, filename) {
+//
+// `version` (pass the record's `updated_at`, when the caller has it) is
+// appended as a `?v=` cache-busting query param. The server sends
+// `Cache-Control: max-age=14400` on these static files, so a record that
+// gets its image replaced in place (same filename, new content) would
+// otherwise keep being served the old bytes — by Cloudflare's edge cache,
+// the device's own network stack, and expo-image's disk cache — for up to 4
+// hours, or longer if a cache layer doesn't strictly honor max-age. A
+// version query string makes it a different URL, which every one of those
+// caches treats as a fresh resource instead of a hit to revalidate.
+export function imgUri(base, filename, version) {
   if (!filename) return null;
-  return base + filename.replace(/{/g, '%7B').replace(/}/g, '%7D');
+  const uri = base + filename.replace(/{/g, '%7B').replace(/}/g, '%7D');
+  return version ? `${uri}?v=${encodeURIComponent(version)}` : uri;
 }
 
 const api = axios.create({

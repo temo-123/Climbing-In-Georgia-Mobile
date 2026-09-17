@@ -25,7 +25,7 @@ export default function IndoorCard({ cardData }) {
     >
       <View style={styles.imageView}>
         <CachedImage
-          uri={imgUri(IMG_BASES.indoor, gd.image)}
+          uri={imgUri(IMG_BASES.indoor, gd.image, gd.updated_at)}
           style={styles.image}
           contentFit="cover"
         />
