@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../utils/AuthContext';
+import SocialLoginButtons from '../../components/auth/SocialLoginButtons';
 import { COLORS } from '../../assets/styles/styles';
 
 export default function LoginScreen({ navigation }) {
@@ -105,6 +106,11 @@ export default function LoginScreen({ navigation }) {
         >
           <Text style={styles.outlineButtonText}>{t('auth.no_account')}</Text>
         </TouchableOpacity>
+
+        <SocialLoginButtons
+          onLoggedIn={() => navigation.goBack()}
+          onNeedsPassword={(email) => navigation.navigate('social_create_password', { email })}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );

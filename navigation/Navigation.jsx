@@ -15,6 +15,7 @@ import other_activity_page from '../screens/article_pages/other_activity_page';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
+import SocialCreatePasswordScreen from '../screens/auth/SocialCreatePasswordScreen';
 
 import UserProfileScreen from '../screens/user/UserProfileScreen';
 import UserOptionsScreen from '../screens/user/UserOptionsScreen';
@@ -108,6 +109,10 @@ export const Navigation = () => {
         <Stack.Screen name="forgot_password"
           component={ForgotPasswordScreen}
           options={{ title: t('auth.forgot_password_title'), headerStyle, headerTintColor, headerTitleStyle }}
+        />
+        <Stack.Screen name="social_create_password"
+          component={SocialCreatePasswordScreen}
+          options={{ title: t('auth.create_password_title'), headerStyle, headerTintColor, headerTitleStyle }}
         />
         <Stack.Screen name="user_profile"
           component={OfflineGuardedUserProfileScreen}

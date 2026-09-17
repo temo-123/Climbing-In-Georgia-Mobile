@@ -11,6 +11,7 @@ Documentation for the login/register/auth flow in the Climbing In Georgia React 
 - [API Endpoints](#api-endpoints)
 - [RSA Password Encryption](#rsa-password-encryption)
 - [Auth Flow](#auth-flow)
+- [Social Login (Google/Facebook)](#social-login-googlefacebook)
 - [File Reference](#file-reference)
 - [Token Storage](#token-storage)
 - [Error Codes](#error-codes)
@@ -20,6 +21,8 @@ Documentation for the login/register/auth flow in the Climbing In Georgia React 
 ## Overview
 
 Auth is **optional** — users can browse all climbing content without an account. Login/Register are accessible from the side drawer. When authenticated, the drawer header shows the user's avatar and a "Hi {name}" greeting (tapping the avatar opens the full profile screen); Logout lives in the profile screen's menu, not the drawer — see [`docs/CLIMBER_PROFILE.md`](CLIMBER_PROFILE.md) for the profile screen itself.
+
+In addition to email/password, LoginScreen and RegisterScreen both offer **Google/Facebook sign-in** — see [Social Login](#social-login-googlefacebook) below. Each provider's button only renders if the backend reports that provider as configured (`GET /login/status`), so an app build with no Google/Facebook credentials set on the backend just shows the email/password form.
 
 Backend: Laravel 11 + Laravel Sanctum (token-based auth).  
 Token lifetime: 7 days (configurable via `SANCTUM_TOKEN_EXPIRATION`).
@@ -36,9 +39,12 @@ App.js
                  ├── Drawer (always visible)
                  │    └── "Login / Register" button (guest) → navigate('login')
                  │    └── Avatar + "Hi {name}" → navigate('user_profile') (authenticated)
-                 ├── login           → screens/auth/LoginScreen.jsx
-                 ├── register        → screens/auth/RegisterScreen.jsx
-                 ├── forgot_password → screens/auth/ForgotPasswordScreen.jsx
+                 ├── login                    → screens/auth/LoginScreen.jsx
+                 │        └── components/auth/SocialLoginButtons.jsx (Google/Facebook)
+                 ├── register                 → screens/auth/RegisterScreen.jsx
+                 │        └── components/auth/SocialLoginButtons.jsx (Google/Facebook)
+                 ├── social_create_password   → screens/auth/SocialCreatePasswordScreen.jsx
+                 ├── forgot_password          → screens/auth/ForgotPasswordScreen.jsx
                  └── ... (all other screens, accessible without auth)
 ```
 
@@ -56,6 +62,10 @@ Base URL: `https://climbing.ge/api`
 | `GET` | `/auth_user` | Bearer token | Get authenticated user + permissions |
 | `POST` | `/password/send_forget_mail` | No | Send password reset email |
 | `POST` | `/password/reset_password` | No | Reset password with token |
+| `GET` | `/login/status` | No | Which OAuth providers are configured — `{ google, facebook }` |
+| `GET` | `/login/{provider}` | No | Get the Google/Facebook authorization URL to open |
+| `GET` | `/login/{provider}/callback` | No (browser only) | OAuth callback — see [Social Login](#social-login-googlefacebook) |
+| `POST` | `/login/social/create_password/{email}` | No | Set a password for a brand-new social signup, returns a token |
 
 ### POST `/login`
 
@@ -237,16 +247,96 @@ navigation.goBack()
 
 ---
 
+## Social Login (Google/Facebook)
+
+The backend already runs a standard web OAuth flow for climbing.ge (Laravel Socialite: redirect to provider → provider redirects back to a backend callback → callback exchanges the code and returns the result). The mobile app reuses that **exact same flow** through an in-app browser rather than talking to Google/Facebook directly — no native Google Sign-In / FBSDK, no separate mobile OAuth client, no client-side `client_id`.
+
+### Why an in-app browser, not a native SDK
+
+A native SDK (`@react-native-google-signin/google-signin`, `react-native-fbsdk-next`) needs its own OAuth client per platform (Android SHA-1 fingerprint, iOS bundle ID, FB key hash) and a backend endpoint that verifies a native ID/access token — a different code path than the Socialite flow the backend already has for web. Reusing the web flow via [`expo-web-browser`](https://docs.expo.dev/versions/latest/sdk/webbrowser/)'s `openAuthSessionAsync` needed only one small backend change (below) and no new credentials.
+
+### The one thing that had to change on the backend
+
+`SocialController::callback()` normally returns raw JSON — fine for the web SPA reading the response body directly, useless for a React Native in-app browser session, which only ever gets handed the *final URL* it landed on (`WebBrowser.openAuthSessionAsync` cannot read a response body). So:
+
+1. The app requests the authorize URL with `GET /login/{provider}?mobile=1`.
+2. The backend folds `mobile=1` into OAuth's `state` parameter (`?state=mobile`) — the one custom value providers echo back unchanged — since Socialite's `stateless()` mode has no session to carry a flag through otherwise.
+3. In the callback, if `state=mobile`, the backend responds with a `302` to `{MOBILE_APP_SCHEME}://oauth-callback?...` (the same data as the JSON body, as query params) instead of JSON. That custom scheme is what `openAuthSessionAsync` is watching for — the moment the in-app browser navigates there, Expo closes it and hands the URL back to the app.
+
+Web behavior (no `state=mobile`) is completely unchanged — same JSON responses as before.
+
+```
+MOBILE                              BACKEND                          GOOGLE/FACEBOOK
+  │                                    │                                    │
+  ├─ GET /login/google?mobile=1 ─────▶│                                    │
+  │◀──────────── { url } ─────────────┤                                    │
+  │                                    │                                    │
+  ├─ WebBrowser.openAuthSessionAsync(url, 'climbinggeorgia://oauth-callback')
+  │                                    │                                    │
+  ├───────────────── in-app browser opens `url` ─────────────────────────▶│
+  │                                    │◀────── user approves ─────────────┤
+  │                                    │◀── GET .../callback?code=...&state=mobile
+  │                                    ├─ exchanges code, finds/creates user
+  │◀── 302 climbinggeorgia://oauth-callback?status=login&token=... ────────┤
+  │  (Expo detects the scheme match, closes the browser, returns the URL)  │
+  ├─ parse query params from result.url                                    │
+```
+
+### Outcomes
+
+`startSocialLogin(provider)` (in `utils/socialAuth.js`) resolves to one of:
+
+| Result | Meaning | App behavior |
+|---|---|---|
+| `{ status: 'login', token }` | Existing user (matched by email) | `loginWithToken(token)` → fetches `/auth_user`, completes session |
+| `{ status: 'registratione', new_user_email }` | Brand-new user — backend already created the `User` row (with an unusable random password) and a `social_accounts` row | Navigate to `social_create_password` with that email |
+| `{ message, is_banned? }` (no `status`) | Provider error, no email returned, or the matched user is banned | Shown inline as an error under the buttons |
+| *(throws)* `social_login_cancelled` | User closed the in-app browser before finishing | Swallowed silently — no error shown |
+
+### Finishing a new signup
+
+`social_create_password` (`screens/auth/SocialCreatePasswordScreen.jsx`) collects a password + confirmation and calls:
+
+```json
+// POST /login/social/create_password/{email}
+// Request — note the `data` wrapper; the backend reads $request->data['password']
+{ "data": { "password": "...", "password_confirmation": "..." } }
+
+// Response 200
+{ "message": "Password created successfully", "token": "6|abc123..." }
+```
+
+The returned token goes through the same `loginWithToken()` as an existing-user social login.
+
+### Configuration
+
+| Where | Var | Notes |
+|---|---|---|
+| Backend `.env` | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_URL` | Same OAuth client used by the web frontend — no separate mobile client |
+| Backend `.env` | `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET` / `FACEBOOK_URL` | Same idea |
+| Backend `.env` | `MOBILE_APP_SCHEME` | Must equal this app's `expo.scheme` (`app.json`) — defaults to `climbinggeorgia` |
+| `app.json` | `expo.scheme` | `"climbinggeorgia"` — must match `MOBILE_APP_SCHEME` on the backend and the hardcoded `REDIRECT_URL` in `utils/socialAuth.js` |
+| Mobile `.env` | `EXPO_PUBLIC_GOOGLE_CLIENT_ID` / `EXPO_PUBLIC_FACEBOOK_CLIENT_ID` | **Dev-only UI preview**, not real config — any non-empty value force-shows that provider's button in a `__DEV__` build even if the backend reports it unconfigured, so the button can be styled/tested before real backend credentials exist. No effect in release builds; tapping the button still hits the real backend and won't complete a login for an unconfigured provider. |
+
+`GET /login/status` returns `false` for a provider unless *all three* of its `client_id`/`client_secret`/`redirect` are set (and not the literal placeholder `"..."`) — see `SocialController::isProviderConfigured()` in the backend repo. `SocialLoginButtons` hides a provider's button entirely when its status is `false` (dev override aside), and hides itself completely if both are `false`.
+
+> **Testing note:** `expo-web-browser` itself works in Expo Go, but the `climbinggeorgia://` scheme redirect that closes the browser and returns control to the app is only registered at the OS level in a real dev-client/EAS build — **not** in plain Expo Go. Verify this flow with `eas build --profile preview` (or a dev client), not `npx expo start`.
+
+---
+
 ## File Reference
 
 | File | Purpose |
 |------|---------|
-| `utils/AuthContext.js` | React context — `user`, `token`, `isLoading` state + `login`, `logout`, `register`, `forgotPassword`, `refreshUser` functions |
+| `utils/AuthContext.js` | React context — `user`, `token`, `isLoading` state + `login`, `loginWithToken`, `logout`, `register`, `forgotPassword`, `refreshUser` functions |
 | `utils/rsaEncrypt.js` | `encryptPassword(plaintext)` — RSA-2048 PKCS1v1_5 encryption using node-forge |
-| `screens/auth/LoginScreen.jsx` | Login form UI (email + password) |
-| `screens/auth/RegisterScreen.jsx` | Register form UI (name, surname, email, password, confirm) |
+| `utils/socialAuth.js` | `getSocialLoginStatus()` (`GET /login/status`) and `startSocialLogin(provider)` — runs the in-app browser OAuth flow, see [Social Login](#social-login-googlefacebook) |
+| `components/auth/SocialLoginButtons.jsx` | Shared Google/Facebook button row, used by both LoginScreen and RegisterScreen |
+| `screens/auth/LoginScreen.jsx` | Login form UI (email + password) + `SocialLoginButtons` |
+| `screens/auth/RegisterScreen.jsx` | Register form UI (name, surname, email, password, confirm) + `SocialLoginButtons` |
+| `screens/auth/SocialCreatePasswordScreen.jsx` | Set-a-password step for a brand-new Google/Facebook signup |
 | `screens/auth/ForgotPasswordScreen.jsx` | Forgot password form + success state |
-| `navigation/Navigation.jsx` | Adds `login`, `register`, `forgot_password` to the stack navigator |
+| `navigation/Navigation.jsx` | Adds `login`, `register`, `forgot_password`, `social_create_password` to the stack navigator |
 | `navigation/CustomDrawerContent.jsx` | Drawer header — avatar + "Hi {name}" (authenticated, tap → `user_profile`) or app icon + Login/Register button (guest) |
 | `App.js` | Wraps app in `<AuthProvider>` |
 
@@ -266,6 +356,8 @@ api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 delete api.defaults.headers.common['Authorization'];
 ```
 
+Social login only ever gets back a bare token (the callback / `create_password` responses have no `user` object), so it goes through `loginWithToken(token)` instead of `login()` — that sets the header, then fetches `/auth_user` itself before caching and setting state.
+
 ---
 
 ## Error Codes
@@ -279,5 +371,9 @@ delete api.defaults.headers.common['Authorization'];
 | 422 | `auth.failed` | Wrong email or password |
 | 422 | `Validation failed` + `errors` | Missing/invalid fields |
 | 500 | `Server configuration error` | RSA private key not found on server |
+| 500 | `Could not initiate social login.` | `GET /login/{provider}` failed — provider misconfigured despite passing `isProviderConfigured()` |
+| 422 | `Social login failed: could not retrieve user from provider.` | Code exchange with Google/Facebook failed |
+| 422 | `No email returned from provider. Please allow email access.` | User denied the email permission on the provider's consent screen |
+| 403 | `Your account has been banned.` (+ `is_banned: true`) | The email matched a banned user |
 
 > If login returns **400 "Invalid encrypted password"**, the RSA public key in `utils/rsaEncrypt.js` is out of sync with the server's private key. Contact the backend to get the updated public key.

@@ -13,6 +13,7 @@ const AuthContext = createContext({
   token: null,
   isLoading: true,
   login: async () => {},
+  loginWithToken: async () => {},
   logout: async () => {},
   register: async () => {},
   forgotPassword: async () => {},
@@ -84,6 +85,20 @@ export function AuthProvider({ children }) {
     return res.data;
   }
 
+  // Used after a Google/Facebook login (SocialController::callback /
+  // create_password only ever return a bare Sanctum token, never a user
+  // object), so the user has to be fetched separately.
+  async function loginWithToken(newToken) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+    const res = await api.get(`${API_BASE}/auth_user`);
+    const newUser = res.data;
+    await AsyncStorage.setItem(AUTH_TOKEN_KEY, newToken);
+    await AsyncStorage.setItem(AUTH_USER_CACHE_KEY, JSON.stringify(newUser));
+    setToken(newToken);
+    setUser(newUser);
+    return newUser;
+  }
+
   async function logout() {
     try {
       await api.post(`${API_BASE}/logout`);
@@ -132,7 +147,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout, register, forgotPassword, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, loginWithToken, logout, register, forgotPassword, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

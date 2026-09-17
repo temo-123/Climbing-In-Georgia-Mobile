@@ -190,7 +190,13 @@
     "reset_email_sent": "Password reset link sent to",
     "welcome": "Welcome",
     "profile": "My Profile",
-    "nav_login": "Login / Register"
+    "nav_login": "Login / Register",
+    "or": "OR",
+    "continue_with_google": "Continue with Google",
+    "continue_with_facebook": "Continue with Facebook",
+    "create_password_title": "Create a Password",
+    "create_password_sub": "Set a password for {{email}} to finish creating your account.",
+    "password_min_8": "Password must be at least 8 characters"
   },
   "user": {
     "offline_panel_title": "User panel is not available offline",

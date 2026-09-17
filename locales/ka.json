@@ -189,7 +189,13 @@
     "reset_email_sent": "პაროლის განახლების ბმული გაიგზავნა",
     "welcome": "მოგესალმებით",
     "profile": "ჩემი პროფილი",
-    "nav_login": "შესვლა / რეგისტრაცია"
+    "nav_login": "შესვლა / რეგისტრაცია",
+    "or": "ან",
+    "continue_with_google": "გაგრძელება Google-ით",
+    "continue_with_facebook": "გაგრძელება Facebook-ით",
+    "create_password_title": "პაროლის შექმნა",
+    "create_password_sub": "დააყენეთ პაროლი {{email}}-სთვის ანგარიშის შესაქმნელად.",
+    "password_min_8": "პაროლი მინიმუმ 8 სიმბოლო უნდა იყოს"
   },
   "user": {
     "offline_panel_title": "მომხმარებლის პანელი ოფლაინ რეჟიმში მიუწვდომელია",
