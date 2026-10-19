@@ -28,7 +28,8 @@
       "environment": "production",
       "autoIncrement": false,
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "buildArtifactPaths": ["android/app/build/outputs/mapping/release/mapping.txt"]
       },
       "ios": {
         "simulator": false
