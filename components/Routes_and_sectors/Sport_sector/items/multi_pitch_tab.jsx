@@ -4,6 +4,9 @@ import { Table, Row } from 'react-native-reanimated-table';
 import { useTranslation } from 'react-i18next';
 import { getRowBg } from './routes_tab';
 import { gStyle } from '../../../../assets/styles/styles';
+import HtmlContent from '../../../HtmlContent';
+
+const MTP_TEXT_STYLE = { fontSize: 13, lineHeight: 19, color: '#555' };
 
 const FLEX = [0.4, 2.5, 1, 1];
 
@@ -53,9 +56,9 @@ export default function MultiPitchTab({ mtps }) {
           </Text>
 
           {mtp.mtp_text ? (
-            <Text style={styles.mtpText}>
-              {mtp.mtp_text.replace(/<[^>]*>/g, '').trim()}
-            </Text>
+            <View style={styles.mtpText}>
+              <HtmlContent html={mtp.mtp_text} baseStyle={MTP_TEXT_STYLE} />
+            </View>
           ) : null}
 
           <PitchesTable pitchs={mtp.mtp_pitchs} />
@@ -71,8 +74,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   mtpText: {
-    fontSize: 12,
-    color: '#555',
     marginBottom: 6,
   },
   border: {

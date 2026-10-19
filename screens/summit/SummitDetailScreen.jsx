@@ -11,6 +11,7 @@ import { useNetwork } from '../../utils/NetworkContext';
 import { loadSummitData, loadSummitAscentsData } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
+import ReportButton from '../../components/ReportButton';
 import { COLORS } from '../../assets/styles/styles';
 
 const API = `${API_BASE_URL}/summit`;
@@ -102,6 +103,13 @@ function AscentDetailsModal({ ascent, onClose, t }) {
                   <Text style={styles.modalComment}>{ascent.comment}</Text>
                 </View>
               )}
+
+              <ReportButton
+                type="summit_ascent"
+                id={ascent.id}
+                label={`${ascent.name ?? ''} ${ascent.surname ?? ''}`.trim()}
+                style={styles.modalReport}
+              />
 
               <TouchableOpacity style={styles.modalCloseBtn} onPress={onClose} activeOpacity={0.85}>
                 <Text style={styles.modalCloseBtnText}>{t('summit.done')}</Text>
@@ -384,6 +392,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   modalComment: { fontSize: 13, color: '#555', lineHeight: 19, fontStyle: 'italic' },
+  modalReport: { alignSelf: 'center', marginTop: 12 },
   modalCloseBtn: {
     backgroundColor: COLORS.primary,
     borderRadius: 12,

@@ -3,7 +3,7 @@
     "name": "Climb Georgia",
     "slug": "climbing-in-georgia-mobile",
     "scheme": "climbinggeorgia",
-    "version": "1.2.23",
+    "version": "1.2.25",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -16,17 +16,18 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "ge.climbing.app",
-      "buildNumber": "23",
+      "buildNumber": "25",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Used to view and attach climbing route photos.",
         "NSPhotoLibraryAddUsageDescription": "Used to save climbing route photos.",
-        "NSCameraUsageDescription": "Used to take a photo of your ascent.",
+        "NSCameraUsageDescription": "Used to scan summit QR codes and take a photo of your ascent.",
         "CFBundleLocalizations": [
           "en"
         ],
         "CFBundleDevelopmentRegion": "en",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Used only while recording a summit ascent, to verify you reached the summit."
       }
     },
     "android": {
@@ -36,13 +37,27 @@
       },
       "package": "ge.climbing.app",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 23,
+      "versionCode": 25,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.CAMERA",
-        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.POST_NOTIFICATIONS"
+      ],
+      "blockedPermissions": [
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "com.google.android.gms.permission.AD_ID"
       ]
     },
     "web": {
@@ -53,7 +68,7 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Used to take a photo of your ascent.",
+          "cameraPermission": "Used to scan summit QR codes and take a photo of your ascent.",
           "microphonePermission": false,
           "photosPermission": "Used to attach a photo to your ascent."
         }
@@ -64,6 +79,22 @@
           "icon": "./assets/icon.png",
           "color": "#279fbb",
           "sounds": []
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Used only while recording a summit ascent, to verify you reached the summit.",
+          "isAndroidBackgroundLocationEnabled": false,
+          "isIosBackgroundLocationEnabled": false
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Used to scan summit QR codes and take a photo of your ascent.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
         }
       ],
       "expo-font",

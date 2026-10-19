@@ -24,7 +24,7 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 function HtmlBlock({ html, width }) {
-  return <HtmlContent html={html} contentWidth={width} />;
+  return <HtmlContent html={html} contentWidth={width - 60} />;
 }
 
 export default function MassiveSection({ mountMasiveName, articleId }) {

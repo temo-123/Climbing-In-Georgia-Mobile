@@ -3,9 +3,9 @@ import api, { corsUrl, API_BASE_URL } from '../utils/api';
 import { StatusBar } from 'expo-status-bar';
 import {
   StyleSheet, Text, View, ScrollView, TouchableOpacity,
-  TextInput, ActivityIndicator, Alert, Linking, useWindowDimensions,
+  TextInput, ActivityIndicator, Alert, Linking,
 } from 'react-native';
-import RenderHtml from 'react-native-render-html';
+import HtmlContent from '../components/HtmlContent';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../utils/LocaleContext';
 import { withRecaptchaRetry } from '../utils/recaptcha';
@@ -13,6 +13,7 @@ import { gStyle, COLORS } from '../assets/styles/styles';
 import Preloader from '../components/Preloader';
 import PageFooter from '../components/PageFooter';
 import RouteAuthorsModal from '../components/RouteAuthorsModal';
+import LegalLinks from '../components/LegalLinks';
 
 // Static contact details — same as the "Seller Contacts" block on
 // climbing.ge/about_us, which is hardcoded in the site's own template
@@ -25,7 +26,6 @@ const SELLER_PHONE_TEL = '+995598457048';
 export default function App() {
   const { t } = useTranslation();
   const { locale } = useLocale();
-  const { width } = useWindowDimensions();
   const [aboutUsData, setAboutUsData] = useState([]);
   const [isLoading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -129,7 +129,7 @@ export default function App() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={gStyle.h1}>{t('article.about_us')}</Text>
       {!!description && (
-        <RenderHtml contentWidth={width - 32} source={{ html: description }} />
+        <HtmlContent html={description} />
       )}
 
       <View style={styles.section}>
@@ -168,6 +168,11 @@ export default function App() {
           ))}
         </View>
       )}
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('legal.section_title')}</Text>
+        <LegalLinks />
+      </View>
 
       <TouchableOpacity style={styles.authorsBtn} onPress={() => setAuthorsVisible(true)} activeOpacity={0.85}>
         <Text style={styles.authorsBtnText}>{t('about.check_route_authors')}</Text>

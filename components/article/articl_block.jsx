@@ -32,7 +32,6 @@ export default function articleBlock({ local_data, global_data, global_info_data
     return (
       <HtmlContent
         html={html}
-        contentWidth={width}
         renderers={iframeConfig.renderers}
         WebView={WebView}
         customHTMLElementModels={iframeConfig.customHTMLElementModels}

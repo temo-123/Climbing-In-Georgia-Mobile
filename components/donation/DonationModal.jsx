@@ -3,7 +3,7 @@ import {
   View, Text, Modal, TouchableOpacity, StyleSheet, ScrollView,
   TextInput, ActivityIndicator, Linking, useWindowDimensions,
 } from 'react-native';
-import RenderHtml from 'react-native-render-html';
+import HtmlContent from '../HtmlContent';
 import * as Clipboard from 'expo-clipboard';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../utils/LocaleContext';
@@ -144,7 +144,7 @@ export default function DonationModal({ visible, onClose }) {
           <ScrollView keyboardShouldPersistTaps="handled">
             <Text style={styles.title}>❤️ {t('donation.modal_title')}</Text>
             {!!description && (
-              <RenderHtml contentWidth={contentWidth} source={{ html: description }} />
+              <HtmlContent contentWidth={contentWidth} html={description} />
             )}
 
             <View style={styles.tabRow}>

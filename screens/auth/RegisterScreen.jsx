@@ -6,6 +6,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../utils/AuthContext';
 import SocialLoginButtons from '../../components/auth/SocialLoginButtons';
+import { useLocale } from '../../utils/LocaleContext';
+import { openPrivacyPolicy, openTermsOfUse } from '../../utils/legalLinks';
 import { COLORS } from '../../assets/styles/styles';
 
 export default function RegisterScreen({ navigation }) {
@@ -21,6 +23,10 @@ export default function RegisterScreen({ navigation }) {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { locale } = useLocale();
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+  const acceptedAll = acceptedTerms && acceptedPrivacy;
 
   async function handleRegister() {
     if (!name.trim() || !surname.trim() || !email.trim() || !country.trim() || !city.trim() || !phoneNumber.trim() || !password || !passwordConfirm) {
@@ -35,6 +41,10 @@ export default function RegisterScreen({ navigation }) {
       setError(t('auth.password_min'));
       return;
     }
+    if (!acceptedAll) {
+      setError(t('legal.must_accept'));
+      return;
+    }
     setError('');
     setLoading(true);
     try {
@@ -44,16 +54,14 @@ export default function RegisterScreen({ navigation }) {
       if (!err.isAxiosError) {
         // Not an HTTP error — reCAPTCHA token generation itself failed
         // (WebView not ready, timed out, etc.), not a server rejection.
-        setError(`${t('auth.generic_error')}\n\n[TEMP DEBUG] recaptcha failed: ${err?.message}`);
+        setError(t('auth.generic_error'));
         return;
       }
       if (err?.response?.data?.errors) {
         const errs = Object.values(err.response.data.errors).flat();
         setError(errs.join('\n'));
       } else {
-        setError(
-          `${err?.response?.data?.message || t('auth.generic_error')}\n\n[TEMP DEBUG] status: ${err?.response?.status}\n${JSON.stringify(err?.response?.data)}`,
-        );
+        setError(err?.response?.data?.message || t('auth.generic_error'));
       }
     } finally {
       setLoading(false);
@@ -140,9 +148,29 @@ export default function RegisterScreen({ navigation }) {
           secureTextEntry
         />
 
+        <AgreeCheckbox
+          checked={acceptedTerms}
+          onToggle={() => setAcceptedTerms(v => !v)}
+          prefix={t('legal.agree_prefix')}
+          linkText={t('legal.terms_of_use')}
+          onOpenLink={() => openTermsOfUse(locale)}
+        />
+        <AgreeCheckbox
+          checked={acceptedPrivacy}
+          onToggle={() => setAcceptedPrivacy(v => !v)}
+          prefix={t('legal.agree_prefix')}
+          linkText={t('legal.privacy_policy')}
+          onOpenLink={() => openPrivacyPolicy(locale)}
+        />
+
         {!!error && <Text style={styles.error}>{error}</Text>}
 
-        <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={[styles.button, !acceptedAll && styles.buttonDisabled]}
+          onPress={handleRegister}
+          disabled={loading || !acceptedAll}
+          activeOpacity={0.8}
+        >
           {loading
             ? <ActivityIndicator color="#fff" />
             : <Text style={styles.buttonText}>{t('auth.register')}</Text>
@@ -153,12 +181,37 @@ export default function RegisterScreen({ navigation }) {
           <Text style={styles.link}>{t('auth.have_account')}</Text>
         </TouchableOpacity>
 
-        <SocialLoginButtons
-          onLoggedIn={() => navigation.goBack()}
-          onNeedsPassword={(email) => navigation.navigate('social_create_password', { email })}
-        />
+        {/* Social signup creates an account too, so it needs the same consent. */}
+        <View pointerEvents={acceptedAll ? 'auto' : 'none'} style={!acceptedAll && styles.disabled}>
+          <SocialLoginButtons
+            onLoggedIn={() => navigation.goBack()}
+            onNeedsPassword={(email) => navigation.navigate('social_create_password', { email })}
+          />
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
+  );
+}
+
+function AgreeCheckbox({ checked, onToggle, prefix, linkText, onOpenLink }) {
+  return (
+    <View style={styles.checkRow}>
+      <TouchableOpacity
+        onPress={onToggle}
+        activeOpacity={0.7}
+        hitSlop={8}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked }}
+      >
+        <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+          {checked && <Text style={styles.checkmark}>✓</Text>}
+        </View>
+      </TouchableOpacity>
+      <Text style={styles.checkLabel} onPress={onToggle}>
+        {prefix}
+        <Text style={styles.checkLink} onPress={onOpenLink}>{linkText}</Text>
+      </Text>
+    </View>
   );
 }
 
@@ -192,6 +245,45 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     marginBottom: 14,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  checkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  checkboxChecked: {
+    backgroundColor: COLORS.primary,
+  },
+  checkmark: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  checkLabel: {
+    flex: 1,
+    fontSize: 14,
+    color: '#222',
+  },
+  checkLink: {
+    color: COLORS.primary,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
   },
   buttonText: {
     color: '#fff',

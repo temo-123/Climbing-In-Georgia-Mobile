@@ -3,7 +3,7 @@ import {
   View, Text, Modal, TouchableOpacity, StyleSheet,
   ScrollView, ActivityIndicator, useWindowDimensions,
 } from 'react-native';
-import RenderHtml from 'react-native-render-html';
+import HtmlContent from '../HtmlContent';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../utils/LocaleContext';
 import { getDonationSiteData } from '../../utils/donationSiteData';
@@ -48,11 +48,11 @@ export default function DonationWarningModal({ visible, onClose }) {
             ) : (
               <ScrollView style={styles.scroll}>
                 {!!content?.short_description && (
-                  <RenderHtml contentWidth={contentWidth} source={{ html: content.short_description }} />
+                  <HtmlContent contentWidth={contentWidth} html={content.short_description} />
                 )}
                 <Text style={styles.termsTitle}>{t('donation.terms_title')}</Text>
                 {!!content?.terms_of_use && (
-                  <RenderHtml contentWidth={contentWidth} source={{ html: content.terms_of_use }} />
+                  <HtmlContent contentWidth={contentWidth} html={content.terms_of_use} />
                 )}
               </ScrollView>
             )}

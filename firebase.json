@@ -1,0 +1,6 @@
+{
+  "react-native": {
+    "google_analytics_adid_collection_enabled": false,
+    "google_analytics_default_allow_ad_personalization_signals": false
+  }
+}

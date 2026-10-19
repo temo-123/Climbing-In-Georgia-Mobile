@@ -6,7 +6,11 @@
     "start": "npx expo start",
     "android": "npx expo start --android",
     "ios": "npx expo start --ios",
-    "web": "npx expo start --web"
+    "web": "npx expo start --web",
+    "build:aab": "eas build -p android --profile production",
+    "build:apk": "eas build -p android --profile production-apk",
+    "build:ipa": "eas build -p ios --profile production",
+    "build:all": "eas build -p all --profile production --no-wait && eas build -p android --profile production-apk --no-wait"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.3.0",

@@ -4,6 +4,7 @@ import {
   ScrollView, ActivityIndicator, Alert,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../utils/AuthContext';
 import api, { API_BASE_URL, IMG_BASES, imgUri } from '../../utils/api';
@@ -12,6 +13,8 @@ import { COLORS } from '../../assets/styles/styles';
 import EditProfileModal from '../../components/user/EditProfileModal';
 import ChangePasswordModal from '../../components/user/ChangePasswordModal';
 import UserLinksManager from '../../components/user/UserLinksManager';
+import LegalLinks from '../../components/LegalLinks';
+import DeleteAccountModal from '../../components/user/DeleteAccountModal';
 
 const API = API_BASE_URL;
 
@@ -34,6 +37,14 @@ export default function UserOptionsScreen() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [editProfileVisible, setEditProfileVisible] = useState(false);
   const [changePasswordVisible, setChangePasswordVisible] = useState(false);
+  const [deleteAccountVisible, setDeleteAccountVisible] = useState(false);
+  const navigation = useNavigation();
+
+  function handleAccountDeleted() {
+    setDeleteAccountVisible(false);
+    navigation.navigate('HomeDrawer', { screen: 'home' });
+    Alert.alert(t('user.account_deleted'));
+  }
 
   async function pickAvatar(useCamera) {
     try {
@@ -135,10 +146,28 @@ export default function UserOptionsScreen() {
           </TouchableOpacity>
         </View>
 
+        <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { marginBottom: 8 }]}>{t('legal.section_title')}</Text>
+          <LegalLinks />
+        </View>
+
+        <View style={styles.card}>
+          <Text style={[styles.sectionTitle, styles.dangerTitle]}>{t('user.delete_account')}</Text>
+          <Text style={styles.hint}>{t('user.delete_account_hint')}</Text>
+          <TouchableOpacity style={[styles.button, styles.dangerButton]} onPress={() => setDeleteAccountVisible(true)} activeOpacity={0.8}>
+            <Text style={styles.buttonText}>{t('user.delete_account')}</Text>
+          </TouchableOpacity>
+        </View>
+
       </ScrollView>
 
       <EditProfileModal visible={editProfileVisible} onClose={() => setEditProfileVisible(false)} />
       <ChangePasswordModal visible={changePasswordVisible} onClose={() => setChangePasswordVisible(false)} />
+      <DeleteAccountModal
+        visible={deleteAccountVisible}
+        onClose={() => setDeleteAccountVisible(false)}
+        onDeleted={handleAccountDeleted}
+      />
     </>
   );
 }
@@ -175,4 +204,6 @@ const styles = StyleSheet.create({
     alignItems: 'center', marginTop: 4,
   },
   buttonText: { color: '#fff', fontSize: 15, fontWeight: 'bold' },
+  dangerTitle: { color: '#e74c3c', marginBottom: 4 },
+  dangerButton: { backgroundColor: '#e74c3c' },
 });

@@ -31,7 +31,7 @@ export default function LoginScreen({ navigation }) {
       if (!err.isAxiosError) {
         // Not an HTTP error — reCAPTCHA token generation itself failed
         // (WebView not ready, timed out, etc.), not a server rejection.
-        setError(`${t('auth.generic_error')}\n\n[TEMP DEBUG] recaptcha failed: ${err?.message}`);
+        setError(t('auth.generic_error'));
         return;
       }
       const msg = err?.response?.data?.message;
@@ -41,9 +41,7 @@ export default function LoginScreen({ navigation }) {
         const errs = Object.values(err.response.data.errors).flat();
         setError(errs.join('\n'));
       } else {
-        setError(
-          `${t('auth.generic_error')}\n\n[TEMP DEBUG] status: ${err?.response?.status}\n${JSON.stringify(err?.response?.data)}`,
-        );
+        setError(t('auth.generic_error'));
       }
     } finally {
       setLoading(false);

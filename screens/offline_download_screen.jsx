@@ -120,10 +120,10 @@ export default function OfflineDownloadScreen() {
         </View>
       )}
 
-      {/* [TEMP DEBUG] remove once the summit download failure is diagnosed */}
-      {result && !isDownloading && result.debugErrors?.length > 0 && (
+      {/* Raw download errors — dev builds only, never shown in release. */}
+      {__DEV__ && result && !isDownloading && result.debugErrors?.length > 0 && (
         <View style={styles.debugBox}>
-          <Text style={styles.debugTitle}>[TEMP DEBUG] {result.debugErrors.length} error(s):</Text>
+          <Text style={styles.debugTitle}>{result.debugErrors.length} error(s):</Text>
           {result.debugErrors.map((e, i) => (
             <Text key={i} style={styles.debugText}>
               {e.phase} / {e.label}{'\n'}

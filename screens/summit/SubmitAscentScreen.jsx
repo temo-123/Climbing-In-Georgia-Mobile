@@ -146,7 +146,20 @@ export default function SubmitAscentScreen({ route, navigation }) {
     }
   }
 
+  // Google Play requires a prominent disclosure before the OS location prompt,
+  // so explain the purpose first unless permission was already granted.
   async function captureGPS() {
+    try {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      if (status === 'granted') return requestAndCaptureGPS();
+    } catch {}
+    Alert.alert(t('summit.gps_disclosure_title'), t('summit.gps_disclosure_body'), [
+      { text: t('summit.gps_disclosure_cancel'), style: 'cancel' },
+      { text: t('summit.gps_disclosure_continue'), onPress: requestAndCaptureGPS },
+    ]);
+  }
+
+  async function requestAndCaptureGPS() {
     setGpsLoading(true);
     setGpsError(false);
     try {

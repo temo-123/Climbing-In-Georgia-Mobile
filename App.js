@@ -94,8 +94,8 @@ async function setupNotifications() {
         shouldSetBadge: false,
       }),
     });
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status !== 'granted') return;
+    // No permission prompt here — the privacy policy promises permissions are
+    // asked only when a feature needs them; queueAscent() asks on first use.
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('ascent_sync', {
         name: 'Ascent Sync',

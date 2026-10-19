@@ -14,12 +14,18 @@ const PAYMENT_CONFIGURED = !!(
   process.env.EXPO_PUBLIC_DONATION_IBAN
 );
 
+// Hidden for now: Google Play (and the App Store) only allow in-app payments
+// outside their billing for tax-exempt charity donations, which these aren't.
+// Donations stay available on the website. Flip back to true to re-enable —
+// the whole flow (warning modal, card/bank modal) is kept intact.
+const DONATIONS_ENABLED = false;
+
 export default function DonationButton() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [warningVisible, setWarningVisible] = useState(false);
 
-  if (!PAYMENT_CONFIGURED) return null;
+  if (!DONATIONS_ENABLED || !PAYMENT_CONFIGURED) return null;
 
   return (
     <>

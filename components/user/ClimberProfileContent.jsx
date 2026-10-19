@@ -5,6 +5,7 @@ import api, { API_BASE_URL, IMG_BASES, imgUri } from '../../utils/api';
 import { useAuth } from '../../utils/AuthContext';
 import { COLORS } from '../../assets/styles/styles';
 import RadarStatsChart from './RadarStatsChart';
+import ReportButton from '../ReportButton';
 
 const API = API_BASE_URL;
 
@@ -160,6 +161,10 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
             </Text>
           </TouchableOpacity>
         )}
+
+        {!isSelf && (
+          <ReportButton type="user" id={user.id} label={`${user.name} ${user.surname}`} style={styles.reportBtn} />
+        )}
       </View>
 
       <View style={styles.radarSection}>
@@ -229,6 +234,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
 }
 
 const styles = StyleSheet.create({
+  reportBtn: { marginTop: 10 },
   center: { padding: 40, alignItems: 'center', justifyContent: 'center' },
   emptyText: { color: '#888', fontSize: 14 },
   header: { alignItems: 'center', paddingHorizontal: 20, paddingTop: 8 },

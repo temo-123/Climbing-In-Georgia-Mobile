@@ -202,6 +202,15 @@
     "password_min_8": "Password must be at least 8 characters"
   },
   "user": {
+    "delete_account": "Delete account",
+    "delete_account_hint": "Permanently delete your account and all data linked to it.",
+    "delete_account_warning": "This is permanent and cannot be undone. Your profile, ascents, comments, reviews and all other data linked to your account will be deleted.",
+    "delete_account_password_hint": "Leave empty if you signed up with Google or Facebook.",
+    "delete_account_type_confirm": "Type DELETE to confirm",
+    "delete_account_confirm_btn": "Delete my account permanently",
+    "delete_account_web": "Delete account on the web instead",
+    "delete_account_retry": "Could not delete the account. Check your connection and try again.",
+    "account_deleted": "Your account has been deleted",
     "offline_panel_title": "User panel is not available offline",
     "offline_panel_message": "Your profile, activity and settings are loaded from the server, so this section only works with an internet connection.",
     "offline_panel_hint": "You stay signed in. Ascents you record while offline are saved on your device with your account details and uploaded automatically once you are back online.",
@@ -296,6 +305,10 @@
     "comment": "Comment (optional)",
     "gps": "GPS Location",
     "capture_gps": "Capture My Location",
+    "gps_disclosure_title": "Use your location?",
+    "gps_disclosure_body": "Climb Georgia uses your current location only on this screen, to verify that you are near the summit. It is sent together with your ascent submission and is never tracked in the background.",
+    "gps_disclosure_cancel": "Not now",
+    "gps_disclosure_continue": "Continue",
     "gps_denied": "Location permission denied",
     "gps_error": "Could not get location",
     "gps_verified": "GPS verified — you're near the summit",
@@ -390,6 +403,20 @@
     "copy": "Copy",
     "copied": "Copied",
     "bank_transfer_error": "Could not load bank transfer details"
+  },
+  "report": {
+    "button": "Report",
+    "title": "Report content",
+    "email_intro": "I want to report the following content on Climb Georgia:",
+    "email_reason": "Reason:",
+    "no_email_app": "No email app found. Please send your report to {{email}}"
+  },
+  "legal": {
+    "section_title": "Legal",
+    "privacy_policy": "Privacy Policy",
+    "terms_of_use": "Terms of Use",
+    "agree_prefix": "I agree with the ",
+    "must_accept": "Please accept the Terms of Use and the Privacy Policy to continue"
   },
   "about": {
     "seller_contacts": "Seller Contacts",

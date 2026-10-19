@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import api, { API_BASE_URL } from './api';
 import { encryptPassword } from './rsaEncrypt';
 import { withRecaptchaRetry } from './recaptcha';
+import { clearQueue } from './ascentQueue';
 
 const API_BASE = API_BASE_URL;
 const AUTH_TOKEN_KEY = '@auth_token';
@@ -15,6 +16,7 @@ const AuthContext = createContext({
   login: async () => {},
   loginWithToken: async () => {},
   logout: async () => {},
+  deleteAccount: async () => {},
   register: async () => {},
   forgotPassword: async () => {},
   refreshUser: async () => {},
@@ -99,14 +101,29 @@ export function AuthProvider({ children }) {
     return newUser;
   }
 
-  async function logout() {
-    try {
-      await api.post(`${API_BASE}/logout`);
-    } catch {}
+  async function clearSession() {
     await AsyncStorage.multiRemove([AUTH_TOKEN_KEY, AUTH_USER_CACHE_KEY]);
     delete api.defaults.headers.common['Authorization'];
     setToken(null);
     setUser(null);
+  }
+
+  async function logout() {
+    try {
+      await api.post(`${API_BASE}/logout`);
+    } catch {}
+    await clearSession();
+  }
+
+  // Permanent. The backend revokes every token itself, so no /logout call
+  // afterwards (it would just 401). Social-signup users have no real
+  // password — send it only when one was typed.
+  async function deleteAccount(password) {
+    const body = { confirm: 'DELETE' };
+    if (password) body.password = password;
+    await api.post(`${API_BASE}/account/delete`, body);
+    await clearQueue().catch(() => {});
+    await clearSession();
   }
 
   async function register(name, surname, email, country, city, phoneNumber, password, passwordConfirmation) {
@@ -147,7 +164,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, loginWithToken, logout, register, forgotPassword, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, loginWithToken, logout, deleteAccount, register, forgotPassword, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

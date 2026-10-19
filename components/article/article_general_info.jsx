@@ -1,4 +1,4 @@
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import IframeRenderer, { iframeModel } from '@native-html/iframe-plugin';
 import WebView from 'react-native-webview';
 import HtmlContent from '../HtmlContent';
@@ -13,13 +13,10 @@ const renderersProps = {
 };
 
 export default function articleGeneralInfo({ global_info_data, actyve_block_data }) {
-  const { width } = useWindowDimensions();
-
   function Html({ html }) {
     return (
       <HtmlContent
         html={html}
-        contentWidth={width}
         renderers={renderers}
         WebView={WebView}
         customHTMLElementModels={customHTMLElementModels}

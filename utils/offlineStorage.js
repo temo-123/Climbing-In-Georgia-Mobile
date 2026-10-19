@@ -333,8 +333,9 @@ export async function downloadAllData(locale = 'en', onProgress) {
 
   const cachedLists = {};
   const allImageUrls = [];
-  // [TEMP DEBUG] capture what actually failed, since the try/catch below was
-  // silently discarding the real error — surfaced via the result object.
+  // Capture what actually failed, since the try/catch below would otherwise
+  // silently discard the real error — surfaced via the result object and
+  // shown on the offline download screen in dev builds only.
   const debugErrors = [];
 
   // Phase 1: Download category lists
@@ -607,6 +608,6 @@ export async function downloadAllData(locale = 'en', onProgress) {
     completed: totalCompleted,
     failed: listFailed + articleFailed + sectorsFailed + spotRocksImagesFailed + massiveFailed
       + routeImagesFailed + groupedListsFailed + summitsFailed + summitRoutesFailed + summitAscentsFailed,
-    debugErrors, // [TEMP DEBUG] remove once the summit download failure is diagnosed
+    debugErrors,
   };
 }

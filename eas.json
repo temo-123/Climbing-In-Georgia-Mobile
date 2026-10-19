@@ -16,6 +16,7 @@
     },
     "preview": {
       "distribution": "internal",
+      "environment": "preview",
       "android": {
         "buildType": "apk"
       },
@@ -24,7 +25,8 @@
       }
     },
     "production": {
-      "autoIncrement": true,
+      "environment": "production",
+      "autoIncrement": false,
       "android": {
         "buildType": "app-bundle"
       },
@@ -34,7 +36,6 @@
     },
     "production-apk": {
       "extends": "production",
-      "autoIncrement": false,
       "android": {
         "buildType": "apk"
       }
@@ -43,7 +44,7 @@
   "submit": {
     "production": {
       "android": {
-        "track": "internal",
+        "track": "alpha",
         "serviceAccountKeyPath": "./google-play-service-account.json"
       },
       "ios": {

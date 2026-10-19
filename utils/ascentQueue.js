@@ -34,6 +34,9 @@ export async function queueAscent(data) {
   if (!IS_EXPO_GO) {
     try {
       const Notifications = await import('expo-notifications');
+      // First offline ascent is the first time notifications are useful.
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') return;
       await Notifications.scheduleNotificationAsync({
         content: {
           title: i18n.t('summit.queued_notification_title'),
@@ -82,6 +85,15 @@ async function markItemError(id, message) {
     ? { ...item, lastError: message, lastErrorAt: new Date().toISOString() }
     : item));
   await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(next));
+}
+
+// Drops every queued ascent and its saved photo — used after account
+// deletion so a dead account's submissions never get retried.
+export async function clearQueue() {
+  const queue = await getQueue();
+  await AsyncStorage.removeItem(QUEUE_KEY);
+  await Promise.all(queue.filter(item => item.image_uri).map(item => deletePersistedPhoto(item.image_uri)));
+  await notifyListeners();
 }
 
 export function describeError(err) {
