@@ -4,7 +4,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useTranslation } from 'react-i18next';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { loadSummitData, loadOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 
 // Real summit QR codes encode e.g. http://summit.climbing.ge/summit/{url_title}?make_ascent={id}
 const SUMMIT_URL_TITLE_PATTERN = /\/summit\/([^/?]+)/;
@@ -149,10 +149,10 @@ const CORNER_THICKNESS = 3;
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   camera: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: '#111' },
-  infoText: { color: '#fff', fontSize: 15, textAlign: 'center', marginBottom: 20 },
-  btn: { backgroundColor: COLORS.primary, borderRadius: 10, paddingVertical: 12, paddingHorizontal: 28 },
-  btnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: COLORS.ink },
+  infoText: { color: '#fff', fontSize: 15, fontFamily: FONTS.body, textAlign: 'center', marginBottom: 20 },
+  btn: { backgroundColor: COLORS.primary, borderRadius: 999, paddingVertical: 12, paddingHorizontal: 28 },
+  btnText: { color: '#fff', fontFamily: FONTS.bodyBold, fontSize: 15 },
 
   overlay: { ...StyleSheet.absoluteFillObject },
   topOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)' },
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     gap: 16,
   },
-  hint: { color: 'rgba(255,255,255,0.85)', fontSize: 14, textAlign: 'center' },
+  hint: { color: 'rgba(255,255,255,0.85)', fontSize: 14, fontFamily: FONTS.body, textAlign: 'center' },
   cancelBtn: {
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.6)',
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 32,
   },
-  cancelBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  cancelBtnText: { color: '#fff', fontFamily: FONTS.bodySemi, fontSize: 15 },
 
   corner: {
     position: 'absolute',

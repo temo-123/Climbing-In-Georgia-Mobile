@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text, TouchableOpacity, StyleSheet, Linking, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { COLORS, FONTS } from '../assets/styles/styles';
 
 // Google Play's User Generated Content policy requires an in-app way to report
 // objectionable content/users. The backend has no report endpoint, so this
@@ -30,5 +31,5 @@ export default function ReportButton({ type, id, label, style }) {
 }
 
 const styles = StyleSheet.create({
-  text: { fontSize: 12, color: '#999', textDecorationLine: 'underline' },
+  text: { fontSize: 12, fontFamily: FONTS.body, color: COLORS.muted, textDecorationLine: 'underline' },
 });

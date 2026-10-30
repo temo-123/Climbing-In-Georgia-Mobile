@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api, { corsUrl, API_BASE_URL } from '../utils/api';
-import { COLORS } from '../assets/styles/styles';
+import { COLORS, FONTS } from '../assets/styles/styles';
 
 const SORT_FIELDS = ['total', 'name', 'sport', 'boulder', 'dry', 'ice'];
 const API = `${API_BASE_URL}/get_route/routes_authers_by_categories/`;
@@ -164,42 +164,42 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 14,
   },
-  title: { fontSize: 18, fontWeight: '800', color: '#222' },
-  closeBtn: { fontSize: 20, color: '#999', fontWeight: '700' },
+  title: { fontSize: 18, fontFamily: FONTS.bodyHeavy, color: COLORS.ink },
+  closeBtn: { fontSize: 24, color: COLORS.muted, fontFamily: FONTS.displayBold },
   sortRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   sortChip: {
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
+    borderWidth: 1,
+    borderColor: COLORS.line,
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
   sortChipActive: { backgroundColor: COLORS.primary },
-  sortChipText: { fontSize: 12, color: COLORS.primary, fontWeight: '600' },
+  sortChipText: { fontSize: 12, color: COLORS.primary, fontFamily: FONTS.bodySemi },
   sortChipTextActive: { color: '#fff' },
   loader: { marginVertical: 24 },
-  emptyText: { color: '#999', textAlign: 'center', marginVertical: 24 },
+  emptyText: { color: COLORS.muted, textAlign: 'center', marginVertical: 24 },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, gap: 10 },
-  rank: { width: 26, fontSize: 12, color: '#aaa', fontWeight: '700' },
+  rank: { width: 26, fontSize: 12, color: COLORS.muted, fontFamily: FONTS.bodyBold },
   rowMain: { flex: 1 },
-  authorName: { fontSize: 14, fontWeight: '700', color: '#222' },
-  breakdown: { fontSize: 11, color: '#888', marginTop: 2 },
+  authorName: { fontSize: 14, fontFamily: FONTS.bodyBold, color: COLORS.ink },
+  breakdown: { fontSize: 11, fontFamily: FONTS.body, color: COLORS.muted, marginTop: 2 },
   totalBadge: {
-    backgroundColor: '#e8f6fa',
+    backgroundColor: COLORS.primarySoft,
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 4,
     minWidth: 36,
     alignItems: 'center',
   },
-  totalBadgeText: { fontSize: 13, fontWeight: '800', color: COLORS.primary },
-  separator: { height: 1, backgroundColor: '#f0f0f0' },
+  totalBadgeText: { fontSize: 13, fontFamily: FONTS.bodyHeavy, color: COLORS.primary },
+  separator: { height: 1, backgroundColor: COLORS.line },
   closeCard: {
     backgroundColor: COLORS.primary,
-    borderRadius: 12,
+    borderRadius: 999,
     paddingVertical: 13,
     alignItems: 'center',
     marginTop: 16,
   },
-  closeCardText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  closeCardText: { color: '#fff', fontSize: 15, fontFamily: FONTS.bodyBold },
 });

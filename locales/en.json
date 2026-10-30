@@ -13,7 +13,8 @@
     "welcome_message": "Welcome to Climb Georgia mobile app",
     "powered_by": "Powered by climbing.ge",
     "hi_user": "Hi {{name}}",
-    "offline_indicator": "You are in offline mode"
+    "offline_indicator": "You are in offline mode",
+    "partners": "Find a Partner"
   },
   "page": {
     "indoor_gym": "Indoor Gym",
@@ -57,7 +58,6 @@
     "routes": "Routes",
     "about_us": "About us"
   },
-  
   "offline_screen": {
     "title": "Offline Mode",
     "subtitle": "Download all climbing data so you can browse the app without an internet connection.",
@@ -102,7 +102,9 @@
     "vertical": "Vertical",
     "overhang": "Overhang",
     "slab": "Slab",
-    "roof": "Roof"
+    "roof": "Roof",
+    "label": "Sector",
+    "area": "Area"
   },
   "routes_count": {
     "sport": "Georgia is waiting for you! Find {{totalSectors}} sectors with {{totalRoutes}} routes for Sport Climbing, Bouldering and Multi-Pitch!\nAll climbing spots are ready to welcome you. {{sportRoutes}} Sport routes in {{sportSectors}} sectors. {{boulderRoutes}} Bouldering routes in {{boulderSectors}} sectors. {{mtpRoutes}} Multi-Pitch routes in {{mtpSectors}} sectors.\nYour next adventure is waiting. Come and explore Georgia's amazing climbing areas today!",
@@ -115,7 +117,9 @@
     "mountain": "Mountain routes",
     "other": "Other Activity",
     "summits": "Summit Tracker",
-    "about_us": "About us"
+    "about_us": "About us",
+    "lead": "Sport climbing, ice, mountaineering and gyms — a guidebook made by climbers, for climbers.",
+    "find_crag": "Find a crag"
   },
   "routes_tab": {
     "no_routes": "No routes",
@@ -445,5 +449,62 @@
     "message_sent_title": "Message Sent",
     "message_sent_body": "Thanks for reaching out — we'll get back to you soon.",
     "message_send_error": "Couldn't send your message. Please try again."
+  },
+  "climb": {
+    "login_required": "Log in to log your ascents and write reviews.",
+    "reviews_btn": "Reviews ({{count}})",
+    "write_review": "Write a review",
+    "your_rating": "Your rating",
+    "review_text": "Your review (optional)",
+    "review_thanks": "Thank you for your review!",
+    "rating_required": "Please choose a rating.",
+    "recaptcha_failed": "We couldn't verify the request. Please try again in a moment.",
+    "you_climbed": "You climbed it · {{style}}",
+    "pitches": "{{count}} pitches",
+    "details": "Details",
+    "description": "Description",
+    "delete_confirm": "Delete this ascent from your logbook?",
+    "deleted": "Ascent deleted",
+    "my_logbook": "My logbook",
+    "my_mtp_ascents": "My multi-pitch ascents",
+    "logbook_empty": "No ascents yet. Open a crag, tap a route and log your first tick!",
+    "mtp_empty": "No multi-pitch ascents yet.",
+    "styles_summary": "Styles",
+    "first_ascent": "First ascent",
+    "add_review_after": "Rate this route too?"
+  },
+  "favorites_cat": {
+    "outdoor": "Outdoor",
+    "ice": "Ice",
+    "indoor": "Gyms",
+    "mount_route": "Mountaineering",
+    "other": "Other"
+  },
+  "time": {
+    "just_now": "just now",
+    "min_ago": "{{n}} min ago",
+    "h_ago": "{{n}} h ago",
+    "d_ago": "{{n}} days ago"
+  },
+  "comments": {
+    "none": "No comments yet. Be the first to share something useful.",
+    "placeholder": "Write a comment…",
+    "send": "Add comment",
+    "reply": "Reply",
+    "replying_to": "Replying to {{name}}",
+    "thanks": "Thanks for your comment!",
+    "empty_text": "Please write a comment first.",
+    "login_required": "Log in to comment and reply."
+  },
+  "partners_app": {
+    "published": "Your plan is on the board!",
+    "need_place": "Choose an area or write a place.",
+    "end_before_start": "The trip can't end before it starts.",
+    "too_long": "A trip can be at most {{n}} days long.",
+    "search_area": "Search areas…"
+  },
+  "gyms": {
+    "working": "Working",
+    "address": "Address"
   }
 }

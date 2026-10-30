@@ -14,7 +14,12 @@ import { queueAscent, describeError } from '../../utils/ascentQueue';
 import { withRecaptchaRetry, isRecaptchaFailure } from '../../utils/recaptcha';
 import { loadSummitData, loadSummitRoutesData } from '../../utils/offlineStorage';
 import { persistPickedPhoto, resolvePhotoUri, deletePersistedPhoto, readPhotoAsBase64 } from '../../utils/imageCompress';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
+import { faCalendarDays, faCamera, faImage, faInbox, faMountain, faRotate, faWifi } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { SvgXml } from 'react-native-svg';
+import { SCENES } from '../../components/ui/scenes';
+import IconText from '../../components/ui/IconText';
 
 const API = `${API_BASE_URL}/summit`;
 // Matches the backend's own Haversine check (SummitPublicController::submit_ascent) exactly,
@@ -344,7 +349,7 @@ export default function SubmitAscentScreen({ route, navigation }) {
     const isVerificationIssue = queuedReason === 'recaptcha_score';
     return (
       <View style={styles.successContainer}>
-        <Text style={styles.successIcon}>{isVerificationIssue ? '🔄' : '📥'}</Text>
+        <View style={styles.successIcon}><FontAwesomeIcon icon={isVerificationIssue ? faRotate : faInbox} size={40} color={COLORS.primary} /></View>
         <Text style={styles.successTitle}>
           {t(isVerificationIssue ? 'summit.queued_title_verification' : 'summit.queued_title')}
         </Text>
@@ -364,7 +369,7 @@ export default function SubmitAscentScreen({ route, navigation }) {
   if (success) {
     return (
       <View style={styles.successContainer}>
-        <Text style={styles.successIcon}>🎉</Text>
+        <View style={styles.successScene}><SvgXml xml={SCENES.summit} width="100%" height="100%" /></View>
         <Text style={styles.successTitle}>{t('summit.ascent_recorded')}</Text>
         <Text style={styles.successSub}>{title}</Text>
         {photoDropped && (
@@ -384,12 +389,12 @@ export default function SubmitAscentScreen({ route, navigation }) {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       {isOffline && (
         <View style={styles.offlineBanner}>
-          <Text style={styles.offlineBannerText}>📵 {t('summit.offline_banner')}</Text>
+          <IconText icon={faWifi} iconColor="#7a5c00" style={styles.offlineBannerText}>{t('summit.offline_banner')}</IconText>
         </View>
       )}
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <View style={styles.summitBanner}>
-          <Text style={styles.summitBannerIcon}>🏔️</Text>
+          <View style={styles.summitBannerIcon}><FontAwesomeIcon icon={faMountain} size={18} color={COLORS.hold} /></View>
           <Text style={styles.summitBannerTitle}>{title}</Text>
         </View>
 
@@ -405,15 +410,15 @@ export default function SubmitAscentScreen({ route, navigation }) {
           </View>
         ) : (
           <>
-            <TextInput style={styles.input} placeholder={t('auth.name')} placeholderTextColor="#aaa" value={name} onChangeText={setName} autoCapitalize="words" />
-            <TextInput style={styles.input} placeholder={t('auth.surname')} placeholderTextColor="#aaa" value={surname} onChangeText={setSurname} autoCapitalize="words" />
-            <TextInput style={styles.input} placeholder={t('auth.email')} placeholderTextColor="#aaa" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+            <TextInput style={styles.input} placeholder={t('auth.name')} placeholderTextColor={COLORS.muted} value={name} onChangeText={setName} autoCapitalize="words" />
+            <TextInput style={styles.input} placeholder={t('auth.surname')} placeholderTextColor={COLORS.muted} value={surname} onChangeText={setSurname} autoCapitalize="words" />
+            <TextInput style={styles.input} placeholder={t('auth.email')} placeholderTextColor={COLORS.muted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
           </>
         )}
 
         <Text style={styles.sectionTitle}>{t('summit.ascent_details')}</Text>
         <View style={styles.dateDisplay}>
-          <Text style={styles.dateDisplayText}>📅 {ascentDate}</Text>
+          <IconText icon={faCalendarDays} style={styles.dateDisplayText}>{ascentDate}</IconText>
         </View>
 
         {routes.length > 0 ? (
@@ -438,7 +443,7 @@ export default function SubmitAscentScreen({ route, navigation }) {
           <TextInput
             style={styles.input}
             placeholder={t('summit.other_route')}
-            placeholderTextColor="#aaa"
+            placeholderTextColor={COLORS.muted}
             value={otherRoute}
             onChangeText={setOtherRoute}
           />
@@ -447,7 +452,7 @@ export default function SubmitAscentScreen({ route, navigation }) {
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder={t('summit.comment')}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={comment}
           onChangeText={setComment}
           multiline
@@ -474,8 +479,8 @@ export default function SubmitAscentScreen({ route, navigation }) {
                 !!coords && !gpsVerified && styles.gpsBtnTextWarn,
               ]}>
                 {coords
-                  ? `📍 ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`
-                  : `📍 ${t('summit.capture_gps')}`}
+                  ? `${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`
+                  : t('summit.capture_gps')}
               </Text>
           }
         </TouchableOpacity>
@@ -486,7 +491,7 @@ export default function SubmitAscentScreen({ route, navigation }) {
         )}
         {!gpsLoading && (gpsError || (!!coords && !gpsVerified)) && (
           <TouchableOpacity style={styles.gpsRetryBtn} onPress={captureGPS} activeOpacity={0.7}>
-            <Text style={styles.gpsRetryText}>🔄 {t('summit.retry_gps')}</Text>
+            <IconText icon={faRotate} style={styles.gpsRetryText}>{t('summit.retry_gps')}</IconText>
           </TouchableOpacity>
         )}
 
@@ -507,10 +512,10 @@ export default function SubmitAscentScreen({ route, navigation }) {
         ) : (
           <View style={styles.photoBtnRow}>
             <TouchableOpacity style={styles.photoBtn} onPress={() => pickImage(true)} activeOpacity={0.8}>
-              <Text style={styles.photoBtnText}>📷 {t('summit.take_photo')}</Text>
+              <IconText icon={faCamera} style={styles.photoBtnText}>{t('summit.take_photo')}</IconText>
             </TouchableOpacity>
             <TouchableOpacity style={styles.photoBtn} onPress={() => pickImage(false)} activeOpacity={0.8}>
-              <Text style={styles.photoBtnText}>🖼️ {t('summit.choose_from_gallery')}</Text>
+              <IconText icon={faImage} style={styles.photoBtnText}>{t('summit.choose_from_gallery')}</IconText>
             </TouchableOpacity>
           </View>
         )}
@@ -535,16 +540,17 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
   },
-  offlineBannerText: { color: '#fff', fontSize: 13, fontWeight: '600', textAlign: 'center' },
+  offlineBannerText: { color: '#fff', fontSize: 13, fontFamily: FONTS.bodySemi, textAlign: 'center' },
   successContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: '#fff' },
-  successIcon: { fontSize: 72, marginBottom: 20 },
-  successTitle: { fontSize: 22, fontWeight: '800', color: COLORS.primary, textAlign: 'center', marginBottom: 8 },
-  successSub: { fontSize: 15, color: '#555', textAlign: 'center', marginBottom: 36 },
-  queuedDetailText: { fontSize: 12, color: '#999', textAlign: 'center', marginTop: -24, marginBottom: 24, fontFamily: 'monospace' },
-  doneBtn: { backgroundColor: COLORS.primary, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 40 },
-  doneBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  successIcon: { width: 84, height: 84, borderRadius: 42, backgroundColor: COLORS.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
+  successScene: { width: '100%', maxWidth: 340, aspectRatio: 360 / 240, marginBottom: 20, borderRadius: 20, overflow: 'hidden' },
+  successTitle: { fontSize: 26, fontFamily: FONTS.displayBold, color: COLORS.primary, textAlign: 'center', marginBottom: 8 },
+  successSub: { fontSize: 15, fontFamily: FONTS.body, color: COLORS.stone, textAlign: 'center', marginBottom: 36 },
+  queuedDetailText: { fontSize: 12, color: COLORS.muted, textAlign: 'center', marginTop: -24, marginBottom: 24, fontFamily: 'monospace' },
+  doneBtn: { backgroundColor: COLORS.primary, borderRadius: 999, paddingVertical: 14, paddingHorizontal: 40 },
+  doneBtnText: { color: '#fff', fontSize: 16, fontFamily: FONTS.bodyBold },
   summitBanner: {
-    backgroundColor: '#e8f6fa',
+    backgroundColor: COLORS.primarySoft,
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -552,52 +558,52 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     gap: 12,
   },
-  summitBannerIcon: { fontSize: 28 },
-  summitBannerTitle: { fontSize: 17, fontWeight: '700', color: COLORS.primary, flex: 1 },
-  sectionTitle: { fontSize: 14, fontWeight: '700', color: COLORS.primary, marginBottom: 10, marginTop: 4 },
-  label: { fontSize: 13, color: '#666', marginBottom: 8, fontWeight: '600' },
-  loggedInInfoBox: { backgroundColor: '#e8f6fa', borderRadius: 10, padding: 12, marginBottom: 12 },
-  loggedInInfoText: { fontSize: 13, color: '#1a6f85' },
+  summitBannerIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: COLORS.ink, alignItems: 'center', justifyContent: 'center' },
+  summitBannerTitle: { fontSize: 17, fontFamily: FONTS.bodyBold, color: COLORS.primary, flex: 1 },
+  sectionTitle: { fontSize: 14, fontFamily: FONTS.bodyBold, color: COLORS.primary, marginBottom: 10, marginTop: 4 },
+  label: { fontSize: 13, color: COLORS.stone, marginBottom: 8, fontFamily: FONTS.bodySemi },
+  loggedInInfoBox: { backgroundColor: COLORS.primarySoft, borderRadius: 10, padding: 12, marginBottom: 12 },
+  loggedInInfoText: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.primaryDark },
   input: {
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 12, backgroundColor: COLORS.surface,
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 12,
-    fontSize: 15,
-    color: '#222',
+    fontSize: 15, fontFamily: FONTS.body,
+    color: COLORS.ink,
   },
   textArea: { height: 100, paddingTop: 12 },
   routeList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   routeOption: {
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
+    borderWidth: 1,
+    borderColor: COLORS.line,
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 7,
   },
   routeOptionActive: { backgroundColor: COLORS.primary },
-  routeOptionText: { fontSize: 13, color: COLORS.primary, fontWeight: '600' },
+  routeOptionText: { fontSize: 13, color: COLORS.primary, fontFamily: FONTS.bodySemi },
   routeOptionTextActive: { color: '#fff' },
   gpsBtn: {
     borderWidth: 1.5,
     borderColor: COLORS.primary,
-    borderRadius: 10,
+    borderRadius: 999,
     paddingVertical: 13,
     alignItems: 'center',
     marginBottom: 20,
   },
-  gpsBtnActive: { backgroundColor: '#e8f6fa', borderColor: '#1a8aa8' },
+  gpsBtnActive: { backgroundColor: COLORS.primarySoft, borderColor: COLORS.primaryDark },
   gpsBtnWarn: { backgroundColor: '#fdf3e3', borderColor: '#f39c12' },
-  gpsBtnText: { fontSize: 14, color: COLORS.primary, fontWeight: '600' },
-  gpsBtnTextActive: { color: '#1a8aa8' },
+  gpsBtnText: { fontSize: 14, color: COLORS.primary, fontFamily: FONTS.bodySemi },
+  gpsBtnTextActive: { color: COLORS.primaryDark },
   gpsBtnTextWarn: { color: '#b9770e' },
-  gpsStatus: { fontSize: 12, fontWeight: '600', marginTop: -14, marginBottom: 6, textAlign: 'center' },
-  gpsStatusOk: { color: '#1e8449' },
+  gpsStatus: { fontSize: 12, fontFamily: FONTS.bodySemi, marginTop: -14, marginBottom: 6, textAlign: 'center' },
+  gpsStatusOk: { color: COLORS.success },
   gpsStatusWarn: { color: '#b9770e' },
   gpsRetryBtn: { alignSelf: 'center', paddingVertical: 4, paddingHorizontal: 10, marginBottom: 20 },
-  gpsRetryText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
+  gpsRetryText: { fontSize: 13, color: COLORS.primary, fontFamily: FONTS.bodyBold },
   photoCompressingBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -605,47 +611,47 @@ const styles = StyleSheet.create({
     gap: 10,
     borderWidth: 1.5,
     borderColor: COLORS.primary,
-    borderRadius: 10,
+    borderRadius: 999,
     paddingVertical: 16,
     marginBottom: 20,
   },
-  photoCompressingText: { fontSize: 13, color: COLORS.primary, fontWeight: '600' },
+  photoCompressingText: { fontSize: 13, color: COLORS.primary, fontFamily: FONTS.bodySemi },
   photoBtnRow: { flexDirection: 'row', gap: 10, marginBottom: 20 },
   photoBtn: {
     flex: 1,
     borderWidth: 1.5,
     borderColor: COLORS.primary,
-    borderRadius: 10,
+    borderRadius: 999,
     paddingVertical: 12,
     alignItems: 'center',
   },
-  photoBtnText: { fontSize: 13, color: COLORS.primary, fontWeight: '600' },
+  photoBtnText: { fontSize: 13, color: COLORS.primary, fontFamily: FONTS.bodySemi },
   photoPreviewWrap: { marginBottom: 20 },
   // resizeMode="contain" can letterbox (image aspect ratio rarely matches the
   // box exactly) — a neutral background makes that look intentional.
-  photoPreview: { width: '100%', height: 240, borderRadius: 10, marginBottom: 8, backgroundColor: '#f4f6f8' },
+  photoPreview: { width: '100%', height: 240, borderRadius: 10, marginBottom: 8, backgroundColor: COLORS.chalk },
   photoRemoveBtn: {
     alignSelf: 'center',
     borderWidth: 1.5,
-    borderColor: '#e74c3c',
+    borderColor: COLORS.danger,
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 6,
   },
-  photoRemoveBtnText: { color: '#e74c3c', fontSize: 13, fontWeight: '600' },
+  photoRemoveBtnText: { color: COLORS.danger, fontSize: 13, fontFamily: FONTS.bodySemi },
   dateDisplay: {
-    backgroundColor: '#e8f6fa',
+    backgroundColor: COLORS.primarySoft,
     borderRadius: 10,
     paddingVertical: 13,
     paddingHorizontal: 16,
     marginBottom: 12,
   },
-  dateDisplayText: { fontSize: 15, color: COLORS.primary, fontWeight: '700' },
+  dateDisplayText: { fontSize: 15, color: COLORS.primary, fontFamily: FONTS.bodyBold },
   submitBtn: {
     backgroundColor: COLORS.primary,
-    borderRadius: 12,
+    borderRadius: 999,
     paddingVertical: 15,
     alignItems: 'center',
   },
-  submitBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  submitBtnText: { color: '#fff', fontSize: 16, fontFamily: FONTS.bodyHeavy },
 });

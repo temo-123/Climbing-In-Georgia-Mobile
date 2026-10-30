@@ -1,11 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Constants from 'expo-constants';
+import { IS_EXPO_GO } from './isExpoGo';
 import api, { corsUrl, API_BASE_URL } from './api';
 import i18n from './i18n';
 import { withRecaptchaRetry } from './recaptcha';
 import { resolvePhotoUri, deletePersistedPhoto, readPhotoAsBase64 } from './imageCompress';
 
-const IS_EXPO_GO = Constants.appOwnership === 'expo';
 
 const QUEUE_KEY = '@ascent_queue';
 const API = `${API_BASE_URL}/summit`;

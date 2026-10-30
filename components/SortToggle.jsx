@@ -2,7 +2,7 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowUpAZ, faSort } from '@fortawesome/free-solid-svg-icons';
-import { COLORS } from '../assets/styles/styles';
+import { COLORS, FONTS } from '../assets/styles/styles';
 
 // Toggles between the list's default (server) order and A-Z. The site's
 // filter/group endpoints don't expose a sort order themselves — this is a
@@ -22,13 +22,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     alignSelf: 'flex-start',
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    minHeight: 36,
+    backgroundColor: COLORS.chalk2,
+    borderRadius: 999,
+    paddingHorizontal: 14,
     marginTop: 8,
     marginBottom: 16,
   },
-  text: { fontSize: 12, color: COLORS.primary, fontWeight: '600' },
+  text: { fontSize: 12, color: COLORS.ink2, fontFamily: FONTS.bodyBold },
 });

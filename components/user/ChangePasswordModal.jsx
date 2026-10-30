@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TextInput, TouchableOpacity, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api, { API_BASE_URL } from '../../utils/api';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 import FormModal from './FormModal';
 
 const API = API_BASE_URL;
@@ -57,9 +57,9 @@ export default function ChangePasswordModal({ visible, onClose }) {
 
   return (
     <FormModal visible={visible} title={t('user.change_password')} onClose={onClose}>
-      <TextInput style={styles.input} placeholder={t('user.current_password')} placeholderTextColor="#aaa" value={currentPassword} onChangeText={setCurrentPassword} secureTextEntry />
-      <TextInput style={styles.input} placeholder={t('auth.password')} placeholderTextColor="#aaa" value={newPassword} onChangeText={setNewPassword} secureTextEntry />
-      <TextInput style={styles.input} placeholder={t('auth.confirm_password')} placeholderTextColor="#aaa" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
+      <TextInput style={styles.input} placeholder={t('user.current_password')} placeholderTextColor={COLORS.muted} value={currentPassword} onChangeText={setCurrentPassword} secureTextEntry />
+      <TextInput style={styles.input} placeholder={t('auth.password')} placeholderTextColor={COLORS.muted} value={newPassword} onChangeText={setNewPassword} secureTextEntry />
+      <TextInput style={styles.input} placeholder={t('auth.confirm_password')} placeholderTextColor={COLORS.muted} value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
       {!!error && <Text style={styles.error}>{error}</Text>}
       <TouchableOpacity style={styles.button} onPress={handleSave} disabled={loading} activeOpacity={0.8}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{t('user.change_password')}</Text>}
@@ -70,13 +70,13 @@ export default function ChangePasswordModal({ visible, onClose }) {
 
 const styles = StyleSheet.create({
   input: {
-    borderWidth: 1.5, borderColor: COLORS.primary, borderRadius: 10,
-    paddingHorizontal: 14, paddingVertical: 12, marginBottom: 12, fontSize: 15, color: '#222',
+    borderWidth: 1, borderColor: COLORS.line, borderRadius: 12, backgroundColor: COLORS.surface,
+    paddingHorizontal: 14, paddingVertical: 12, marginBottom: 12, fontSize: 15, fontFamily: FONTS.body, color: COLORS.ink,
   },
   button: {
-    backgroundColor: COLORS.primary, borderRadius: 10, paddingVertical: 13,
+    backgroundColor: COLORS.primary, borderRadius: 999, paddingVertical: 13,
     alignItems: 'center', marginTop: 4,
   },
-  buttonText: { color: '#fff', fontSize: 15, fontWeight: 'bold' },
-  error: { color: '#e74c3c', marginBottom: 10, fontSize: 13 },
+  buttonText: { color: '#fff', fontSize: 15, fontFamily: FONTS.bodyBold },
+  error: { color: COLORS.danger, marginBottom: 10, fontSize: 13, fontFamily: FONTS.body },
 });

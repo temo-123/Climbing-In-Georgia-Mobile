@@ -12,6 +12,10 @@ import ImageViewerModal from "../../components/ImageViewerModal";
 import Preloader from "../../components/Preloader";
 import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
+import { useRememberViewed } from "../../utils/recentlyViewed";
+import ArticleComments from "../../components/guide/ArticleComments";
+import DirectionsButton from "../../components/guide/DirectionsButton";
+import AreaConditions from "../../components/guide/AreaConditions";
 
 import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from "../../utils/api";
 import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
@@ -29,6 +33,8 @@ export default function App({ route }) {
   const [isLoading, setLoading] = useState(true);
   const [noCache, setNoCache] = useState(false);
   const [viewer, setViewer] = useState(null);
+
+  useRememberViewed('ice', globalIceData.global_data, localeIceData.title);
 
   const load = useCallback(() => {
     api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/ice/${locale}/` + route.params))
@@ -75,6 +81,14 @@ export default function App({ route }) {
       <ArticleBlock
         local_data={localeIceData}
         global_data={globalIceData.global_data || {}}
+        favoriteId={globalIceData.global_data?.id}
+        gearChecklist
+        afterImageContent={
+          <>
+            <DirectionsButton parking={globalIceData.global_data?.parking} />
+            <AreaConditions articleId={globalIceData.global_data?.id} category="ice" />
+          </>
+        }
         global_info_data={globalIceInfoData}
         imgBase={IMG_BASE}
       />
@@ -97,6 +111,8 @@ export default function App({ route }) {
         visible={viewer !== null}
         onClose={() => setViewer(null)}
       />
+
+      <ArticleComments articleId={globalIceData.global_data?.id} />
 
       <PageFooter />
       <StatusBar style="auto" />

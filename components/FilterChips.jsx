@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { COLORS } from '../assets/styles/styles';
+import { COLORS, FONTS } from '../assets/styles/styles';
 
 // Horizontal, scrollable, single-select chip row — used for the region
 // filter (outdoor spots), massif filter (mountain routes), and month filter
@@ -35,13 +35,15 @@ export default function FilterChips({ options, selected, onSelect }) {
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 8, paddingVertical: 4, paddingHorizontal: 2 },
   chip: {
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    minHeight: 38,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    backgroundColor: COLORS.surface,
+    borderRadius: 999,
+    paddingHorizontal: 15,
   },
-  chipActive: { backgroundColor: COLORS.primary },
-  chipText: { fontSize: 13, color: COLORS.primary, fontWeight: '600' },
-  chipTextActive: { color: '#fff' },
+  chipActive: { backgroundColor: COLORS.ink, borderColor: COLORS.ink },
+  chipText: { fontSize: 13, color: COLORS.ink2, fontFamily: FONTS.bodyBold },
+  chipTextActive: { color: COLORS.hold },
 });

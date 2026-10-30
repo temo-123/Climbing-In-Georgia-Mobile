@@ -1,82 +1,19 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-} from "react-native";
-import React from "react";
-import { useNavigation } from "@react-navigation/native";
-import CachedImage from "../CachedImage";
-import { imgUri, IMG_BASES } from "../../utils/api";
-import { COLORS } from '../../assets/styles/styles';
+import React from 'react';
+import { useNavigation } from '@react-navigation/native';
+import ArticleCardShell from './ArticleCardShell';
+import FavoriteHeart from '../guide/FavoriteHeart';
+import { imgUri, IMG_BASES } from '../../utils/api';
 
-export default function outdoorCard({ cardData }) {
+export default function OtherActivityCard({ cardData }) {
   const navigation = useNavigation();
+  const gd = cardData.global_data;
   return (
-    <TouchableOpacity
-      style={styles.outdoor_article_card}
-      onPress={() =>
-        navigation.navigate("other_activity_page", cardData.global_data.url_title)
-      }
-    >
-      <View style={styles.outdoor_article_card_image_view}>
-        <CachedImage
-          uri={imgUri(IMG_BASES.other, cardData.global_data.image, cardData.global_data.updated_at)}
-          style={styles.outdoor_article_card_image}
-          contentFit="contain"
-        />
-      </View>
-      <View style={styles.outdoor_article_card_text}>
-        <Text
-          style={styles.outdoor_article_card_title}
-          onPress={() =>
-            navigation.navigate("other_activity_page", cardData.global_data.url_title)
-          }
-        >
-          {cardData.locale_data.title}
-        </Text>
-        {/* <Text style={styles.outdoor_article_card_description}>article description</Text> */}
-      </View>
-    </TouchableOpacity>
+    <ArticleCardShell
+      topRight={<FavoriteHeart articleId={gd.id} size="sm" />}
+      imageUri={imgUri(IMG_BASES.other, gd.image, gd.updated_at)}
+      title={cardData.locale_data.title}
+      text={cardData.locale_data.short_description}
+      onPress={() => navigation.navigate('other_activity_page', gd.url_title)}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  outdoor_article_card: {
-    backgroundColor: "white",
-    width: "100%",
-    height: 100,
-    alignItems: "center",
-    marginBottom: 16,
-
-    borderWidth: 1.5,
-    borderRadius: 10,
-    borderColor: COLORS.primary,
-
-    flexDirection: "row",
-  },
-  outdoor_article_card_image_view: {
-    width: "45%",
-  },
-  outdoor_article_card_image: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 10,
-    resizeMode: "contain",
-  },
-  outdoor_article_card_text: {
-    flex: 1,
-    padding: 4,
-  },
-  outdoor_article_card_title: {
-    fontSize: 20,
-    float: "top",
-  },
-  outdoor_article_card_routes: {
-    flexDirection: "row",
-    marginTop: 3,
-  },
-  outdoor_article_card_routes_text: {
-    fontSize: 14,
-  },
-});

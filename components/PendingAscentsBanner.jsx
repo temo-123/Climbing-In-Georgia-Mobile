@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { subscribeToQueue, syncQueue, discardQueuedAscent } from '../utils/ascentQueue';
-import { COLORS } from '../assets/styles/styles';
+import { COLORS, FONTS } from '../assets/styles/styles';
+import { faInbox, faMountain } from '@fortawesome/free-solid-svg-icons';
+import IconText from './ui/IconText';
 
 function queuedAtFromId(_id) {
   const ms = Number(String(_id).split('_')[0]);
@@ -45,7 +47,7 @@ function QueuedAscentRow({ item, t }) {
     <View style={styles.row}>
       <View style={styles.rowMain}>
         <Text style={styles.rowName}>{item.name} {item.surname}</Text>
-        {!!summitLabel && <Text style={styles.rowSummit}>🏔️ {summitLabel}</Text>}
+        {!!summitLabel && <IconText icon={faMountain} style={styles.rowSummit}>{summitLabel}</IconText>}
         {!!routeLabel && <Text style={styles.rowMeta}>{routeLabel}</Text>}
         {!!queuedAt && (
           <Text style={styles.rowMeta}>{t('summit.queued_on', { date: queuedAt.toLocaleString() })}</Text>
@@ -91,7 +93,7 @@ export default function PendingAscentsBanner() {
   return (
     <View style={styles.banner}>
       <View style={styles.row2}>
-        <Text style={styles.text}>📥 {t('summit.pending_ascents', { count: queue.length })}</Text>
+        <IconText icon={faInbox} iconColor={COLORS.ink} style={styles.text}>{t('summit.pending_ascents', { count: queue.length })}</IconText>
         <TouchableOpacity style={styles.syncBtn} onPress={handleSyncNow} disabled={syncing} activeOpacity={0.8}>
           {syncing
             ? <ActivityIndicator size="small" color="#1a6f85" />
@@ -131,19 +133,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 10,
   },
-  text: { fontSize: 12, color: '#7a5200', flexShrink: 1, fontWeight: '600' },
+  text: { fontSize: 12, color: '#7a5200', flexShrink: 1, fontFamily: FONTS.bodySemi },
   syncBtn: {
     borderWidth: 1.5,
     borderColor: COLORS.primary,
-    borderRadius: 8,
+    borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 6,
     minWidth: 72,
     alignItems: 'center',
   },
-  syncBtnText: { fontSize: 12, color: COLORS.primary, fontWeight: '700' },
-  errorText: { fontSize: 11, color: '#b9770e' },
-  toggleText: { fontSize: 12, color: '#1a6f85', fontWeight: '700', textDecorationLine: 'underline' },
+  syncBtnText: { fontSize: 12, color: COLORS.primary, fontFamily: FONTS.bodyBold },
+  errorText: { fontSize: 11, fontFamily: FONTS.body, color: '#b9770e' },
+  toggleText: { fontSize: 12, color: COLORS.primaryDark, fontFamily: FONTS.bodyBold, textDecorationLine: 'underline' },
   list: { gap: 8, marginTop: 4 },
   row: {
     flexDirection: 'row',
@@ -155,16 +157,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   rowMain: { flex: 1, gap: 2 },
-  rowName: { fontSize: 13, fontWeight: '700', color: '#333' },
-  rowSummit: { fontSize: 12, color: COLORS.primary, fontWeight: '600', marginTop: 1 },
-  rowMeta: { fontSize: 11, color: '#888' },
-  rowError: { fontSize: 11, color: '#b9770e', marginTop: 2 },
+  rowName: { fontSize: 13, fontFamily: FONTS.bodyBold, color: COLORS.ink },
+  rowSummit: { fontSize: 12, color: COLORS.primary, fontFamily: FONTS.bodySemi, marginTop: 1 },
+  rowMeta: { fontSize: 11, fontFamily: FONTS.body, color: COLORS.muted },
+  rowError: { fontSize: 11, fontFamily: FONTS.body, color: '#b9770e', marginTop: 2 },
   removeBtn: {
     borderWidth: 1.5,
-    borderColor: '#e74c3c',
+    borderColor: COLORS.danger,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
-  removeBtnText: { fontSize: 11, color: '#e74c3c', fontWeight: '700' },
+  removeBtnText: { fontSize: 11, color: COLORS.danger, fontFamily: FONTS.bodyBold },
 });

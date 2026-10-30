@@ -6,6 +6,9 @@ import { useSiteDescription } from '../../utils/useSiteData';
 import { useLocale } from '../../utils/LocaleContext';
 import { useNetwork } from '../../utils/NetworkContext';
 import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
+import { eventStatus, toDate, monthYear } from '../../utils/eventDates';
+import { useInterested } from '../../utils/interested';
+import { searchItems } from '../../utils/listSearch';
 
 import EventCard from "../../components/cards/event_card_component";
 import Article_list_header_text from "../../components/article_list_header_text_component";
@@ -15,10 +18,13 @@ import Preloader from "../../components/Preloader";
 import OfflineBanner from "../../components/OfflineBanner";
 import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
+import ListSearchBar from "../../components/ListSearchBar";
+import Segmented from "../../components/ui/Segmented";
 
-// The site has no server-side event filter to mirror — events are already
-// restricted to current/upcoming and sorted by start date server-side. This
-// derives a month filter client-side from whatever's already fetched.
+// get_event_on_site_list returns every published event, past ones too (the
+// website files them under "Past"). The app lists only events that haven't
+// finished yet — happening now first, then by start date — and derives a
+// month filter client-side from those.
 function monthKey(dateStr) {
   if (!dateStr) return null;
   const d = new Date(dateStr.replace(' ', 'T'));
@@ -28,8 +34,13 @@ function monthKey(dateStr) {
 
 function monthLabel(key, locale) {
   const [y, m] = key.split('-').map(Number);
-  const d = new Date(y, m - 1, 1);
-  return d.toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', { month: 'long', year: 'numeric' });
+  return monthYear(new Date(y, m - 1, 1), locale);
+}
+
+function upcomingOnly(list) {
+  return (Array.isArray(list) ? list : [])
+    .filter((item) => item?.global_event && eventStatus(item.global_event).key !== 'finished')
+    .sort((a, b) => (toDate(a.global_event.start_data) || 0) - (toDate(b.global_event.start_data) || 0));
 }
 
 export default function App() {
@@ -42,6 +53,10 @@ export default function App() {
   const [noCache, setNoCache] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const description = useSiteDescription('events');
+  const { loggedIn, isInterested } = useInterested();
+  const [query, setQuery] = useState('');
+  const [cat, setCat] = useState('all');
+  const [mine, setMine] = useState(false);
 
   function load() {
     setLoading(true);
@@ -76,9 +91,11 @@ export default function App() {
     wasDeviceOffline.current = deviceOffline;
   }, [deviceOffline]);
 
+  const upcoming = useMemo(() => upcomingOnly(event_data), [event_data]);
+
   const monthOptions = useMemo(() => {
     const seen = new Map();
-    for (const item of event_data) {
+    for (const item of upcoming) {
       const key = monthKey(item.global_event?.start_data);
       if (key && !seen.has(key)) seen.set(key, monthLabel(key, locale));
     }
@@ -87,11 +104,14 @@ export default function App() {
       { key: null, label: t('filter.all') },
       ...sortedKeys.map((key) => ({ key, label: seen.get(key) })),
     ];
-  }, [event_data, locale, t]);
+  }, [upcoming, locale, t]);
 
-  const visibleEvents = selectedMonth == null
-    ? event_data
-    : event_data.filter((item) => monthKey(item.global_event?.start_data) === selectedMonth);
+  let visibleEvents = selectedMonth == null
+    ? upcoming
+    : upcoming.filter((item) => monthKey(item.global_event?.start_data) === selectedMonth);
+  if (cat !== 'all') visibleEvents = visibleEvents.filter((i) => (cat === 'competition') === (i.global_event.category === 'competition'));
+  if (mine) visibleEvents = visibleEvents.filter((i) => isInterested(i.global_event.id));
+  visibleEvents = searchItems(visibleEvents, query);
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;
@@ -105,9 +125,33 @@ export default function App() {
         ListHeaderComponent={
           <View>
             <Article_list_header_text
+              art="trophy"
               title={t('list.events_title')}
               description={description}
             />
+            {upcoming.length > 0 && (
+              <>
+                <ListSearchBar value={query} onChange={setQuery} found={visibleEvents.length} placeholder={t('site.guide.events.search')} />
+                <Segmented
+                  style={styles.gap}
+                  options={[
+                    { key: 'all', label: t('site.guide.events.cat_all') },
+                    { key: 'competition', label: t('site.guide.events.cat_competition') },
+                    { key: 'event', label: t('site.guide.events.cat_event') },
+                  ]}
+                  value={cat}
+                  onChange={setCat}
+                />
+                {loggedIn && (
+                  <Segmented
+                    style={styles.gap}
+                    options={[{ key: false, label: t('site.guide.events.all_events') }, { key: true, label: t('site.guide.events.only_mine') }]}
+                    value={mine}
+                    onChange={setMine}
+                  />
+                )}
+              </>
+            )}
             {monthOptions.length > 2 && (
               <FilterChips options={monthOptions} selected={selectedMonth} onSelect={setSelectedMonth} />
             )}
@@ -116,6 +160,7 @@ export default function App() {
         renderItem={({ item }) => <EventCard cardData={item} />}
         ListEmptyComponent={<EmptyState message={t('empty.events')} />}
         ListFooterComponent={<PageFooter />}
+        ListFooterComponentStyle={styles.footer}
         contentContainerStyle={styles.container}
       />
     </View>
@@ -124,5 +169,7 @@ export default function App() {
 
 const styles = StyleSheet.create({
   wrapper: { flex: 1 },
-  container: { padding: 16 },
+  container: { padding: 16, flexGrow: 1 },
+  footer: { flexGrow: 1, justifyContent: 'flex-end' },
+  gap: { marginBottom: 12 },
 });

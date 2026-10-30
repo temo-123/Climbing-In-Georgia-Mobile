@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocale } from '../utils/LocaleContext';
 import { downloadAllData, getLastDownloadTime } from '../utils/offlineStorage';
 import PageFooter from '../components/PageFooter';
-import { COLORS } from '../assets/styles/styles';
+import { COLORS, FONTS } from '../assets/styles/styles';
 
 export default function OfflineDownloadScreen() {
   const { t } = useTranslation();
@@ -141,7 +141,7 @@ export default function OfflineDownloadScreen() {
         <Text style={styles.tipText}>{t('offline_screen.how_2')}</Text>
         <Text style={styles.tipText}>{t('offline_screen.how_3')}</Text>
       </View>
-      <PageFooter />
+      <PageFooter bleed={24} />
     </ScrollView>
   );
 }
@@ -152,19 +152,19 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 16,
     padding: 28,
-    backgroundColor: '#e8f6fa',
+    backgroundColor: COLORS.primarySoft,
     borderRadius: 100,
   },
   title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#222',
+    fontSize: 30,
+    fontFamily: FONTS.displayBold,
+    color: COLORS.ink,
     marginBottom: 10,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 15,
-    color: '#555',
+    fontSize: 15, fontFamily: FONTS.body,
+    color: COLORS.stone,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -179,8 +179,8 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     width: '100%',
   },
-  infoText: { fontSize: 14, color: COLORS.primary, flex: 1 },
-  infoTextMuted: { color: '#999' },
+  infoText: { fontSize: 14, fontFamily: FONTS.body, color: COLORS.primary, flex: 1 },
+  infoTextMuted: { color: COLORS.muted },
   button: {
     backgroundColor: COLORS.primary,
     borderRadius: 14,
@@ -190,10 +190,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontSize: 17, fontWeight: 'bold', letterSpacing: 0.3 },
+  buttonText: { color: '#fff', fontSize: 17, fontFamily: FONTS.bodyBold, letterSpacing: 0.3 },
   progressBox: { width: '100%', marginBottom: 20, alignItems: 'center', gap: 10 },
   progressSpinner: { marginBottom: 4 },
-  progressLabel: { fontSize: 13, color: '#555', textAlign: 'center' },
+  progressLabel: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.stone, textAlign: 'center' },
   resultBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -205,8 +205,8 @@ const styles = StyleSheet.create({
   },
   resultSuccess: { backgroundColor: '#e6f6ec' },
   resultError: { backgroundColor: '#fde8e8' },
-  resultText: { fontSize: 14, color: '#2d7a4f', flex: 1, lineHeight: 20 },
-  resultTextError: { color: '#c0392b' },
+  resultText: { fontSize: 14, fontFamily: FONTS.body, color: '#2d7a4f', flex: 1, lineHeight: 20 },
+  resultTextError: { color: COLORS.danger },
   debugBox: {
     width: '100%',
     backgroundColor: '#fdf3e3',
@@ -214,16 +214,16 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 20,
   },
-  debugTitle: { fontSize: 12, fontWeight: 'bold', color: '#7a5c00', marginBottom: 6 },
-  debugText: { fontSize: 11, color: '#7a5c00', marginBottom: 8, lineHeight: 16 },
+  debugTitle: { fontSize: 12, fontFamily: FONTS.bodyBold, color: '#7a5c00', marginBottom: 6 },
+  debugText: { fontSize: 11, fontFamily: FONTS.body, color: '#7a5c00', marginBottom: 8, lineHeight: 16 },
   tipBox: {
     width: '100%',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.chalk,
     borderRadius: 12,
     padding: 16,
     marginTop: 4,
     gap: 6,
   },
-  tipTitle: { fontSize: 15, fontWeight: 'bold', color: '#333', marginBottom: 6 },
-  tipText: { fontSize: 13, color: '#555', lineHeight: 20 },
+  tipTitle: { fontSize: 15, fontFamily: FONTS.bodyBold, color: COLORS.ink, marginBottom: 6 },
+  tipText: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.stone, lineHeight: 20 },
 });

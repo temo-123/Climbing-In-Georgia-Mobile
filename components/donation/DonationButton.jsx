@@ -3,6 +3,9 @@ import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import DonationWarningModal from './DonationWarningModal';
+import { COLORS, FONTS } from '../../assets/styles/styles';
+import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import IconText from '../ui/IconText';
 
 // Don't offer donations at all until real payment/bank details are actually
 // configured (see .env.example) — showing "Support Us" with a blank IBAN
@@ -34,7 +37,7 @@ export default function DonationButton() {
         onPress={() => setWarningVisible(true)}
         activeOpacity={0.85}
       >
-        <Text style={styles.floatingBtnText}>❤️ {t('donation.support_button')}</Text>
+        <IconText icon={faHeart} iconColor={COLORS.rope} style={styles.floatingBtnText}>{t('donation.support_button')}</IconText>
       </TouchableOpacity>
       <DonationWarningModal visible={warningVisible} onClose={() => setWarningVisible(false)} />
     </>
@@ -48,7 +51,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 28,
-    backgroundColor: '#28a745',
+    backgroundColor: COLORS.hold,
+    borderBottomWidth: 3,
+    borderBottomColor: 'rgba(0,0,0,0.14)',
     elevation: 6,
     shadowColor: '#000',
     shadowOpacity: 0.25,
@@ -56,5 +61,5 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     zIndex: 999,
   },
-  floatingBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  floatingBtnText: { color: COLORS.ink, fontSize: 14, fontFamily: FONTS.bodyBold },
 });

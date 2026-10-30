@@ -1,69 +1,25 @@
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
-import CachedImage from '../CachedImage';
+import { faMountain } from '@fortawesome/free-solid-svg-icons';
+import ArticleCardShell from './ArticleCardShell';
+import FavoriteHeart from '../guide/FavoriteHeart';
 import { imgUri, IMG_BASES } from '../../utils/api';
-import { COLORS } from '../../assets/styles/styles';
 
-export default function outdoorCard({cardData}) {
+export default function MountRouteCard({ cardData }) {
   const navigation = useNavigation();
+  const gd = cardData.global_data;
+  const chips = [];
+  if (cardData.mount_masive) chips.push({ icon: faMountain, label: cardData.mount_masive, tone: 'accent' });
+  if (gd.mount_grade) chips.push({ label: gd.mount_grade });
+
   return (
-    <TouchableOpacity style={styles.outdoor_article_card} onPress={() => navigation.navigate('mountain_route_page', { url_title: cardData.global_data.url_title, mount_masive: cardData.mount_masive })}>
-      <View style={styles.outdoor_article_card_image_view}>
-        <CachedImage uri={imgUri(IMG_BASES.mountRoute, cardData.global_data.image, cardData.global_data.updated_at)} style={styles.outdoor_article_card_image} contentFit="contain" />
-      </View>
-      <View style={styles.outdoor_article_card_text}>
-        <Text style={styles.outdoor_article_card_title}>{cardData.locale_data.title}</Text>
-        {cardData.mount_masive ? (
-          <Text style={styles.outdoor_article_card_masive}>{cardData.mount_masive}</Text>
-        ) : null}
-      </View>
-    </TouchableOpacity>
+    <ArticleCardShell
+      topRight={<FavoriteHeart articleId={gd.id} size="sm" />}
+      imageUri={imgUri(IMG_BASES.mountRoute, gd.image, gd.updated_at)}
+      title={cardData.locale_data.title}
+      text={cardData.locale_data.short_description}
+      chips={chips}
+      onPress={() => navigation.navigate('mountain_route_page', { url_title: gd.url_title, mount_masive: cardData.mount_masive })}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  outdoor_article_card: {
-    backgroundColor: 'white',
-    width: '100%',
-    height: 100,
-    alignItems: 'center',
-    marginBottom: 16,
-
-    borderWidth: 1.5,
-    borderRadius: 10,
-    borderColor: COLORS.primary,
-
-    flexDirection: 'row',
-  },
-  outdoor_article_card_image_view: {
-    width: '45%',
-    height: 100,
-  },
-  outdoor_article_card_image: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 10,
-    resizeMode: 'contain',
-  },
-  outdoor_article_card_text: {
-    flex: 1,
-    padding: 4
-  },
-  outdoor_article_card_title: {
-    fontSize: 18,
-    fontWeight: '500',
-  },
-  outdoor_article_card_masive: {
-    fontSize: 12,
-    color: COLORS.primary,
-    marginTop: 2,
-  },
-  outdoor_article_card_routes: {
-    flexDirection: 'row',
-    marginTop: 3,
-  },
-  outdoor_article_card_routes_text: {
-    fontSize: 14,
-  },
-})

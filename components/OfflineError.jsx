@@ -1,15 +1,17 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faCloudXmark } from '@fortawesome/free-solid-svg-icons';
+import { SvgXml } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
-import { COLORS } from '../assets/styles/styles';
+import { SCENES } from './ui/scenes';
+import { COLORS, FONTS } from '../assets/styles/styles';
 
 export default function OfflineError() {
   const { t } = useTranslation();
   return (
     <View style={styles.container}>
-      <FontAwesomeIcon icon={faCloudXmark} size={64} color="#ccc" />
+      <View style={styles.scene}>
+        <SvgXml xml={SCENES.lost} width="100%" height="100%" />
+      </View>
       <Text style={styles.title}>{t('error.offline_title')}</Text>
       <Text style={styles.message}>
         {t('error.offline_message')}
@@ -25,23 +27,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
-    gap: 16,
+    padding: 28,
+    gap: 14,
+    backgroundColor: COLORS.chalk,
   },
+  scene: { width: '80%', maxWidth: 260, aspectRatio: 360 / 420 },
   title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 28,
+    fontFamily: FONTS.displayBold,
+    color: COLORS.ink,
     textAlign: 'center',
   },
   message: {
     fontSize: 14,
-    color: '#666',
+    fontFamily: FONTS.body,
+    color: COLORS.stone,
     textAlign: 'center',
     lineHeight: 22,
   },
-  highlight: {
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
+  highlight: { color: COLORS.primary, fontFamily: FONTS.bodyBold },
 });

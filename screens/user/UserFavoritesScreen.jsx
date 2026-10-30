@@ -1,121 +1,150 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, Dimensions,
-} from 'react-native';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { View, FlatList, StyleSheet, RefreshControl } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import api, { API_BASE_URL } from '../../utils/api';
+import { useNavigation } from '@react-navigation/native';
+import api, { API_BASE_URL, imgUri } from '../../utils/api';
 import { useNetwork } from '../../utils/NetworkContext';
+import { useLocale } from '../../utils/LocaleContext';
+import { useFavorites } from '../../utils/favorites';
 import { saveOfflineData, loadOfflineData } from '../../utils/offlineStorage';
+import { articleImageBase, openArticle } from '../../utils/articleRoutes';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
+import EmptyState from '../../components/EmptyState';
+import PageHead from '../../components/ui/PageHead';
+import Segmented from '../../components/ui/Segmented';
+import FilterChips from '../../components/FilterChips';
+import { SkeletonList } from '../../components/ui/Skeleton';
+import ArticleCardShell from '../../components/cards/ArticleCardShell';
+import EventCard from '../../components/cards/event_card_component';
+import FavoriteHeart from '../../components/guide/FavoriteHeart';
 import { COLORS } from '../../assets/styles/styles';
 
-const API = API_BASE_URL;
-const CACHE_KEY = '@my_favorites_cache';
-const TABS = ['areas', 'events'];
+const CACHE_KEY = '@my_favorites_cache_v2';
+const CATEGORIES = ['outdoor', 'ice', 'indoor', 'mount_route', 'other'];
 
-function AreaCard({ item }) {
-  return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>{item.title ?? item.name ?? '—'}</Text>
-      {!!item.region && <Text style={styles.cardSub}>{item.region}</Text>}
-    </View>
-  );
-}
-
-function EventCard({ item }) {
-  return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>{item.title ?? item.name ?? '—'}</Text>
-      {!!item.event_date && <Text style={styles.cardSub}>{new Date(item.event_date).toLocaleDateString()}</Text>}
-    </View>
-  );
-}
-
+// The website's /my_favorite_outdoor_area ("Favorite articles", every guide
+// type with category filters) + /interested_events.
 export default function UserFavoritesScreen({ route }) {
   const { t } = useTranslation();
+  const navigation = useNavigation();
+  const { locale } = useLocale();
   const { isOffline: deviceOffline } = useNetwork();
-  const initialTab = route?.params?.tab ?? 'areas';
-  const [activeTab, setActiveTab] = useState(initialTab);
-  const [areas, setAreas] = useState([]);
+  const { ids, loaded: idsLoaded } = useFavorites();
+  const [tab, setTab] = useState(route?.params?.tab === 'events' ? 'events' : 'areas');
+  const [category, setCategory] = useState(null);
+  const [articles, setArticles] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [noCache, setNoCache] = useState(false);
 
-  function load() {
-    setLoading(true);
+  function load(isRefresh = false) {
+    if (isRefresh) setRefreshing(true);
+    setIsOffline(false);
     Promise.all([
-      api.get(`${API}/get_faworite/get_faworite_outdoor_region`),
-      api.get(`${API}/get_faworite/get_interested_events`),
+      api.get(`${API_BASE_URL}/get_faworite/get_favorite_articles`, { params: { lang: locale === 'ka' ? 'ka' : 'us' } }),
+      api.get(`${API_BASE_URL}/get_faworite/get_interested_events`),
     ]).then(([a, e]) => {
-      const areasData = Array.isArray(a.data) ? a.data : a.data?.data ?? [];
-      const eventsData = Array.isArray(e.data) ? e.data : e.data?.data ?? [];
-      setAreas(areasData);
-      setEvents(eventsData);
-      saveOfflineData(CACHE_KEY, { areas: areasData, events: eventsData });
+      const art = Array.isArray(a.data) ? a.data : [];
+      const ev = Array.isArray(e.data) ? e.data : [];
+      setArticles(art);
+      setEvents(ev);
+      saveOfflineData(CACHE_KEY, { articles: art, events: ev });
     }).catch(async () => {
       const cached = await loadOfflineData(CACHE_KEY);
-      if (cached && (cached.areas?.length > 0 || cached.events?.length > 0)) {
-        setAreas(cached.areas ?? []);
+      if (cached) {
+        setArticles(cached.articles ?? []);
         setEvents(cached.events ?? []);
         setIsOffline(true);
       } else {
         setNoCache(true);
       }
-    }).finally(() => setLoading(false));
+    }).finally(() => { setLoading(false); setRefreshing(false); });
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [locale]);
 
-  // Refetch the moment the device reconnects, so a stale "showing cached
-  // data" banner doesn't linger after connectivity actually comes back.
   const wasDeviceOffline = useRef(deviceOffline);
   useEffect(() => {
     if (wasDeviceOffline.current && !deviceOffline) load();
     wasDeviceOffline.current = deviceOffline;
   }, [deviceOffline]);
 
-  const tabLabels = {
-    areas: t('user.favorite_areas'),
-    events: t('user.interested_events'),
-  };
+  // Hearts toggled elsewhere (or Undo) update the shared id set; hide removed
+  // items right away without a refetch.
+  const visibleArticles = useMemo(() => articles
+    .filter((a) => a?.global_data && (!idsLoaded || ids.has(Number(a.global_data.id))))
+    .filter((a) => !category || a.global_data.category === category), [articles, ids, idsLoaded, category]);
 
-  const activeData = { areas, events }[activeTab] ?? [];
-  const CardComponent = { areas: AreaCard, events: EventCard }[activeTab];
-  const emptyKey = { areas: 'user.no_favorite_areas', events: 'user.no_interested_events' }[activeTab];
+  const categoryOptions = useMemo(() => {
+    const present = new Set(articles.map((a) => a?.global_data?.category));
+    return [
+      { key: null, label: t('filter.all') },
+      ...CATEGORIES.filter((c) => present.has(c)).map((c) => ({ key: c, label: t(`favorites_cat.${c}`) })),
+    ];
+  }, [articles, t]);
+
+  const eventItems = useMemo(() => events.map((ev) => ({
+    global_event: ev,
+    locale_event: (locale === 'ka' ? ev.ka_event : ev.us_event) || ev.us_event || ev.ka_event || {},
+  })), [events, locale]);
 
   if (noCache) return <OfflineError />;
+  if (loading) return <SkeletonList count={3} />;
+
+  const header = (
+    <View>
+      <PageHead art="carabiners" title={t('site.guide.favorite.my_favorites')} />
+      <Segmented
+        options={[{ key: 'areas', label: t('user.favorite_areas') }, { key: 'events', label: t('user.interested_events') }]}
+        value={tab}
+        onChange={setTab}
+        style={styles.tabs}
+      />
+      {tab === 'areas' && categoryOptions.length > 2 && (
+        <View style={styles.filters}>
+          <FilterChips options={categoryOptions} selected={category} onSelect={setCategory} />
+        </View>
+      )}
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      {isOffline ? <OfflineBanner /> : null}
-      <View style={styles.tabs}>
-        {TABS.map(tab => (
-          <TouchableOpacity
-            key={tab}
-            style={[styles.tab, activeTab === tab && styles.tabActive]}
-            onPress={() => setActiveTab(tab)}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]} numberOfLines={1}>
-              {tabLabels[tab]}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {loading ? (
-        <View style={styles.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>
-      ) : activeData.length === 0 ? (
-        <View style={styles.center}><Text style={styles.emptyText}>{t(emptyKey)}</Text></View>
+      {isOffline && <OfflineBanner />}
+      {tab === 'areas' ? (
+        <FlatList
+          data={visibleArticles}
+          keyExtractor={(a) => String(a.global_data.id)}
+          ListHeaderComponent={header}
+          contentContainerStyle={styles.list}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(true)} colors={[COLORS.primary]} />}
+          ListEmptyComponent={<EmptyState message={t('user.no_favorite_areas')} />}
+          renderItem={({ item }) => {
+            const gd = item.global_data;
+            return (
+              <ArticleCardShell
+                imageUri={imgUri(articleImageBase(gd.category), gd.image, gd.updated_at)}
+                title={item.locale_data?.title}
+                text={item.locale_data?.short_description}
+                chips={[{ label: t(`favorites_cat.${gd.category}`, { defaultValue: gd.category }), tone: 'accent' }]}
+                topRight={<FavoriteHeart articleId={gd.id} size="sm" />}
+                onPress={() => openArticle(navigation, gd.category, gd.url_title)}
+              />
+            );
+          }}
+        />
       ) : (
         <FlatList
-          data={activeData}
-          keyExtractor={(item, i) => String(item.id ?? i)}
-          renderItem={({ item }) => <CardComponent item={item} />}
+          data={eventItems}
+          keyExtractor={(e) => String(e.global_event.id)}
+          ListHeaderComponent={header}
           contentContainerStyle={styles.list}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(true)} colors={[COLORS.primary]} />}
+          ListEmptyComponent={<EmptyState message={t('user.no_interested_events')} />}
+          renderItem={({ item }) => <EventCard cardData={item} />}
         />
       )}
     </View>
@@ -123,23 +152,8 @@ export default function UserFavoritesScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6f8' },
-  tabs: { flexDirection: 'row', backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#eee' },
-  tab: {
-    flex: 1, paddingVertical: 13, alignItems: 'center',
-    borderBottomWidth: 2, borderBottomColor: 'transparent',
-  },
-  tabActive: { borderBottomColor: COLORS.primary },
-  tabText: { fontSize: 11, color: '#888', fontWeight: '600', textAlign: 'center' },
-  tabTextActive: { color: COLORS.primary },
-  list: { padding: 16 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  card: {
-    backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 10,
-    elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, shadowOffset: { width: 0, height: 2 },
-  },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#222', marginBottom: 4 },
-  cardSub: { fontSize: 12, color: '#888' },
-  price: { fontSize: 15, fontWeight: '700', color: COLORS.primary, marginTop: 4 },
-  emptyText: { color: '#888', fontSize: 15 },
+  container: { flex: 1, backgroundColor: COLORS.chalk },
+  list: { padding: 16, paddingBottom: 120 },
+  tabs: { marginBottom: 12 },
+  filters: { marginBottom: 12 },
 });

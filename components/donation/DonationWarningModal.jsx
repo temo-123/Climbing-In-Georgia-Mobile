@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../utils/LocaleContext';
 import { getDonationSiteData } from '../../utils/donationSiteData';
 import DonationModal from './DonationModal';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 
 export default function DonationWarningModal({ visible, onClose }) {
   const { t } = useTranslation();
@@ -102,40 +102,40 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 24,
   },
-  title: { fontSize: 18, fontWeight: '800', color: COLORS.primary, textAlign: 'center', marginBottom: 12 },
+  title: { fontSize: 18, fontFamily: FONTS.bodyHeavy, color: COLORS.primary, textAlign: 'center', marginBottom: 12 },
   loader: { marginVertical: 32 },
   scroll: { marginBottom: 16 },
-  termsTitle: { fontSize: 14, fontWeight: '700', color: COLORS.primary, marginTop: 12, marginBottom: 6 },
+  termsTitle: { fontSize: 14, fontFamily: FONTS.bodyBold, color: COLORS.primary, marginTop: 12, marginBottom: 6 },
   checkboxRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16, gap: 10 },
   checkbox: {
     width: 22,
     height: 22,
     borderRadius: 5,
     borderWidth: 1.5,
-    borderColor: '#28a745',
+    borderColor: COLORS.success,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkboxChecked: { backgroundColor: '#28a745' },
-  checkboxTick: { color: '#fff', fontSize: 13, fontWeight: '800' },
-  checkboxLabel: { flex: 1, fontSize: 13, color: '#444' },
+  checkboxChecked: { backgroundColor: COLORS.success },
+  checkboxTick: { color: '#fff', fontSize: 13, fontFamily: FONTS.bodyHeavy },
+  checkboxLabel: { flex: 1, fontSize: 13, fontFamily: FONTS.body, color: COLORS.stone },
   btnRow: { flexDirection: 'row', gap: 10 },
   closeBtn: {
     flex: 1,
     borderWidth: 1.5,
-    borderColor: '#999',
+    borderColor: COLORS.muted,
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
   },
-  closeBtnText: { color: '#666', fontSize: 14, fontWeight: '700' },
+  closeBtnText: { color: COLORS.stone, fontSize: 14, fontFamily: FONTS.bodyBold },
   continueBtn: {
     flex: 1,
-    backgroundColor: '#28a745',
+    backgroundColor: COLORS.success,
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
   },
   continueBtnDisabled: { opacity: 0.4 },
-  continueBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  continueBtnText: { color: '#fff', fontSize: 14, fontFamily: FONTS.bodyBold },
 });

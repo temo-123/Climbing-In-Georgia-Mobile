@@ -12,7 +12,12 @@ import { loadSummitData, loadSummitAscentsData } from '../../utils/offlineStorag
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
 import ReportButton from '../../components/ReportButton';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS, HEAD_COLORS, RADII } from '../../assets/styles/styles';
+import { SvgXml } from 'react-native-svg';
+import { SKETCHES } from '../../components/ui/sketches';
+import { faCamera, faLocationDot, faMountain } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import IconText from '../../components/ui/IconText';
 
 const API = `${API_BASE_URL}/summit`;
 // Matches summit.climbing.ge's own "Photos from the Summit" gallery — the
@@ -193,7 +198,10 @@ export default function SummitDetailScreen({ route, navigation }) {
     <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
       {isOffline && <OfflineBanner />}
       <View style={styles.heroCard}>
-        <Text style={styles.heroIcon}>🏔️</Text>
+        <View pointerEvents="none" style={styles.heroSketch}>
+          <SvgXml xml={SKETCHES.summit} width="100%" height="100%" />
+        </View>
+        <View style={styles.heroIcon}><FontAwesomeIcon icon={faMountain} size={26} color={COLORS.hold} /></View>
         <Text style={styles.heroTitle}>{primaryTitle}</Text>
         {!!secondaryTitle && <Text style={styles.heroKa}>{secondaryTitle}</Text>}
         <View style={styles.heroBadges}>
@@ -219,7 +227,7 @@ export default function SummitDetailScreen({ route, navigation }) {
 
       {(!!summit.latitude && !!summit.longitude) && (
         <View style={styles.coordsRow}>
-          <Text style={styles.coordsLabel}>📍</Text>
+          <FontAwesomeIcon icon={faLocationDot} size={14} color={COLORS.primary} />
           <Text style={styles.coordsText}>{summit.latitude}, {summit.longitude}</Text>
         </View>
       )}
@@ -245,7 +253,7 @@ export default function SummitDetailScreen({ route, navigation }) {
 
       {photoAscents.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📷 {t('summit.photos_from_summit')}</Text>
+          <IconText icon={faCamera} size={15} style={styles.sectionTitle}>{t('summit.photos_from_summit')}</IconText>
           <View style={styles.photoGrid}>
             {photoAscents.map((item, i) => (
               <PhotoThumbnail key={item.id ?? i} item={item} onPress={setSelectedAscent} />
@@ -260,24 +268,26 @@ export default function SummitDetailScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: '#f4f6f8' },
+  scroll: { flex: 1, backgroundColor: COLORS.chalk },
   // Extra bottom room so the last ascent row never ends up under the floating
   // "Support Us" button (rendered globally in App.js, bottom-right).
   container: { padding: 16, paddingBottom: 120 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   heroCard: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 16,
+    backgroundColor: HEAD_COLORS.summit,
+    borderRadius: RADII.xl,
     padding: 24,
     alignItems: 'center',
     marginBottom: 16,
+    overflow: 'hidden',
   },
-  heroIcon: { fontSize: 48, marginBottom: 10 },
-  heroTitle: { fontSize: 22, fontWeight: '800', color: '#fff', textAlign: 'center', marginBottom: 4 },
-  heroKa: { fontSize: 14, color: 'rgba(255,255,255,0.85)', marginBottom: 12 },
+  heroSketch: { position: 'absolute', right: -40, bottom: -14, width: 230, height: 138, opacity: 0.45 },
+  heroIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  heroTitle: { fontSize: 26, fontFamily: FONTS.displayBold, color: '#fff', textAlign: 'center', marginBottom: 4 },
+  heroKa: { fontSize: 14, fontFamily: FONTS.body, color: 'rgba(255,255,255,0.85)', marginBottom: 12 },
   heroBadges: { flexDirection: 'row', gap: 8 },
   badge: { backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5 },
-  badgeText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  badgeText: { color: '#fff', fontFamily: FONTS.bodyBold, fontSize: 13 },
   badgeOutline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.6)' },
   badgeOutlineText: { color: 'rgba(255,255,255,0.9)' },
   section: {
@@ -291,8 +301,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 1 },
   },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: COLORS.primary, marginBottom: 12 },
-  description: { fontSize: 14, color: '#444', lineHeight: 22 },
+  sectionTitle: { fontSize: 15, fontFamily: FONTS.bodyBold, color: COLORS.primary, marginBottom: 12 },
+  description: { fontSize: 14, fontFamily: FONTS.body, color: COLORS.stone, lineHeight: 22 },
   coordsRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -302,25 +312,24 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     gap: 8,
   },
-  coordsLabel: { fontSize: 16 },
-  coordsText: { fontSize: 13, color: '#555', fontFamily: 'monospace' },
+  coordsText: { fontSize: 13, color: COLORS.stone, fontFamily: 'monospace' },
   recordBtn: {
     backgroundColor: COLORS.primary,
-    borderRadius: 12,
+    borderRadius: 999,
     paddingVertical: 15,
     alignItems: 'center',
     marginBottom: 16,
   },
-  recordBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  recordBtnText: { color: '#fff', fontSize: 16, fontFamily: FONTS.bodyHeavy },
   ascentRow: {
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: COLORS.line,
     paddingVertical: 12,
   },
   ascentMain: { flexDirection: 'row', alignItems: 'flex-start' },
   ascentLeft: { flex: 1 },
-  climberName: { fontSize: 14, fontWeight: '600', color: '#222', marginBottom: 3 },
-  ascentMeta: { fontSize: 12, color: '#888' },
+  climberName: { fontSize: 14, fontFamily: FONTS.bodySemi, color: COLORS.ink, marginBottom: 3 },
+  ascentMeta: { fontSize: 12, fontFamily: FONTS.body, color: COLORS.muted },
   ascentRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   gpsBadge: {
     backgroundColor: '#d4edda',
@@ -328,9 +337,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 2,
   },
-  gpsBadgeText: { fontSize: 10, fontWeight: '700', color: '#155724' },
-  expandBtn: { fontSize: 20, color: '#bbb', paddingHorizontal: 4, fontWeight: '700' },
-  emptyText: { color: '#aaa', fontSize: 14, textAlign: 'center', paddingVertical: 16 },
+  gpsBadgeText: { fontSize: 10, fontFamily: FONTS.bodyBold, color: '#155724' },
+  expandBtn: { fontSize: 24, color: '#bbb', paddingHorizontal: 4, fontFamily: FONTS.displayBold },
+  emptyText: { color: COLORS.muted, fontSize: 14, fontFamily: FONTS.body, textAlign: 'center', paddingVertical: 16 },
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -345,13 +354,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 22,
   },
-  modalName: { fontSize: 19, fontWeight: '800', color: '#222', marginBottom: 4 },
-  modalMeta: { fontSize: 13, color: '#888', marginBottom: 18 },
+  modalName: { fontSize: 19, fontFamily: FONTS.bodyHeavy, color: COLORS.ink, marginBottom: 4 },
+  modalMeta: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.muted, marginBottom: 18 },
   modalPhoto: {
     width: '100%',
     height: 220,
     borderRadius: 10,
-    backgroundColor: '#f4f6f8',
+    backgroundColor: COLORS.chalk,
     marginBottom: 12,
   },
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
@@ -360,7 +369,7 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     borderRadius: 10,
     overflow: 'hidden',
-    backgroundColor: '#f4f6f8',
+    backgroundColor: COLORS.chalk,
   },
   thumbImage: { width: '100%', height: '100%' },
   thumbCaptionBar: {
@@ -372,33 +381,33 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 6,
   },
-  thumbCaption: { fontSize: 10, color: '#fff', fontWeight: '600' },
+  thumbCaption: { fontSize: 10, color: '#fff', fontFamily: FONTS.bodySemi },
   modalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: COLORS.line,
   },
-  modalRowLabel: { fontSize: 13, color: '#888', fontWeight: '600' },
-  modalRowValue: { fontSize: 13, color: '#333', fontWeight: '600', flexShrink: 1, textAlign: 'right' },
-  modalGpsOk: { color: '#1e8449' },
+  modalRowLabel: { fontSize: 13, color: COLORS.muted, fontFamily: FONTS.bodySemi },
+  modalRowValue: { fontSize: 13, color: COLORS.ink, fontFamily: FONTS.bodySemi, flexShrink: 1, textAlign: 'right' },
+  modalGpsOk: { color: COLORS.success },
   modalGpsWarn: { color: '#b9770e' },
   modalCommentBox: {
-    backgroundColor: '#f4f6f8',
+    backgroundColor: COLORS.chalk,
     borderRadius: 10,
     padding: 12,
     marginTop: 12,
   },
-  modalComment: { fontSize: 13, color: '#555', lineHeight: 19, fontStyle: 'italic' },
+  modalComment: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.stone, lineHeight: 19, fontStyle: 'italic' },
   modalReport: { alignSelf: 'center', marginTop: 12 },
   modalCloseBtn: {
     backgroundColor: COLORS.primary,
-    borderRadius: 12,
+    borderRadius: 999,
     paddingVertical: 13,
     alignItems: 'center',
     marginTop: 20,
   },
-  modalCloseBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  modalCloseBtnText: { color: '#fff', fontSize: 15, fontFamily: FONTS.bodyBold },
 });

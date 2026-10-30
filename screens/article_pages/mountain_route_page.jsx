@@ -19,6 +19,10 @@ import MassiveSection from "../../components/article/mount_masive/mount_masive_d
 import Preloader from "../../components/Preloader";
 import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
+import { useRememberViewed } from "../../utils/recentlyViewed";
+import ArticleComments from "../../components/guide/ArticleComments";
+import GradeTape from '../../components/ui/GradeTape';
+import { formatMountGradeSlash } from '../../utils/grades';
 
 const IMG_BASE           = IMG_BASES.mountRoute;
 const ROUTE_PHOTO_BASE   = IMG_BASES.mountRouteDescription;
@@ -37,6 +41,8 @@ export default function MountainRoutePage({ route }) {
   const [noCache, setNoCache]                 = useState(false);
   const [routeImages, setRouteImages]         = useState([]);
   const [viewer, setViewer]                   = useState(null);
+
+  useRememberViewed('mount_route', globalData.global_data, localeData.title);
 
   const loadArticle = useCallback(() => {
     api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/mount_route/${locale}/` + urlTitle))
@@ -116,9 +122,14 @@ export default function MountainRoutePage({ route }) {
       <ArticleBlock
         local_data={localeData}
         global_data={globalData.global_data || {}}
+        favoriteId={globalData.global_data?.id}
+        gearChecklist
         global_info_data={globalInfoData}
         imgBase={IMG_BASE}
         headerUri={headerUri}
+        headerExtra={!!globalData.global_data?.mount_grade && (
+          <GradeTape grade={formatMountGradeSlash(globalData.global_data.mount_grade)} />
+        )}
         afterImageContent={mountMasive ? (
           <MassiveSection
             mountMasiveName={mountMasive}
@@ -131,12 +142,12 @@ export default function MountainRoutePage({ route }) {
         title={t('article.route_photos')}
         uris={routeImageUris}
         onPress={openRoutePhoto}
-        columns={2}
       />
 
       <ArticleImageGrid title={t('article.photos')} uris={galleryUris} onPress={openGalleryPhoto} />
 
       <IceSectors
+        withTools={false}
         article_id={globalData.global_data?.id}
         onImagePress={openSectorImage}
       />
@@ -147,6 +158,8 @@ export default function MountainRoutePage({ route }) {
         visible={viewer !== null}
         onClose={() => setViewer(null)}
       />
+
+      <ArticleComments articleId={globalData.global_data?.id} />
 
       <PageFooter />
       <StatusBar style="auto" />

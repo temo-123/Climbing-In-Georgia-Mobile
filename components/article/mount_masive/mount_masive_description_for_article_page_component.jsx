@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   LayoutAnimation,
-  Platform,
-  UIManager,
 } from "react-native";
 import { useWindowDimensions } from "react-native";
 import { useTranslation } from 'react-i18next';
@@ -17,11 +15,10 @@ import HtmlContent from "../../HtmlContent";
 import { useLocale } from "../../../utils/LocaleContext";
 import { saveMassiveData, loadMassiveData } from "../../../utils/offlineStorage";
 import { useRefetchOnReconnect } from "../../../utils/useRefetchOnReconnect";
-import { COLORS } from '../../../assets/styles/styles';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faChevronUp, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { COLORS, FONTS, RADII, SHADOWS } from '../../../assets/styles/styles';
 
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 function HtmlBlock({ html, width }) {
   return <HtmlContent html={html} contentWidth={width - 60} />;
@@ -151,7 +148,7 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
           <Text style={styles.headerLabel}>{t('massive.label')}</Text>
           <Text style={styles.headerName}>{mountMasiveName || "—"}</Text>
         </View>
-        <Text style={styles.arrow}>{open ? "▲" : "▼"}</Text>
+        <FontAwesomeIcon icon={open ? faChevronUp : faChevronDown} size={13} color={COLORS.hold} />
       </TouchableOpacity>
 
       {open ? renderContent() : null}
@@ -161,60 +158,34 @@ export default function MassiveSection({ mountMasiveName, articleId }) {
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    borderRadius: 10,
-    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: RADII.lg,
+    marginBottom: 14,
     overflow: "hidden",
+    backgroundColor: COLORS.surface,
+    ...SHADOWS.sm,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#e8f6fb",
+    backgroundColor: COLORS.ink,
     paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
   },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
+  headerLeft: { flex: 1 },
   headerLabel: {
-    fontSize: 13,
-    color: "#555",
+    fontSize: 10,
+    fontFamily: FONTS.bodyHeavy,
+    letterSpacing: 1.6,
+    textTransform: "uppercase",
+    color: COLORS.hold,
   },
-  headerName: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: COLORS.primary,
-  },
-  arrow: {
-    fontSize: 12,
-    color: COLORS.primary,
-  },
-  body: {
-    padding: 14,
-    backgroundColor: "#fff",
-  },
-  loader: {
-    marginVertical: 16,
-  },
-  subSection: {
-    marginTop: 12,
-  },
-  subTitle: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#222",
-    marginBottom: 6,
-    borderBottomWidth: 1.5,
-    borderBottomColor: COLORS.primary,
-    paddingBottom: 4,
-  },
-  noData: {
-    fontSize: 13,
-    color: "#888",
-    fontStyle: "italic",
-  },
+  headerName: { fontSize: 22, fontFamily: FONTS.displayBold, color: "#fff" },
+  body: { padding: 16 },
+  loader: { marginVertical: 16 },
+  subSection: { marginTop: 12 },
+  subTitle: { fontSize: 20, fontFamily: FONTS.displayBold, color: COLORS.ink, marginBottom: 6 },
+  noData: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.muted, fontStyle: "italic" },
 });

@@ -139,7 +139,7 @@ function buildArticleConfigs(locale) {
       type:       'event',
       imgBase:    IMG_BASES.event,
       detailUrl:  (key) => `${API_BASE_URL}/get_event/get_event_on_site_page/${locale}/${key}`,
-      getKey:     (item) => item.global_event?.id?.toString(),
+      getKey:     (item) => item.global_event?.url_title,
       getId:      (item) => null,
       getImage:   (item) => item.global_event?.image,
       getImageVersion: (item) => item.global_event?.updated_at,

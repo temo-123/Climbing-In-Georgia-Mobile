@@ -3,13 +3,17 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Lin
 import { useTranslation } from 'react-i18next';
 import api, { API_BASE_URL, IMG_BASES, imgUri } from '../../utils/api';
 import { useAuth } from '../../utils/AuthContext';
-import { COLORS } from '../../assets/styles/styles';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faFacebookF, faInstagram, faYoutube } from '@fortawesome/free-brands-svg-icons';
+import { faGlobe, faLink, faUsers, faUserPlus, faStar, faFlag, faComment } from '@fortawesome/free-solid-svg-icons';
+import IconText from '../ui/IconText';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 import RadarStatsChart from './RadarStatsChart';
 import ReportButton from '../ReportButton';
 
 const API = API_BASE_URL;
 
-const SOCIAL_ICONS = { facebook: '📘', instagram: '📷', youtube: '▶️', website: '🌐' };
+const SOCIAL_ICONS = { facebook: faFacebookF, instagram: faInstagram, youtube: faYoutube, website: faGlobe };
 
 function initialsOf(user) {
   return `${user?.name?.[0] ?? ''}${user?.surname?.[0] ?? ''}`.toUpperCase();
@@ -23,10 +27,10 @@ function hostnameOf(url) {
   }
 }
 
-function ActivityRow({ primary, secondary, date }) {
+function ActivityRow({ icon, primary, secondary, date }) {
   return (
     <View style={styles.activityRow}>
-      <Text style={styles.activityPrimary} numberOfLines={1}>{primary}</Text>
+      <IconText icon={icon} style={styles.activityPrimary} numberOfLines={1}>{primary}</IconText>
       {!!secondary && <Text style={styles.activitySecondary} numberOfLines={2}>{secondary}</Text>}
       {!!date && <Text style={styles.activityDate}>{new Date(date).toLocaleDateString()}</Text>}
     </View>
@@ -127,7 +131,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
           <View style={styles.socialRow}>
             {socialEntries.map(([key, url]) => (
               <TouchableOpacity key={key} style={styles.socialIcon} onPress={() => Linking.openURL(url)}>
-                <Text style={styles.socialIconText}>{SOCIAL_ICONS[key] ?? '🔗'}</Text>
+                <FontAwesomeIcon icon={SOCIAL_ICONS[key] ?? faLink} size={16} color={COLORS.primaryDark} />
               </TouchableOpacity>
             ))}
           </View>
@@ -137,16 +141,16 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
           <View style={styles.sitesRow}>
             {profile.user_sites.map(site => (
               <TouchableOpacity key={site.id} onPress={() => Linking.openURL(site.url)}>
-                <Text style={styles.siteLink}>🔗 {hostnameOf(site.url)}</Text>
+                <IconText icon={faLink} style={styles.siteLink}>{hostnameOf(site.url)}</IconText>
               </TouchableOpacity>
             ))}
           </View>
         )}
 
         <View style={styles.chipsRow}>
-          <View style={styles.chip}><Text style={styles.chipText}>👥 {followers_count} {t('user.followers')}</Text></View>
-          <View style={styles.chip}><Text style={styles.chipText}>➕ {following_count} {t('user.following')}</Text></View>
-          <View style={[styles.chip, styles.pointsChip]}><Text style={[styles.chipText, styles.pointsChipText]}>⭐ {points_total} {t('user.points')}</Text></View>
+          <View style={styles.chip}><IconText icon={faUsers} style={styles.chipText}>{followers_count} {t('user.followers')}</IconText></View>
+          <View style={styles.chip}><IconText icon={faUserPlus} style={styles.chipText}>{following_count} {t('user.following')}</IconText></View>
+          <View style={[styles.chip, styles.pointsChip]}><IconText icon={faStar} iconColor={COLORS.ink} style={[styles.chipText, styles.pointsChipText]}>{points_total} {t('user.points')}</IconText></View>
         </View>
 
         {!isSelf && authUser && (
@@ -193,7 +197,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
             <>
               <Text style={styles.subsectionTitle}>{t('user.recent_ascents')}</Text>
               {profile.recent_ascents.map(a => (
-                <ActivityRow key={`a${a.id}`} primary={`🚩 ${a.summit_title ?? '—'}`} date={a.ascent_date} />
+                <ActivityRow key={`a${a.id}`} icon={faFlag} primary={a.summit_title ?? '—'} date={a.ascent_date} />
               ))}
             </>
           )}
@@ -201,7 +205,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
             <>
               <Text style={styles.subsectionTitle}>{t('user.my_route_reviews')}</Text>
               {profile.recent_route_reviews.map(r => (
-                <ActivityRow key={`r${r.id}`} primary={`⭐ ${r.route_name ?? '—'}`} secondary={r.text} date={r.created_at} />
+                <ActivityRow key={`r${r.id}`} icon={faStar} primary={r.route_name ?? '—'} secondary={r.text} date={r.created_at} />
               ))}
             </>
           )}
@@ -209,7 +213,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
             <>
               <Text style={styles.subsectionTitle}>{t('user.mtp_reviews')}</Text>
               {profile.recent_mtp_reviews.map(r => (
-                <ActivityRow key={`m${r.id}`} primary={`⭐ ${r.mtp_name ?? '—'}`} secondary={r.text} date={r.created_at} />
+                <ActivityRow key={`m${r.id}`} icon={faStar} primary={r.mtp_name ?? '—'} secondary={r.text} date={r.created_at} />
               ))}
             </>
           )}
@@ -217,7 +221,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
             <>
               <Text style={styles.subsectionTitle}>{t('user.my_comments')}</Text>
               {profile.recent_comments.map(c => (
-                <ActivityRow key={`c${c.id}`} primary={`💬 ${c.text}`} date={c.created_at} />
+                <ActivityRow key={`c${c.id}`} icon={faComment} primary={c.text} date={c.created_at} />
               ))}
             </>
           )}
@@ -236,7 +240,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
 const styles = StyleSheet.create({
   reportBtn: { marginTop: 10 },
   center: { padding: 40, alignItems: 'center', justifyContent: 'center' },
-  emptyText: { color: '#888', fontSize: 14 },
+  emptyText: { color: COLORS.muted, fontSize: 14, fontFamily: FONTS.body },
   header: { alignItems: 'center', paddingHorizontal: 20, paddingTop: 8 },
   avatarWrap: { marginBottom: 12 },
   avatarImg: { width: 84, height: 84, borderRadius: 42, borderWidth: 2, borderColor: COLORS.primary },
@@ -244,37 +248,37 @@ const styles = StyleSheet.create({
     width: 84, height: 84, borderRadius: 42, backgroundColor: COLORS.primary,
     alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: COLORS.primary,
   },
-  avatarText: { fontSize: 28, fontWeight: 'bold', color: '#fff' },
-  name: { fontSize: 19, fontWeight: 'bold', color: '#222', marginBottom: 4, textAlign: 'center' },
-  bio: { fontSize: 13, color: '#666', textAlign: 'center', marginBottom: 8, lineHeight: 18 },
+  avatarText: { fontSize: 32, fontFamily: FONTS.displayBold, color: '#fff' },
+  name: { fontSize: 28, lineHeight: 31, fontFamily: FONTS.displayBold, color: COLORS.ink, marginBottom: 4, textAlign: 'center' },
+  bio: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.stone, textAlign: 'center', marginBottom: 8, lineHeight: 18 },
   socialRow: { flexDirection: 'row', marginBottom: 10, gap: 10 },
   socialIcon: { padding: 4 },
   sitesRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12, marginBottom: 10 },
-  siteLink: { fontSize: 12, color: COLORS.primary, fontWeight: '600' },
-  socialIconText: { fontSize: 18 },
+  siteLink: { fontSize: 12, color: COLORS.primary, fontFamily: FONTS.bodySemi },
+  socialIconText: { fontSize: 18, fontFamily: FONTS.body },
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginBottom: 12 },
-  chip: { backgroundColor: '#f0f4f6', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6 },
-  chipText: { fontSize: 12, fontWeight: '600', color: '#555' },
-  pointsChip: { backgroundColor: '#fdf1d6' },
-  pointsChipText: { color: '#a67c00' },
+  chip: { backgroundColor: COLORS.chalk, borderWidth: 1, borderColor: COLORS.line, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6 },
+  chipText: { fontSize: 12, fontFamily: FONTS.bodySemi, color: COLORS.stone },
+  pointsChip: { backgroundColor: COLORS.hold, borderColor: COLORS.hold },
+  pointsChipText: { color: COLORS.ink },
   followBtn: { backgroundColor: COLORS.primary, borderRadius: 20, paddingHorizontal: 24, paddingVertical: 9, marginTop: 2 },
-  followingBtn: { backgroundColor: '#eee' },
-  followBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
-  followingBtnText: { color: '#555' },
-  radarSection: { alignItems: 'center', paddingVertical: 16, borderTopWidth: 1, borderTopColor: '#f0f0f0', marginTop: 16 },
+  followingBtn: { backgroundColor: COLORS.line },
+  followBtnText: { color: '#fff', fontFamily: FONTS.bodyBold, fontSize: 13 },
+  followingBtnText: { color: COLORS.stone },
+  radarSection: { alignItems: 'center', paddingVertical: 16, borderTopWidth: 1, borderTopColor: COLORS.line, marginTop: 16 },
   countsRow: { flexDirection: 'row', marginTop: 12 },
   countCol: { alignItems: 'center', paddingHorizontal: 12 },
-  countNum: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
-  countLabel: { fontSize: 10, color: '#888', marginTop: 2, textAlign: 'center', maxWidth: 70 },
+  countNum: { fontSize: 18, fontFamily: FONTS.bodyBold, color: COLORS.primary },
+  countLabel: { fontSize: 10, fontFamily: FONTS.body, color: COLORS.muted, marginTop: 2, textAlign: 'center', maxWidth: 70 },
   allUsersLink: { marginTop: 12 },
-  allUsersLinkText: { color: COLORS.primary, fontWeight: '600', fontSize: 13 },
+  allUsersLinkText: { color: COLORS.primary, fontFamily: FONTS.bodySemi, fontSize: 13 },
   activitySection: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#222', marginBottom: 8 },
-  subsectionTitle: { fontSize: 12, fontWeight: '700', color: '#999', textTransform: 'uppercase', marginTop: 12, marginBottom: 6, letterSpacing: 0.5 },
-  activityRow: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f4f4f4' },
-  activityPrimary: { fontSize: 13, fontWeight: '600', color: '#333' },
-  activitySecondary: { fontSize: 12, color: '#777', marginTop: 2 },
-  activityDate: { fontSize: 10, color: '#aaa', marginTop: 3 },
-  viewFullBtn: { backgroundColor: COLORS.primary, borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginHorizontal: 20, marginTop: 8, marginBottom: 20 },
-  viewFullBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
+  sectionTitle: { fontSize: 15, fontFamily: FONTS.bodyBold, color: COLORS.ink, marginBottom: 8 },
+  subsectionTitle: { fontSize: 12, fontFamily: FONTS.bodyBold, color: COLORS.muted, textTransform: 'uppercase', marginTop: 12, marginBottom: 6, letterSpacing: 0.5 },
+  activityRow: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: COLORS.chalk },
+  activityPrimary: { fontSize: 13, fontFamily: FONTS.bodySemi, color: COLORS.ink },
+  activitySecondary: { fontSize: 12, fontFamily: FONTS.body, color: COLORS.stone, marginTop: 2 },
+  activityDate: { fontSize: 10, fontFamily: FONTS.body, color: COLORS.muted, marginTop: 3 },
+  viewFullBtn: { backgroundColor: COLORS.primary, borderRadius: 999, paddingVertical: 13, alignItems: 'center', marginHorizontal: 20, marginTop: 8, marginBottom: 20 },
+  viewFullBtnText: { color: '#fff', fontFamily: FONTS.bodyBold, fontSize: 14 },
 });

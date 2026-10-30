@@ -2,8 +2,12 @@ import { StyleSheet, LogBox, AppState, Platform } from 'react-native';
 import { useEffect, useRef } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import Constants from 'expo-constants';
+import { IS_EXPO_GO } from './utils/isExpoGo';
 import * as Network from 'expo-network';
+import * as SplashScreen from 'expo-splash-screen';
+import { requireOptionalNativeModule } from 'expo';
+import { useFonts, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold, Manrope_800ExtraBold } from '@expo-google-fonts/manrope';
+import { BarlowCondensed_600SemiBold, BarlowCondensed_700Bold } from '@expo-google-fonts/barlow-condensed';
 
 import { Navigation } from './navigation/Navigation.jsx';
 import { LocaleProvider } from './utils/LocaleContext';
@@ -12,6 +16,7 @@ import { AuthProvider } from './utils/AuthContext';
 import { getQueue, syncQueue } from './utils/ascentQueue';
 import { RecaptchaHost } from './utils/recaptcha';
 import DonationButton from './components/donation/DonationButton';
+import { ToastProvider } from './components/ui/Toast';
 import './utils/i18n';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -24,10 +29,34 @@ LogBox.ignoreLogs([
   'setLayoutAnimationEnabledExperimental is currently a no-op',
 ]);
 
-const IS_EXPO_GO = Constants.appOwnership === 'expo';
+
+// Keep the splash up until the brand fonts are ready, so text never renders
+// in the system font and then jumps.
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function App() {
   const appState = useRef(AppState.currentState);
+  const [fontsLoaded, fontError] = useFonts({
+    Manrope_400Regular,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
+    Manrope_800ExtraBold,
+    BarlowCondensed_600SemiBold,
+    BarlowCondensed_700Bold,
+  });
+  const fontsReady = fontsLoaded || !!fontError;
+
+  useEffect(() => {
+    // expo-splash-screen's hideAsync() drops the native hide() promise, so a
+    // rejection ("activity already destroyed", e.g. during a dev reload)
+    // surfaces as an uncaught promise error — call the native method directly
+    // so its promise is caught.
+    if (fontsReady) {
+      const splash = requireOptionalNativeModule('ExpoSplashScreen');
+      Promise.resolve(splash?.hide?.()).catch(() => {});
+    }
+  }, [fontsReady]);
 
   useEffect(() => {
     setupNotifications();
@@ -66,15 +95,19 @@ export default function App() {
     };
   }, []);
 
+  if (!fontsReady) return null;
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <LocaleProvider>
           <NetworkProvider>
             <AuthProvider>
-              <RecaptchaHost />
-              <Navigation />
-              <DonationButton />
+              <ToastProvider>
+                <RecaptchaHost />
+                <Navigation />
+                <DonationButton />
+              </ToastProvider>
             </AuthProvider>
           </NetworkProvider>
         </LocaleProvider>

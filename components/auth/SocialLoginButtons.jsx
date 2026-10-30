@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../utils/AuthContext';
 import { getSocialLoginStatus, startSocialLogin } from '../../utils/socialAuth';
 import { GoogleIcon, FacebookIcon } from './ProviderIcons';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 
 // Renders Google/Facebook buttons only for providers the backend reports as
 // configured (GET /login/status) — so an unset client_id/secret on the
@@ -132,12 +132,12 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: COLORS.line,
   },
   dividerText: {
     marginHorizontal: 10,
-    color: '#999',
-    fontSize: 13,
+    color: COLORS.muted,
+    fontSize: 13, fontFamily: FONTS.body,
   },
   socialButton: {
     borderRadius: 10,
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   },
   googleButton: {
     backgroundColor: '#fff',
-    borderColor: '#ddd',
+    borderColor: COLORS.line,
   },
   facebookButton: {
     backgroundColor: '#1877F2',
@@ -162,16 +162,16 @@ const styles = StyleSheet.create({
   },
   socialButtonText: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#222',
+    fontFamily: FONTS.bodySemi,
+    color: COLORS.ink,
   },
   facebookButtonText: {
     color: '#fff',
   },
   error: {
-    color: '#e74c3c',
+    color: COLORS.danger,
     marginBottom: 12,
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: 14, fontFamily: FONTS.body,
   },
 });

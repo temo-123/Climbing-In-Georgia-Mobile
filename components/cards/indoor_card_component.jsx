@@ -1,86 +1,72 @@
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import React from 'react';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import CachedImage from '../CachedImage';
+import { useTranslation } from 'react-i18next';
+import { faClock, faTag } from '@fortawesome/free-solid-svg-icons';
+import ArticleCardShell from './ArticleCardShell';
+import OpenBadge from '../gym/OpenBadge';
+import { STATUS_META } from '../gym/WorkStatusAlert';
+import { hoursForDay, hasHours, variesByDay, dayKey } from '../../utils/gymHours';
+import FavoriteHeart from '../guide/FavoriteHeart';
 import { imgUri, IMG_BASES } from '../../utils/api';
-import { COLORS } from '../../assets/styles/styles';
+import { FONTS } from '../../assets/styles/styles';
 
-function fmtTime(t) {
-  // "08:00:00" → "08:00"
-  return t ? t.substring(0, 5) : null;
-}
-
-export default function IndoorCard({ cardData }) {
+// The website's IndoorCardComponent: ribbon for the three alert work
+// statuses, today's hours (or "Closed today") + "Hours vary by day", price,
+// and a live open / closed badge. `week` = per-day hours from
+// get_gym_hours/all, `now` = the list's minute clock.
+export default function IndoorCard({ cardData, week, now = new Date() }) {
   const navigation = useNavigation();
+  const { t } = useTranslation();
   const gd = cardData.global_data;
+  const gym = week ? { ...gd, weekly_hours: week } : gd;
+  const status = STATUS_META[gd.work_status] ? gd.work_status : null;
+  const comingSoon = gd.work_status === 'coming_soon';
 
-  const openTime = fmtTime(gd.open_time);
-  const closeTime = fmtTime(gd.closed_time);
-  const priceFrom = gd.price_from ?? null;
+  const chips = [];
+  if (!status && hasHours(gym)) {
+    const today = hoursForDay(gym, dayKey(now));
+    chips.push({ icon: faClock, label: today ? `${today.open} – ${today.close}` : t('site.guide.gym_hours.closed_today') });
+    if (variesByDay(gym)) chips.push({ label: t('site.guide.gym_hours.varies') });
+  }
+  if (gd.work_status === 'no_info') chips.push({ icon: faClock, label: t('site.guide.article.work_status.no_info') });
+  if (gd.price_status === 'no_info') {
+    chips.push({ icon: faTag, label: t('site.guide.article.no_info_price') });
+  } else if (gd.price_from != null) {
+    chips.push({ icon: faTag, label: `${t('site.guide.article.prices_from')} ${gd.price_from} ₾`, tone: 'accent' });
+  }
 
   return (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => navigation.navigate('indoor_page', gd.url_title)}
-    >
-      <View style={styles.imageView}>
-        <CachedImage
-          uri={imgUri(IMG_BASES.indoor, gd.image, gd.updated_at)}
-          style={styles.image}
-          contentFit="cover"
-        />
-      </View>
-      <View style={styles.textView}>
-        <Text style={styles.title}>{cardData.locale_data.title}</Text>
-        <View style={styles.infoRow}>
-          {openTime && closeTime && (
-            <Text style={styles.infoText}>{openTime} – {closeTime}</Text>
-          )}
-          {priceFrom != null && (
-            <Text style={styles.infoText}>From {priceFrom} GEL</Text>
-          )}
+    <ArticleCardShell
+      topRight={<FavoriteHeart articleId={gd.id} size="sm" />}
+      imageUri={imgUri(IMG_BASES.indoor, gd.image, gd.updated_at)}
+      title={cardData.locale_data.title}
+      text={cardData.locale_data.short_description}
+      chips={chips}
+      onPress={() => (comingSoon
+        ? Alert.alert(t('site.guide.article.work_status.coming_soon'), t('site.guide.article.work_status_text.coming_soon'))
+        : navigation.navigate('indoor_page', gd.url_title))}
+      mediaOverlay={status && (
+        <View style={[styles.ribbon, { backgroundColor: STATUS_META[status].color }]}>
+          <Text style={styles.ribbonText}>{t(`site.guide.article.work_status.${status}`)}</Text>
         </View>
-      </View>
-    </TouchableOpacity>
+      )}
+    >
+      <OpenBadge gym={gym} now={now} small />
+    </ArticleCardShell>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: 'white',
-    width: '100%',
-    minHeight: 100,
-    alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 1.5,
-    borderRadius: 10,
-    borderColor: COLORS.primary,
-    flexDirection: 'row',
+  ribbon: {
+    position: 'absolute',
+    left: 0,
+    top: 14,
+    paddingVertical: 5,
+    paddingLeft: 12,
+    paddingRight: 14,
+    borderTopRightRadius: 999,
+    borderBottomRightRadius: 999,
   },
-  imageView: {
-    width: '45%',
-    height: 100,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    borderTopLeftRadius: 8,
-    borderBottomLeftRadius: 8,
-  },
-  textView: {
-    flex: 1,
-    padding: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '500',
-  },
-  infoRow: {
-    marginTop: 4,
-    gap: 2,
-  },
-  infoText: {
-    fontSize: 13,
-    color: '#555',
-  },
+  ribbonText: { color: '#fff', fontFamily: FONTS.bodyHeavy, fontSize: 12 },
 });

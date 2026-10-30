@@ -6,6 +6,7 @@ import WebView from 'react-native-webview';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faMapLocationDot, faCloudSun, faWifi } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
+import { COLORS, FONTS } from '../assets/styles/styles';
 
 const renderers = { iframe: IframeRenderer };
 const customHTMLElementModels = { iframe: iframeModel };
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: 8,
     marginVertical: 8,
-    backgroundColor: '#f4f4f4',
+    backgroundColor: COLORS.chalk,
   },
   errorContainer: {
     width: '100%',
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 13,
     color: '#7a5c00',
-    fontWeight: '500',
+    fontFamily: FONTS.bodyMedium,
     flexShrink: 1,
     textAlign: 'center',
   },

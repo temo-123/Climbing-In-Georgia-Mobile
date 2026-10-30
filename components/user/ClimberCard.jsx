@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { IMG_BASES, imgUri } from '../../utils/api';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
+import { faUsers } from '@fortawesome/free-solid-svg-icons';
+import IconText from '../ui/IconText';
 
 function initialsOf(item) {
   return `${item?.name?.[0] ?? ''}${item?.surname?.[0] ?? ''}`.toUpperCase();
@@ -18,7 +20,7 @@ export default function ClimberCard({ item, onPress }) {
       )}
       <Text style={styles.name} numberOfLines={1}>{item.name} {item.surname}</Text>
       <View style={styles.statsRow}>
-        <Text style={styles.statText}>👥 {item.followers_count ?? 0}</Text>
+        <IconText icon={faUsers} style={styles.statText}>{item.followers_count ?? 0}</IconText>
         <Text style={styles.statText}>⭐ {item.points_total ?? 0}</Text>
       </View>
     </TouchableOpacity>
@@ -36,8 +38,8 @@ const styles = StyleSheet.create({
     width: 60, height: 60, borderRadius: 30, backgroundColor: COLORS.primary,
     alignItems: 'center', justifyContent: 'center', marginBottom: 8,
   },
-  avatarText: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
-  name: { fontSize: 13, fontWeight: '700', color: '#222', textAlign: 'center', marginBottom: 6 },
+  avatarText: { fontSize: 24, fontFamily: FONTS.displayBold, color: '#fff' },
+  name: { fontSize: 13, fontFamily: FONTS.bodyBold, color: COLORS.ink, textAlign: 'center', marginBottom: 6 },
   statsRow: { flexDirection: 'row', gap: 10 },
-  statText: { fontSize: 11, color: '#777' },
+  statText: { fontSize: 11, fontFamily: FONTS.body, color: COLORS.stone },
 });

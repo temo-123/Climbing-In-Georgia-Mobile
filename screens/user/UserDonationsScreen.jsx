@@ -6,7 +6,7 @@ import { useNetwork } from '../../utils/NetworkContext';
 import { saveOfflineData, loadOfflineData } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 
 const API = API_BASE_URL;
 const CACHE_KEY = '@my_donations_cache';
@@ -86,11 +86,11 @@ const styles = StyleSheet.create({
     elevation: 2, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
   },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  amount: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
-  status: { fontSize: 12, fontWeight: '600', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20 },
+  amount: { fontSize: 18, fontFamily: FONTS.bodyBold, color: COLORS.primary },
+  status: { fontSize: 12, fontFamily: FONTS.bodySemi, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20 },
   paid: { backgroundColor: '#d4edda', color: '#155724' },
   pending: { backgroundColor: '#fff3cd', color: '#856404' },
-  message: { fontSize: 13, color: '#555', lineHeight: 19 },
-  date: { fontSize: 11, color: '#aaa', marginTop: 8, textAlign: 'right' },
-  emptyText: { color: '#888', fontSize: 15 },
+  message: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.stone, lineHeight: 19 },
+  date: { fontSize: 11, fontFamily: FONTS.body, color: COLORS.muted, marginTop: 8, textAlign: 'right' },
+  emptyText: { color: COLORS.muted, fontSize: 15, fontFamily: FONTS.body },
 });

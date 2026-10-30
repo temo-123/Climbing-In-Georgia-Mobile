@@ -6,7 +6,7 @@ import { useNetwork } from '../../utils/NetworkContext';
 import { saveOfflineData, loadOfflineData } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 
 const API = API_BASE_URL;
 const CACHE_KEY = '@my_ascents_cache';
@@ -94,9 +94,9 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3, borderLeftColor: COLORS.primary,
   },
   cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
-  summitName: { flex: 1, fontSize: 15, fontWeight: '700', color: '#222', marginRight: 8 },
-  height: { fontSize: 13, fontWeight: '600', color: COLORS.primary },
-  note: { fontSize: 13, color: '#555', lineHeight: 19, marginBottom: 4 },
-  date: { fontSize: 11, color: '#aaa', marginTop: 6, textAlign: 'right' },
-  emptyText: { color: '#888', fontSize: 15 },
+  summitName: { flex: 1, fontSize: 15, fontFamily: FONTS.bodyBold, color: COLORS.ink, marginRight: 8 },
+  height: { fontSize: 13, fontFamily: FONTS.bodySemi, color: COLORS.primary },
+  note: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.stone, lineHeight: 19, marginBottom: 4 },
+  date: { fontSize: 11, fontFamily: FONTS.body, color: COLORS.muted, marginTop: 6, textAlign: 'right' },
+  emptyText: { color: COLORS.muted, fontSize: 15, fontFamily: FONTS.body },
 });

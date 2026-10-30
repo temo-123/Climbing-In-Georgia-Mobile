@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import { SvgXml } from 'react-native-svg';
 import { resolveImageUri } from '../utils/imageCache';
+import { SKETCHES } from './ui/sketches';
+import { COLORS } from '../assets/styles/styles';
 
-const NO_IMAGE = require('../assets/images/no_image.png');
+// The website's image-area fallback (imageFallback.js): no stock "no image"
+// picture — a chalk frame with a faint ink pencil sketch.
+const FALLBACK_XML = SKETCHES.mountains.replace(/#fff\b/g, COLORS.ink);
 
 // Always loads from the remote URI. Falls back to the local file cache when
-// the network request fails (i.e. the device is offline), and to a "no
-// image" placeholder — matching the one the website shows for articles
-// with no image on the server — when there's no URI at all, or nothing to
-// fall back to.
+// the network request fails (i.e. the device is offline), and to the chalk
+// sketch frame when there's no URI at all, or nothing to fall back to.
 export default function CachedImage({ uri, style, contentFit, ...props }) {
   const [src, setSrc] = useState(uri);
   const [failed, setFailed] = useState(!uri);
@@ -28,12 +32,15 @@ export default function CachedImage({ uri, style, contentFit, ...props }) {
   }, [uri, src]);
 
   if (failed) {
-    // Keyed separately from the uri branch below: expo-image's Android prop
-    // setter caches a type-specific converter for `source` on first set, and
-    // swapping the same native view between a require() asset and a {uri}
-    // object crashes with "Cannot cast DynamicFromMap to Either<List<SourceMap>,
-    // SharedRef>". A distinct key forces a fresh view instead of a prop update.
-    return <Image key="placeholder" source={NO_IMAGE} style={style} contentFit={contentFit} {...props} />;
+    // Keyed separately from the uri branch below, so the native image view
+    // is unmounted rather than re-used for a different kind of content.
+    return (
+      <View key="placeholder" style={[style, fallback.frame]}>
+        <View style={fallback.sketch}>
+          <SvgXml xml={FALLBACK_XML} width="100%" height="100%" />
+        </View>
+      </View>
+    );
   }
 
   return (
@@ -47,3 +54,8 @@ export default function CachedImage({ uri, style, contentFit, ...props }) {
     />
   );
 }
+
+const fallback = StyleSheet.create({
+  frame: { backgroundColor: COLORS.chalk2, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  sketch: { width: '70%', maxWidth: 260, aspectRatio: 300 / 180, opacity: 0.18 },
+});

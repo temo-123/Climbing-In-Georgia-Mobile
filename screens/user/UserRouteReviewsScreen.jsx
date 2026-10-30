@@ -7,7 +7,7 @@ import { saveOfflineData, loadOfflineData } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
 import WriteOnWebsiteButton from '../../components/user/WriteOnWebsiteButton';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 
 const API = API_BASE_URL;
 const CACHE_KEY = '@my_route_reviews_cache';
@@ -119,10 +119,10 @@ const styles = StyleSheet.create({
     elevation: 2, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
   },
   cardTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 10 },
-  routeName: { flex: 1, fontSize: 14, fontWeight: '700', color: '#222' },
+  routeName: { flex: 1, fontSize: 14, fontFamily: FONTS.bodyBold, color: COLORS.ink },
   gradeBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 6 },
-  gradeText: { fontSize: 12, fontWeight: '700', color: '#333' },
-  comment: { fontSize: 14, color: '#555', lineHeight: 20 },
-  date: { fontSize: 11, color: '#aaa', marginTop: 8, textAlign: 'right' },
-  emptyText: { color: '#888', fontSize: 15 },
+  gradeText: { fontSize: 12, fontFamily: FONTS.bodyBold, color: COLORS.ink },
+  comment: { fontSize: 14, fontFamily: FONTS.body, color: COLORS.stone, lineHeight: 20 },
+  date: { fontSize: 11, fontFamily: FONTS.body, color: COLORS.muted, marginTop: 8, textAlign: 'right' },
+  emptyText: { color: COLORS.muted, fontSize: 15, fontFamily: FONTS.body },
 });

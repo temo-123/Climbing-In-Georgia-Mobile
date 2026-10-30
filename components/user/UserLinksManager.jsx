@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api, { API_BASE_URL } from '../../utils/api';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
+import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 
 const API = API_BASE_URL;
 
@@ -79,7 +81,7 @@ export default function UserLinksManager() {
               {deletingId === link.id ? (
                 <ActivityIndicator size="small" color="#e74c3c" />
               ) : (
-                <Text style={styles.removeIcon}>🗑️</Text>
+                <FontAwesomeIcon icon={faTrashCan} size={15} color={COLORS.danger} />
               )}
             </TouchableOpacity>
           </View>
@@ -90,7 +92,7 @@ export default function UserLinksManager() {
         <TextInput
           style={styles.addInput}
           placeholder={t('user.add_link_placeholder')}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={newUrl}
           onChangeText={setNewUrl}
           autoCapitalize="none"
@@ -107,21 +109,21 @@ export default function UserLinksManager() {
 
 const styles = StyleSheet.create({
   loader: { marginVertical: 12 },
-  emptyText: { color: '#888', fontSize: 13, marginBottom: 12 },
+  emptyText: { color: COLORS.muted, fontSize: 13, fontFamily: FONTS.body, marginBottom: 12 },
   linkRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f0f0f0',
+    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: COLORS.line,
   },
-  linkUrl: { flex: 1, fontSize: 14, color: COLORS.primary, marginRight: 12 },
-  removeIcon: { fontSize: 16 },
+  linkUrl: { flex: 1, fontSize: 14, fontFamily: FONTS.body, color: COLORS.primary, marginRight: 12 },
+  removeIcon: { fontSize: 16, fontFamily: FONTS.body },
   addRow: { flexDirection: 'row', marginTop: 14, gap: 10 },
   addInput: {
-    flex: 1, borderWidth: 1.5, borderColor: COLORS.primary, borderRadius: 10,
-    paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: '#222',
+    flex: 1, borderWidth: 1, borderColor: COLORS.line, borderRadius: 12, backgroundColor: COLORS.surface,
+    paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, fontFamily: FONTS.body, color: COLORS.ink,
   },
   addBtn: {
     backgroundColor: COLORS.primary, borderRadius: 10, paddingHorizontal: 18,
     alignItems: 'center', justifyContent: 'center',
   },
-  addBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
+  addBtnText: { color: '#fff', fontFamily: FONTS.bodyBold, fontSize: 14 },
 });

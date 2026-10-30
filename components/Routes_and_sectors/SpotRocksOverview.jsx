@@ -3,8 +3,9 @@ import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { useTranslation } from 'react-i18next';
 
 import ImageViewerModal from "../ImageViewerModal";
-import CachedImage from "../CachedImage";
-import { gStyle } from "../../assets/styles/styles";
+import NaturalImage from "../ui/NaturalImage";
+import SectionTitle from "../ui/SectionTitle";
+import { COLORS, FONTS } from "../../assets/styles/styles";
 import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from "../../utils/api";
 import { loadSpotRocksImagesData, saveSpotRocksImagesData } from "../../utils/offlineStorage";
 import { useRefetchOnReconnect } from "../../utils/useRefetchOnReconnect";
@@ -59,13 +60,13 @@ export default function SpotRocksOverview({ article_id, onImagePress }) {
 
   return (
     <View style={styles.container}>
-      <Text style={gStyle.h2}>{t('spot_rocks_block.title')}</Text>
+      <SectionTitle align="left">{t('spot_rocks_block.title')}</SectionTitle>
 
       {items.map((img, idx) => (
         <View key={img.id ?? idx}>
-          {img.title ? <Text style={gStyle.h3}>{img.title}</Text> : null}
-          <TouchableOpacity onPress={() => handleImagePress(uris, idx)}>
-            <CachedImage uri={img.uri} style={styles.image} contentFit="contain" />
+          {img.title ? <Text style={styles.title}>{img.title}</Text> : null}
+          <TouchableOpacity activeOpacity={0.9} onPress={() => handleImagePress(uris, idx)} style={styles.image}>
+            <NaturalImage uri={img.uri} />
           </TouchableOpacity>
         </View>
       ))}
@@ -83,6 +84,7 @@ export default function SpotRocksOverview({ article_id, onImagePress }) {
 }
 
 const styles = StyleSheet.create({
-  container: { marginBottom: 24 },
-  image: { height: 300, width: "100%", marginVertical: 8 },
+  container: { marginTop: 8, marginBottom: 16 },
+  title: { fontFamily: FONTS.displayBold, fontSize: 20, color: COLORS.ink, marginBottom: 6 },
+  image: { marginBottom: 12 },
 });

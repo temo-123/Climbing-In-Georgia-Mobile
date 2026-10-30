@@ -1,55 +1,10 @@
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import HtmlContent from './HtmlContent';
-import { COLORS } from '../assets/styles/styles';
+import PageHead from './ui/PageHead';
+import SectionTitle from './ui/SectionTitle';
 
-const descriptionBaseStyle = { fontSize: 13, color: '#555', textAlign: 'center', lineHeight: 20 };
-const descriptionTagsStyles = { p: { marginTop: 0, marginBottom: 0 } };
-
-export default function ArticleListHeaderText({ title, description }) {
-  const { width } = useWindowDimensions();
-  return (
-    <View style={styles.container}>
-      <View style={styles.titleRow}>
-        <View style={styles.accent} />
-        <Text style={styles.title}>{title}</Text>
-        <View style={styles.accent} />
-      </View>
-      {!!description ? (
-        <HtmlContent
-          html={description}
-          contentWidth={width - 16}
-          baseStyle={descriptionBaseStyle}
-          tagsStyles={descriptionTagsStyles}
-        />
-      ) : null}
-    </View>
-  );
+// List pages: the website's `.cg-page-head--list.cg-art-<name>` band (pass
+// `art`, same sketch as the matching website list). Without `art` (article
+// blocks) it's a plain section title with the rope-and-hold underline.
+export default function ArticleListHeaderText({ title, description, art, icon }) {
+  if (!art) return <SectionTitle>{title}</SectionTitle>;
+  return <PageHead art={art} title={title} lead={description} icon={icon} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 16,
-    paddingHorizontal: 4,
-    alignItems: 'center',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 10,
-  },
-  accent: {
-    flex: 1,
-    height: 2,
-    backgroundColor: COLORS.primary,
-    borderRadius: 2,
-    opacity: 0.5,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    textAlign: 'center',
-    letterSpacing: 0.3,
-  },
-});

@@ -2,28 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { useWindowDimensions } from 'react-native';
 import RenderHtml from 'react-native-render-html';
 import { resolveHtmlImageUris } from '../utils/imageCache';
-import { COLORS } from '../assets/styles/styles';
+import { COLORS, FONTS } from '../assets/styles/styles';
 
 // Shared typography for HTML coming from the site's editor (Quill, older
 // texts from CKEditor). Inline `style="color/background-color"` from the
 // editor still applies on top of these — only the defaults are set here.
-const BASE_STYLE = { fontSize: 15, lineHeight: 22, color: '#222' };
+// Custom fonts can't be bolded by the OS on Android, so bold tags switch
+// family instead of setting fontWeight; RenderHtml only applies families
+// listed in `systemFonts`.
+const BASE_STYLE = { fontSize: 15, lineHeight: 23, color: COLORS.ink2, fontFamily: FONTS.body };
+const SYSTEM_FONTS = Object.values(FONTS);
 
 const DEFAULT_TAGS_STYLES = {
   p: { marginTop: 0, marginBottom: 8 },
-  h1: { fontSize: 22, fontWeight: '700', marginTop: 8, marginBottom: 8, lineHeight: 28 },
-  h2: { fontSize: 19, fontWeight: '700', marginTop: 8, marginBottom: 8, lineHeight: 26 },
-  h3: { fontSize: 17, fontWeight: '700', marginTop: 6, marginBottom: 6, lineHeight: 24 },
-  h4: { fontSize: 15, fontWeight: '700', marginTop: 4, marginBottom: 4 },
-  strong: { fontWeight: '700' },
-  b: { fontWeight: '700' },
-  a: { color: COLORS.primary, textDecorationLine: 'none' },
+  h1: { fontSize: 26, fontFamily: FONTS.displayBold, fontWeight: 'normal', color: COLORS.ink, marginTop: 8, marginBottom: 8, lineHeight: 30 },
+  h2: { fontSize: 22, fontFamily: FONTS.displayBold, fontWeight: 'normal', color: COLORS.ink, marginTop: 8, marginBottom: 8, lineHeight: 26 },
+  h3: { fontSize: 19, fontFamily: FONTS.displayBold, fontWeight: 'normal', color: COLORS.ink, marginTop: 6, marginBottom: 6, lineHeight: 23 },
+  h4: { fontSize: 15, fontFamily: FONTS.bodyBold, fontWeight: 'normal', marginTop: 4, marginBottom: 4 },
+  strong: { fontFamily: FONTS.bodyBold, fontWeight: 'normal' },
+  b: { fontFamily: FONTS.bodyBold, fontWeight: 'normal' },
+  a: { color: COLORS.primary, fontFamily: FONTS.bodyBold, textDecorationLine: 'none' },
   ol: { marginTop: 0, marginBottom: 8, paddingLeft: 20 },
   ul: { marginTop: 0, marginBottom: 8, paddingLeft: 20 },
   li: { marginBottom: 4 },
   blockquote: {
     marginVertical: 8, marginHorizontal: 0, paddingLeft: 12,
-    borderLeftWidth: 3, borderLeftColor: COLORS.primary, color: '#555', fontStyle: 'italic',
+    borderLeftWidth: 3, borderLeftColor: COLORS.hold, color: COLORS.stone, fontStyle: 'italic',
   },
 };
 
@@ -68,6 +72,7 @@ export default function HtmlContent({ html, contentWidth, tagsStyles, baseStyle,
       baseStyle={{ ...BASE_STYLE, ...baseStyle }}
       tagsStyles={{ ...DEFAULT_TAGS_STYLES, ...tagsStyles }}
       ignoreDomNode={ignoreDomNode}
+      systemFonts={SYSTEM_FONTS}
       {...renderHtmlProps}
     />
   );

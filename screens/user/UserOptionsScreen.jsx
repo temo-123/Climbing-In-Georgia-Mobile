@@ -9,7 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../utils/AuthContext';
 import api, { API_BASE_URL, IMG_BASES, imgUri } from '../../utils/api';
 import { compressImageIfNeeded, readPhotoAsBase64 } from '../../utils/imageCompress';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 import EditProfileModal from '../../components/user/EditProfileModal';
 import ChangePasswordModal from '../../components/user/ChangePasswordModal';
 import UserLinksManager from '../../components/user/UserLinksManager';
@@ -173,37 +173,37 @@ export default function UserOptionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 40, backgroundColor: '#f4f6f8', flexGrow: 1 },
+  container: { padding: 20, paddingBottom: 40, backgroundColor: COLORS.chalk, flexGrow: 1 },
   avatarSection: { alignItems: 'center', marginBottom: 24 },
   avatarImg: { width: 92, height: 92, borderRadius: 46, borderWidth: 2, borderColor: COLORS.primary },
   avatarFallback: {
     width: 92, height: 92, borderRadius: 46, backgroundColor: COLORS.primary,
     alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: COLORS.primary,
   },
-  avatarText: { fontSize: 30, fontWeight: 'bold', color: '#fff' },
+  avatarText: { fontSize: 34, fontFamily: FONTS.displayBold, color: '#fff' },
   avatarEditBadge: {
     position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14,
     backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: '#fff',
   },
-  avatarEditIcon: { color: '#fff', fontSize: 13 },
-  changeAvatarText: { color: COLORS.primary, fontSize: 13, fontWeight: '600', marginTop: 10 },
+  avatarEditIcon: { color: '#fff', fontSize: 13, fontFamily: FONTS.body },
+  changeAvatarText: { color: COLORS.primary, fontSize: 13, fontFamily: FONTS.bodySemi, marginTop: 10 },
   card: {
     backgroundColor: '#fff', borderRadius: 14, padding: 18, marginBottom: 16,
     elevation: 2, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: COLORS.primary },
-  editLink: { color: COLORS.primary, fontWeight: '600', fontSize: 13 },
-  hint: { fontSize: 12, color: '#999', marginBottom: 10 },
-  row: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f4f4f4' },
-  rowLabel: { fontSize: 11, color: '#999', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 2 },
-  rowValue: { fontSize: 14, color: '#222' },
+  sectionTitle: { fontSize: 16, fontFamily: FONTS.bodyBold, color: COLORS.primary },
+  editLink: { color: COLORS.primary, fontFamily: FONTS.bodySemi, fontSize: 13 },
+  hint: { fontSize: 12, fontFamily: FONTS.body, color: COLORS.muted, marginBottom: 10 },
+  row: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: COLORS.chalk },
+  rowLabel: { fontSize: 11, fontFamily: FONTS.body, color: COLORS.muted, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 2 },
+  rowValue: { fontSize: 14, fontFamily: FONTS.body, color: COLORS.ink },
   button: {
-    backgroundColor: COLORS.primary, borderRadius: 10, paddingVertical: 13,
+    backgroundColor: COLORS.primary, borderRadius: 999, paddingVertical: 13,
     alignItems: 'center', marginTop: 4,
   },
-  buttonText: { color: '#fff', fontSize: 15, fontWeight: 'bold' },
-  dangerTitle: { color: '#e74c3c', marginBottom: 4 },
-  dangerButton: { backgroundColor: '#e74c3c' },
+  buttonText: { color: '#fff', fontSize: 15, fontFamily: FONTS.bodyBold },
+  dangerTitle: { color: COLORS.danger, marginBottom: 4 },
+  dangerButton: { backgroundColor: COLORS.danger },
 });

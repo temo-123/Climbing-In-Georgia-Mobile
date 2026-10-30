@@ -10,7 +10,9 @@ import { useLocale } from '../../utils/LocaleContext';
 import { useAuth } from '../../utils/AuthContext';
 import { getDonationSiteData } from '../../utils/donationSiteData';
 import api, { API_BASE_URL } from '../../utils/api';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
+import { faBuildingColumns, faCreditCard, faHeart } from '@fortawesome/free-solid-svg-icons';
+import IconText from '../ui/IconText';
 
 const API_BASE = API_BASE_URL;
 const PREDEFINED_AMOUNTS = [5, 10, 20, 50, 100, 200];
@@ -142,7 +144,7 @@ export default function DonationModal({ visible, onClose }) {
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <Text style={styles.title}>❤️ {t('donation.modal_title')}</Text>
+            <IconText icon={faHeart} iconColor={COLORS.rope} size={16} style={styles.title}>{t('donation.modal_title')}</IconText>
             {!!description && (
               <HtmlContent contentWidth={contentWidth} html={description} />
             )}
@@ -153,18 +155,14 @@ export default function DonationModal({ visible, onClose }) {
                 onPress={() => setActiveTab('card')}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.tabBtnText, activeTab === 'card' && styles.tabBtnTextActive]}>
-                  💳 {t('donation.card_tab')}
-                </Text>
+                <IconText icon={faCreditCard} iconColor={activeTab === 'card' ? '#fff' : COLORS.primary} style={[styles.tabBtnText, activeTab === 'card' && styles.tabBtnTextActive]}>{t('donation.card_tab')}</IconText>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.tabBtn, activeTab === 'bank' && styles.tabBtnActive]}
                 onPress={switchToBank}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.tabBtnText, activeTab === 'bank' && styles.tabBtnTextActive]}>
-                  🏦 {t('donation.bank_tab')}
-                </Text>
+                <IconText icon={faBuildingColumns} iconColor={activeTab === 'bank' ? '#fff' : COLORS.primary} style={[styles.tabBtnText, activeTab === 'bank' && styles.tabBtnTextActive]}>{t('donation.bank_tab')}</IconText>
               </TouchableOpacity>
             </View>
 
@@ -179,12 +177,12 @@ export default function DonationModal({ visible, onClose }) {
                   </View>
                 ) : (
                   <>
-                    <TextInput style={styles.input} placeholder={t('donation.name')} placeholderTextColor="#aaa" value={donator.name} onChangeText={v => setDonator(d => ({ ...d, name: v }))} autoCapitalize="words" />
-                    <TextInput style={styles.input} placeholder={t('donation.surname')} placeholderTextColor="#aaa" value={donator.surname} onChangeText={v => setDonator(d => ({ ...d, surname: v }))} autoCapitalize="words" />
-                    <TextInput style={styles.input} placeholder={t('donation.email')} placeholderTextColor="#aaa" value={donator.email} onChangeText={v => setDonator(d => ({ ...d, email: v }))} keyboardType="email-address" autoCapitalize="none" />
-                    <TextInput style={styles.input} placeholder={t('donation.phone')} placeholderTextColor="#aaa" value={donator.phone_number} onChangeText={v => setDonator(d => ({ ...d, phone_number: v }))} keyboardType="phone-pad" />
-                    <TextInput style={styles.input} placeholder={t('donation.country')} placeholderTextColor="#aaa" value={donator.country} onChangeText={v => setDonator(d => ({ ...d, country: v }))} />
-                    <TextInput style={styles.input} placeholder={t('donation.age')} placeholderTextColor="#aaa" value={donator.age} onChangeText={v => setDonator(d => ({ ...d, age: v }))} keyboardType="numeric" />
+                    <TextInput style={styles.input} placeholder={t('donation.name')} placeholderTextColor={COLORS.muted} value={donator.name} onChangeText={v => setDonator(d => ({ ...d, name: v }))} autoCapitalize="words" />
+                    <TextInput style={styles.input} placeholder={t('donation.surname')} placeholderTextColor={COLORS.muted} value={donator.surname} onChangeText={v => setDonator(d => ({ ...d, surname: v }))} autoCapitalize="words" />
+                    <TextInput style={styles.input} placeholder={t('donation.email')} placeholderTextColor={COLORS.muted} value={donator.email} onChangeText={v => setDonator(d => ({ ...d, email: v }))} keyboardType="email-address" autoCapitalize="none" />
+                    <TextInput style={styles.input} placeholder={t('donation.phone')} placeholderTextColor={COLORS.muted} value={donator.phone_number} onChangeText={v => setDonator(d => ({ ...d, phone_number: v }))} keyboardType="phone-pad" />
+                    <TextInput style={styles.input} placeholder={t('donation.country')} placeholderTextColor={COLORS.muted} value={donator.country} onChangeText={v => setDonator(d => ({ ...d, country: v }))} />
+                    <TextInput style={styles.input} placeholder={t('donation.age')} placeholderTextColor={COLORS.muted} value={donator.age} onChangeText={v => setDonator(d => ({ ...d, age: v }))} keyboardType="numeric" />
                   </>
                 )}
 
@@ -206,7 +204,7 @@ export default function DonationModal({ visible, onClose }) {
                 <TextInput
                   style={styles.input}
                   placeholder={t('donation.custom_amount')}
-                  placeholderTextColor="#aaa"
+                  placeholderTextColor={COLORS.muted}
                   value={customAmount}
                   onChangeText={onCustomAmountChange}
                   keyboardType="numeric"
@@ -218,7 +216,7 @@ export default function DonationModal({ visible, onClose }) {
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   placeholder={t('donation.comment_placeholder')}
-                  placeholderTextColor="#aaa"
+                  placeholderTextColor={COLORS.muted}
                   value={comment}
                   onChangeText={setComment}
                   multiline
@@ -236,7 +234,7 @@ export default function DonationModal({ visible, onClose }) {
                 >
                   {loading
                     ? <ActivityIndicator color="#fff" />
-                    : <Text style={styles.donateBtnText}>❤️ {t('donation.donate_button')} {displayAmount || 0} {t('donation.gel')}</Text>
+                    : <IconText icon={faHeart} iconColor={COLORS.rope} style={styles.donateBtnText}>{t('donation.donate_button')} {displayAmount || 0} {t('donation.gel')}</IconText>
                   }
                 </TouchableOpacity>
               </>
@@ -307,61 +305,61 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 22,
   },
-  title: { fontSize: 19, fontWeight: '800', color: COLORS.primary, textAlign: 'center', marginBottom: 8 },
+  title: { fontSize: 19, fontFamily: FONTS.bodyHeavy, color: COLORS.primary, textAlign: 'center', marginBottom: 8 },
   loader: { marginVertical: 32 },
   tabRow: { flexDirection: 'row', gap: 10, marginVertical: 16 },
   tabBtn: {
     flex: 1,
     borderWidth: 1.5,
     borderColor: COLORS.primary,
-    borderRadius: 10,
+    borderRadius: 999,
     paddingVertical: 11,
     alignItems: 'center',
   },
   tabBtnActive: { backgroundColor: COLORS.primary },
-  tabBtnText: { fontSize: 14, color: COLORS.primary, fontWeight: '700' },
+  tabBtnText: { fontSize: 14, color: COLORS.primary, fontFamily: FONTS.bodyBold },
   tabBtnTextActive: { color: '#fff' },
-  sectionTitle: { fontSize: 14, fontWeight: '700', color: COLORS.primary, marginBottom: 10, marginTop: 6 },
-  userInfoBox: { backgroundColor: '#e8f6fa', borderRadius: 10, padding: 12, marginBottom: 12 },
-  userInfoText: { fontSize: 13, color: '#1a6f85' },
+  sectionTitle: { fontSize: 14, fontFamily: FONTS.bodyBold, color: COLORS.primary, marginBottom: 10, marginTop: 6 },
+  userInfoBox: { backgroundColor: COLORS.primarySoft, borderRadius: 10, padding: 12, marginBottom: 12 },
+  userInfoText: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.primaryDark },
   input: {
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 12, backgroundColor: COLORS.surface,
     paddingHorizontal: 14,
     paddingVertical: 11,
     marginBottom: 10,
-    fontSize: 14,
-    color: '#222',
+    fontSize: 14, fontFamily: FONTS.body,
+    color: COLORS.ink,
   },
   textArea: { height: 80, paddingTop: 11 },
   amountRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
   amountBtn: {
     borderWidth: 1.5,
-    borderColor: '#28a745',
+    borderColor: COLORS.success,
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
-  amountBtnActive: { backgroundColor: '#28a745' },
-  amountBtnText: { fontSize: 13, color: '#28a745', fontWeight: '700' },
+  amountBtnActive: { backgroundColor: COLORS.success },
+  amountBtnText: { fontSize: 13, color: COLORS.success, fontFamily: FONTS.bodyBold },
   amountBtnTextActive: { color: '#fff' },
-  selectedAmountText: { fontSize: 14, fontWeight: '700', color: '#28a745', textAlign: 'center', marginBottom: 14 },
-  errorText: { color: '#e74c3c', fontSize: 13, textAlign: 'center', marginBottom: 12 },
+  selectedAmountText: { fontSize: 14, fontFamily: FONTS.bodyBold, color: COLORS.success, textAlign: 'center', marginBottom: 14 },
+  errorText: { color: COLORS.danger, fontSize: 13, fontFamily: FONTS.body, textAlign: 'center', marginBottom: 12 },
   donateBtn: {
-    backgroundColor: '#28a745',
+    backgroundColor: COLORS.success,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
     marginBottom: 6,
   },
   donateBtnDisabled: { opacity: 0.5 },
-  donateBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
+  donateBtnText: { color: '#fff', fontSize: 15, fontFamily: FONTS.bodyHeavy },
   bankMessageBox: { alignItems: 'center', paddingVertical: 24 },
-  bankMessageText: { fontSize: 14, fontWeight: '700', color: '#555', textAlign: 'center', marginBottom: 6 },
-  bankMessageSub: { fontSize: 13, color: '#888', textAlign: 'center' },
-  bankInstructions: { fontSize: 13, color: '#555', marginBottom: 12 },
-  bankCard: { backgroundColor: '#f4f6f8', borderRadius: 10, padding: 14 },
+  bankMessageText: { fontSize: 14, fontFamily: FONTS.bodyBold, color: COLORS.stone, textAlign: 'center', marginBottom: 6 },
+  bankMessageSub: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.muted, textAlign: 'center' },
+  bankInstructions: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.stone, marginBottom: 12 },
+  bankCard: { backgroundColor: COLORS.chalk, borderRadius: 10, padding: 14 },
   bankRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -370,18 +368,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e5e5e5',
   },
-  bankRowLabel: { width: 110, fontSize: 12, fontWeight: '700', color: '#666' },
-  bankRowValue: { flex: 1, fontSize: 13, color: '#222', fontWeight: '600' },
+  bankRowLabel: { width: 110, fontSize: 12, fontFamily: FONTS.bodyBold, color: COLORS.stone },
+  bankRowValue: { flex: 1, fontSize: 13, color: COLORS.ink, fontFamily: FONTS.bodySemi },
   ibanValue: { fontFamily: 'monospace', letterSpacing: 0.5 },
   copyBtn: { borderWidth: 1, borderColor: COLORS.primary, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, marginLeft: 8 },
-  copyBtnText: { fontSize: 11, color: COLORS.primary, fontWeight: '700' },
+  copyBtnText: { fontSize: 11, color: COLORS.primary, fontFamily: FONTS.bodyBold },
   closeBtn: {
     borderWidth: 1.5,
-    borderColor: '#999',
+    borderColor: COLORS.muted,
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
     marginTop: 14,
   },
-  closeBtnText: { color: '#666', fontSize: 14, fontWeight: '700' },
+  closeBtnText: { color: COLORS.stone, fontSize: 14, fontFamily: FONTS.bodyBold },
 });

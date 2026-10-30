@@ -9,6 +9,7 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import CachedImage from './CachedImage';
+import { FONTS } from '../assets/styles/styles';
 
 const { width, height } = Dimensions.get('window');
 const IMG_HEIGHT = height * 0.85;
@@ -185,8 +186,8 @@ const styles = StyleSheet.create({
   },
   closeText: {
     color: '#fff',
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontFamily: FONTS.displayBold,
   },
   counter: {
     position: 'absolute',
@@ -194,6 +195,6 @@ const styles = StyleSheet.create({
     left: 20,
     zIndex: 10,
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 15,
+    fontSize: 15, fontFamily: FONTS.body,
   },
 });

@@ -1,116 +1,94 @@
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import CachedImage from '../CachedImage';
+import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faCalendarDays, faTrophy, faPeopleGroup } from '@fortawesome/free-solid-svg-icons';
+import ArticleCardShell from './ArticleCardShell';
+import InterestedButton from '../events/InterestedButton';
 import { imgUri, IMG_BASES } from '../../utils/api';
-import { COLORS } from '../../assets/styles/styles';
+import { useLocale } from '../../utils/LocaleContext';
+import { toDate, eventStatus, statusLabel, rangeLabel, monthShort, hasTime, timeLabel } from '../../utils/eventDates';
+import { COLORS, FONTS, SHADOWS } from '../../assets/styles/styles';
 
-export default function outdoorCard({cardData}) {
+const STATUS_TONES = { live: 'success', today: 'hold', upcoming: 'accent', finished: 'default' };
+
+// The website's EventCardComponent: photo with a tear-off date tag, category
+// chip, status pill (starts in N days / today / happening now / finished),
+// date range + time and the short text.
+export default function EventCard({ cardData }) {
   const navigation = useNavigation();
+  const { t } = useTranslation();
+  const { locale } = useLocale();
+  const ev = cardData.global_event;
+  const start = toDate(ev.start_data);
+  const status = eventStatus(ev);
+  const isCompetition = ev.category === 'competition';
+
+  let range = rangeLabel(ev, locale);
+  if (start && hasTime(ev)) range += ` · ${timeLabel(start)}`;
+
+  const chips = [
+    {
+      icon: isCompetition ? faTrophy : faPeopleGroup,
+      label: isCompetition ? t('site.guide.events.competition_flag') : t('site.guide.events.event_festival_flag'),
+    },
+    { label: statusLabel(status, t), tone: STATUS_TONES[status.key] },
+  ];
+
   return (
-    <TouchableOpacity style={styles.article_card} onPress={() => navigation.navigate('event_page', cardData.global_event.id)}>
-      <View style={styles.article_card_image_view}>
-        <CachedImage uri={imgUri(IMG_BASES.event, cardData.global_event.image, cardData.global_event.updated_at)} style={styles.article_card_image} contentFit="contain" />
-      </View>
-      <View style={styles.article_card_text}>
-        <View style={styles.event_datas}>
-          <View style={styles.event_calendar_start}>
-            <Text style={styles.event_start_calendar_head}>Start</Text>
-            {/* <Text style={styles.event_start_calendar_day}> May 4 (10:00)</Text> */}
-            <Text style={styles.event_start_calendar_day}>{cardData.global_event.start_data}</Text>
-            {/* <Text style={styles.event_start_calendar_time}>10:00</Text> */}
+    <ArticleCardShell
+      imageUri={imgUri(IMG_BASES.event, ev.image, ev.updated_at)}
+      title={cardData.locale_event.title}
+      text={cardData.locale_event.short_description}
+      chips={chips}
+      topRight={<InterestedButton event={ev} />}
+      onPress={() => navigation.navigate('event_page', ev.url_title)}
+      mediaOverlay={start && (
+        <View style={styles.dateTag}>
+          <View style={[styles.dateTagHead, status.key === 'finished' && styles.dateTagHeadDone]}>
+            <Text style={styles.dateTagMonth}>{monthShort(start, locale)}</Text>
           </View>
-          <View style={styles.event_calendar_end}>
-            <Text style={styles.event_end_calendar_head}>And</Text>
-            {/* <Text style={styles.event_end_calendar_day}>May 4 (18:00)</Text> */}
-            <Text style={styles.event_start_calendar_day}>{cardData.global_event.end_data}</Text>
-            {/* <Text style={styles.event_end_calendar_tile}>18:00</Text> */}
-          </View>
+          <Text style={styles.dateTagDay}>{start.getDate()}</Text>
+          <View style={styles.perforation} />
         </View>
-        <Text style={styles.article_card_title} onPress={() => navigation.navigate('event_page')}>{cardData.locale_event.title}</Text>
-        {/* <Text style={styles.article_card_description}>article description</Text> */}
-        
-      </View>
-    </TouchableOpacity>
+      )}
+    >
+      {!!range && (
+        <View style={styles.rangeRow}>
+          <FontAwesomeIcon icon={faCalendarDays} size={12} color={COLORS.primary} />
+          <Text style={styles.range}>{range}</Text>
+        </View>
+      )}
+    </ArticleCardShell>
   );
 }
 
 const styles = StyleSheet.create({
-  article_card: {
-    backgroundColor: 'white',
-    width: '100%',
-    height: 100,
+  dateTag: {
+    position: 'absolute',
+    left: 12,
+    top: 12,
+    width: 54,
+    borderRadius: 10,
+    backgroundColor: '#fff',
     alignItems: 'center',
-    marginBottom: 16,
-
-    borderWidth: 1.5,
-    borderRadius: 10,
-    borderColor: COLORS.primary,
-
-    flexDirection: 'row',
+    overflow: 'hidden',
+    ...SHADOWS.md,
   },
-  article_card_image_view: {
-    width: '45%', 
+  dateTagHead: { alignSelf: 'stretch', backgroundColor: COLORS.rope, paddingVertical: 3, alignItems: 'center' },
+  dateTagHeadDone: { backgroundColor: COLORS.muted },
+  dateTagMonth: { color: '#fff', fontFamily: FONTS.bodyHeavy, fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 },
+  dateTagDay: { fontFamily: FONTS.displayBold, fontSize: 26, lineHeight: 30, color: COLORS.ink, paddingBottom: 4 },
+  perforation: {
+    position: 'absolute',
+    bottom: 0,
+    left: 4,
+    right: 4,
+    borderBottomWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: COLORS.line,
   },
-  article_card_image: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 10,
-    resizeMode: 'contain',
-  },
-  article_card_text: {
-    flex: 1,
-    padding: 4
-  },
-  article_card_title: {
-    fontSize: 20,
-    float: 'top'
-  },
-  // article_card_routes: {
-  //   flexDirection: 'row',
-  //   marginBottom: 3,
-  // },
-  // article_card_routes_text: {
-  //   fontSize: 14,
-  // },
-  event_datas: {
-    flexDirection: 'row',
-  },
-  event_calendar_start: {
-    // backgroundColor: '#ooo',
-    flexGrow: 1,
-    // alignItems: 'center',
-    borderWidth: 1.5,
-    borderRadius: 5,
-    borderColor: COLORS.primary,
-
-    margin: 4,
-    // padding: 4,
-    flexDirection: 'column',
-  },
-  event_calendar_end: {
-    // justifyContent: 'flex-end',
-    // backgroundColor: '#ooo',
-    // boarder: 1,
-    // right: 0,
-    flexGrow: 1,
-    // alignItems: 'center',
-    borderWidth: 1.5,
-    borderRadius: 5,
-    borderColor: COLORS.primary,
-
-    margin: 4,
-    // padding: 4,
-    flexDirection: 'column',
-  },
-  event_start_calendar_head: {
-    backgroundColor: "#065fd4",
-    color: "#fff"
-    
-  },
-  event_end_calendar_head: {
-    // flexDirection: 'column',
-    backgroundColor: "#065fd4",
-    color: "#fff"
-  }
-})
+  rangeRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
+  range: { fontFamily: FONTS.bodySemi, fontSize: 13, color: COLORS.ink2 },
+});

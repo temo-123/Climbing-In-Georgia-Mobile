@@ -25,6 +25,8 @@ export const IMG_BASES = {
   sectorLocal: PUBLIC_IMAGES_BASE + 'sector_local_img/',
   spotRocks: PUBLIC_IMAGES_BASE + 'spot_rocks_img/',
   summitAscent: PUBLIC_IMAGES_BASE + 'summit_ascents_img/',
+  routeAscent: PUBLIC_IMAGES_BASE + 'route_ascents_img/',
+  mtpAscent: PUBLIC_IMAGES_BASE + 'mtp_ascents_img/',
   userProfile: PUBLIC_IMAGES_BASE + 'user_profil_img/',
 };
 

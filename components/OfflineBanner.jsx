@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faWifi } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
+import { COLORS, FONTS } from '../assets/styles/styles';
 
 export default function OfflineBanner() {
   const { t } = useTranslation();
@@ -22,12 +23,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff3cd',
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ffc107',
+    borderBottomWidth: 2,
+    borderBottomColor: COLORS.hold,
   },
   text: {
     fontSize: 13,
     color: '#7a5c00',
-    fontWeight: '500',
+    fontFamily: FONTS.bodySemi,
   },
 });

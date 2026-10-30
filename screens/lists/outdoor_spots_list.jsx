@@ -1,4 +1,5 @@
-import { StyleSheet, View, FlatList, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, FlatList } from 'react-native';
+import { faUserPen } from '@fortawesome/free-solid-svg-icons';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
@@ -17,8 +18,13 @@ import Preloader from "../../components/Preloader";
 import OfflineBanner from "../../components/OfflineBanner";
 import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
+import FavoritesStrip from "../../components/guide/FavoritesStrip";
+import RecentlyViewed from "../../components/guide/RecentlyViewed";
+import CragPicker from "../../components/guide/CragPicker";
+import ListSearchBar from "../../components/ListSearchBar";
+import { searchItems } from "../../utils/listSearch";
 import RouteAuthorsModal from "../../components/RouteAuthorsModal";
-import { COLORS } from '../../assets/styles/styles';
+import Button from "../../components/ui/Button";
 
 const OTHER_REGION_KEY = '__other__';
 
@@ -33,6 +39,7 @@ export default function App() {
   const [authorsVisible, setAuthorsVisible] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [sortAlpha, setSortAlpha] = useState(false);
+  const [query, setQuery] = useState('');
   const description = useSiteDescription('outdoor');
 
   function load() {
@@ -103,8 +110,8 @@ export default function App() {
       list = [...list].sort((a, b) =>
         (a.locale_data?.title || '').localeCompare(b.locale_data?.title || ''));
     }
-    return list;
-  }, [allSpots, selectedRegion, sortAlpha]);
+    return searchItems(list, query);
+  }, [allSpots, selectedRegion, sortAlpha, query]);
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;
@@ -118,13 +125,22 @@ export default function App() {
         ListHeaderComponent={
           <View>
             <Article_list_header_text
+              art="quickdraw"
               title={t('list.outdoor_title')}
               description={description}
             />
+            <FavoritesStrip category="outdoor" />
+            <RecentlyViewed category="outdoor" />
+            <CragPicker areas={allSpots} />
             <RoutesQuantityText />
-            <TouchableOpacity style={styles.authorsBtn} onPress={() => setAuthorsVisible(true)} activeOpacity={0.85}>
-              <Text style={styles.authorsBtnText}>{t('about.check_route_authors')}</Text>
-            </TouchableOpacity>
+            <Button
+              variant="outline"
+              icon={faUserPen}
+              title={t('about.check_route_authors')}
+              onPress={() => setAuthorsVisible(true)}
+              style={styles.authorsBtn}
+            />
+            <ListSearchBar value={query} onChange={setQuery} found={visibleSpots.length} placeholder={t('site.guide.list_search.outdoor')} />
             <FilterChips options={regionOptions} selected={selectedRegion} onSelect={setSelectedRegion} />
             <SortToggle
               active={sortAlpha}
@@ -136,6 +152,7 @@ export default function App() {
         renderItem={({ item }) => <OutdoorCard cardData={item} />}
         ListEmptyComponent={<EmptyState message={t('empty.outdoor')} />}
         ListFooterComponent={<PageFooter />}
+        ListFooterComponentStyle={styles.footer}
         contentContainerStyle={styles.container}
       />
       <RouteAuthorsModal visible={authorsVisible} onClose={() => setAuthorsVisible(false)} />
@@ -145,13 +162,7 @@ export default function App() {
 
 const styles = StyleSheet.create({
   wrapper: { flex: 1 },
-  container: { padding: 16 },
-  authorsBtn: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    paddingVertical: 13,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  authorsBtnText: { color: '#fff', fontSize: 14, fontWeight: '800' },
+  container: { padding: 16, flexGrow: 1 },
+  footer: { flexGrow: 1, justifyContent: 'flex-end' },
+  authorsBtn: { marginBottom: 14 },
 });

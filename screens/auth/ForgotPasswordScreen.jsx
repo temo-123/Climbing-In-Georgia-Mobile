@@ -4,8 +4,9 @@ import {
   ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import AuthHead from '../../components/auth/AuthHead';
 import { useAuth } from '../../utils/AuthContext';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 
 export default function ForgotPasswordScreen({ navigation }) {
   const { t } = useTranslation();
@@ -53,13 +54,13 @@ export default function ForgotPasswordScreen({ navigation }) {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>{t('auth.forgot_password_title')}</Text>
+        <AuthHead title={t('auth.forgot_password_title')} />
         <Text style={styles.subtitle}>{t('auth.forgot_password_sub')}</Text>
 
         <TextInput
           style={styles.input}
           placeholder={t('auth.email')}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 28,
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.chalk,
   },
   centeredContainer: {
     flex: 1,
@@ -99,32 +100,32 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: 26,
-    fontWeight: 'bold',
+    fontSize: 30,
+    fontFamily: FONTS.displayBold,
     color: COLORS.primary,
     marginBottom: 12,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 14, fontFamily: FONTS.body,
+    color: COLORS.stone,
     textAlign: 'center',
     marginBottom: 28,
     lineHeight: 20,
   },
   input: {
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 12, backgroundColor: COLORS.surface,
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 16,
-    fontSize: 16,
-    color: '#222',
+    fontSize: 16, fontFamily: FONTS.body,
+    color: COLORS.ink,
   },
   button: {
     backgroundColor: COLORS.primary,
-    borderRadius: 10,
+    borderRadius: 999,
     paddingVertical: 14,
     alignItems: 'center',
     marginBottom: 14,
@@ -132,34 +133,34 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: FONTS.bodyBold,
   },
   link: {
     color: COLORS.primary,
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: 14, fontFamily: FONTS.body,
     marginTop: 4,
   },
   error: {
-    color: '#e74c3c',
+    color: COLORS.danger,
     marginBottom: 12,
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: 14, fontFamily: FONTS.body,
   },
   successIcon: {
-    fontSize: 60,
+    fontSize: 60, fontFamily: FONTS.body,
     color: COLORS.primary,
     marginBottom: 20,
   },
   successTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#222',
+    fontFamily: FONTS.bodyBold,
+    color: COLORS.ink,
     textAlign: 'center',
     marginBottom: 8,
   },
   successSub: {
-    fontSize: 14,
+    fontSize: 14, fontFamily: FONTS.body,
     color: COLORS.primary,
     marginBottom: 32,
   },

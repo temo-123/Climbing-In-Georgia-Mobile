@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { StyleSheet, View, FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
@@ -14,6 +14,9 @@ import Preloader from "../../components/Preloader";
 import OfflineBanner from "../../components/OfflineBanner";
 import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
+import FavoritesStrip from "../../components/guide/FavoritesStrip";
+import ListSearchBar from "../../components/ListSearchBar";
+import { searchItems } from "../../utils/listSearch";
 
 export default function App() {
   const { t } = useTranslation();
@@ -23,6 +26,8 @@ export default function App() {
   const [isLoading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
   const [noCache, setNoCache] = useState(false);
+  const [query, setQuery] = useState('');
+  const visibleOther = useMemo(() => searchItems(other_data, query), [other_data, query]);
   const description = useSiteDescription('other');
 
   function load() {
@@ -64,17 +69,23 @@ export default function App() {
     <View style={styles.wrapper}>
       {isOffline && <OfflineBanner />}
       <FlatList
-        data={other_data}
+        data={visibleOther}
         keyExtractor={(item) => item.global_data.id.toString()}
         ListHeaderComponent={
-          <Article_list_header_text
-            title={t('list.other_title')}
-            description={description}
-          />
+          <View>
+            <Article_list_header_text
+              art="tent"
+              title={t('list.other_title')}
+              description={description}
+            />
+            <FavoritesStrip category="other" />
+            <ListSearchBar value={query} onChange={setQuery} found={visibleOther.length} />
+          </View>
         }
         renderItem={({ item }) => <OtherActivity cardData={item} />}
         ListEmptyComponent={<EmptyState message={t('empty.other')} />}
         ListFooterComponent={<PageFooter />}
+        ListFooterComponentStyle={styles.footer}
         contentContainerStyle={styles.container}
       />
     </View>
@@ -83,5 +94,6 @@ export default function App() {
 
 const styles = StyleSheet.create({
   wrapper: { flex: 1 },
-  container: { padding: 16 },
+  container: { padding: 16, flexGrow: 1 },
+  footer: { flexGrow: 1, justifyContent: 'flex-end' },
 });

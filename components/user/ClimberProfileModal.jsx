@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import ClimberProfileContent from './ClimberProfileContent';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 
 // Quick-view modal opened from the climbers list grid — mirrors
 // ClimberProfileModalComponent.vue's "quick view + View full profile" pattern.
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8,
   },
-  sheetTitle: { fontSize: 18, fontWeight: 'bold', color: '#222' },
-  closeIcon: { fontSize: 20, color: '#999' },
+  sheetTitle: { fontSize: 18, fontFamily: FONTS.bodyBold, color: COLORS.ink },
+  closeIcon: { fontSize: 20, fontFamily: FONTS.body, color: COLORS.muted },
   scrollContent: { paddingBottom: 20 },
 });

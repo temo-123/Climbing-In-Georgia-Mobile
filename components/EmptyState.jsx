@@ -1,21 +1,17 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Image } from 'expo-image';
+import { SvgXml } from 'react-native-svg';
+import { SCENES } from './ui/scenes';
+import { COLORS, FONTS, RADII } from '../assets/styles/styles';
 
-const IMAGES = [
-  'https://climbing.ge/public/images/404/404_page/1.jpg',
-  'https://climbing.ge/public/images/404/404_page/2.jpg',
-  'https://climbing.ge/public/images/404/404_page/3.jpg',
-  'https://climbing.ge/public/images/404/404_page/4.jpg',
-];
-
-export default function EmptyState({ message = 'No content here yet.\nCheck back soon!' }) {
-  // Pick a random image once on mount (stable ref, no re-render flicker)
-  const uri = useRef(IMAGES[Math.floor(Math.random() * IMAGES.length)]).current;
-
+// The website's `.cg-empty` + EmptyPageComponent: a dashed chalk card with
+// the "climber at a blank wall" scene.
+export default function EmptyState({ message = 'No content here yet.\nCheck back soon!', scene = 'empty' }) {
   return (
     <View style={styles.container}>
-      <Image source={{ uri }} style={styles.image} contentFit="contain" />
+      <View style={styles.scene}>
+        <SvgXml xml={SCENES[scene] ?? SCENES.empty} width="100%" height="100%" />
+      </View>
       <Text style={styles.message}>{message}</Text>
     </View>
   );
@@ -24,19 +20,21 @@ export default function EmptyState({ message = 'No content here yet.\nCheck back
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 24,
+    paddingVertical: 28,
+    paddingHorizontal: 20,
+    marginVertical: 12,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#d5cfc3',
+    borderRadius: RADII.lg,
   },
-  image: {
-    width: 260,
-    height: 200,
-    borderRadius: 12,
-    marginBottom: 20,
-  },
+  scene: { width: '100%', maxWidth: 300, aspectRatio: 360 / 240, marginBottom: 16 },
   message: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 15,
+    fontFamily: FONTS.bodySemi,
+    color: COLORS.stone,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 23,
   },
 });

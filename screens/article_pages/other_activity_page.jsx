@@ -7,6 +7,7 @@ import ArticleBlock from "../../components/article/articl_block";
 import Preloader from "../../components/Preloader";
 import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
+import ArticleComments from "../../components/guide/ArticleComments";
 
 import api, { corsUrl, API_BASE_URL, IMG_BASES } from "../../utils/api";
 import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
@@ -52,8 +53,11 @@ export default function App({ route }) {
       <ArticleBlock
         local_data={localeOtherData}
         global_data={globalOtherData.global_data || {}}
+        favoriteId={globalOtherData.global_data?.id}
         imgBase={IMG_BASE}
       />
+      <ArticleComments articleId={globalOtherData.global_data?.id} />
+
       <PageFooter />
       <StatusBar style="auto" />
     </ScrollView>

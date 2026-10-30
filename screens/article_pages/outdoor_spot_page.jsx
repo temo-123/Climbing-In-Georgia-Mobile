@@ -16,6 +16,10 @@ import { loadArticleData, saveArticleData } from "../../utils/offlineStorage";
 import { useRefetchOnReconnect } from "../../utils/useRefetchOnReconnect";
 import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
+import { useRememberViewed } from "../../utils/recentlyViewed";
+import ArticleComments from "../../components/guide/ArticleComments";
+import DirectionsButton from "../../components/guide/DirectionsButton";
+import AreaConditions from "../../components/guide/AreaConditions";
 
 const GALLERY_BASE = IMG_BASES.gallery;
 const IMG_BASE = IMG_BASES.outdoor;
@@ -29,6 +33,8 @@ export default function App({ route }) {
   const [isLoading, setLoading] = useState(true);
   const [noCache, setNoCache] = useState(false);
   const [viewer, setViewer] = useState(null);
+
+  useRememberViewed('outdoor', globalOutdoorData.global_data, localeOutdoorData.title);
 
   const load = useCallback(() => {
     api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/outdoor/${locale}/` + route.params))
@@ -75,6 +81,14 @@ export default function App({ route }) {
       <ArticleBlock
         local_data={localeOutdoorData}
         global_data={globalOutdoorData.global_data || {}}
+        favoriteId={globalOutdoorData.global_data?.id}
+        gearChecklist
+        afterImageContent={
+          <>
+            <DirectionsButton parking={globalOutdoorData.global_data?.parking} />
+            <AreaConditions articleId={globalOutdoorData.global_data?.id} category="outdoor" />
+          </>
+        }
         global_info_data={globalOutdoorInfoData}
         imgBase={IMG_BASE}
       />
@@ -97,6 +111,8 @@ export default function App({ route }) {
         visible={viewer !== null}
         onClose={() => setViewer(null)}
       />
+
+      <ArticleComments articleId={globalOutdoorData.global_data?.id} />
 
       <PageFooter />
       <StatusBar style="auto" />

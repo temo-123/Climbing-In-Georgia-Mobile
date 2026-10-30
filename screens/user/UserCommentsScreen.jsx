@@ -7,7 +7,7 @@ import { saveOfflineData, loadOfflineData } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
 import WriteOnWebsiteButton from '../../components/user/WriteOnWebsiteButton';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 
 const API = API_BASE_URL;
 const CACHE_KEY = '@my_comments_cache';
@@ -101,8 +101,8 @@ const styles = StyleSheet.create({
     elevation: 2, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
     borderLeftWidth: 3, borderLeftColor: COLORS.primary,
   },
-  articleTitle: { fontSize: 13, fontWeight: '700', color: COLORS.primary, marginBottom: 6 },
-  comment: { fontSize: 14, color: '#333', lineHeight: 20 },
-  date: { fontSize: 11, color: '#aaa', marginTop: 8, textAlign: 'right' },
-  emptyText: { color: '#888', fontSize: 15 },
+  articleTitle: { fontSize: 13, fontFamily: FONTS.bodyBold, color: COLORS.primary, marginBottom: 6 },
+  comment: { fontSize: 14, fontFamily: FONTS.body, color: COLORS.ink, lineHeight: 20 },
+  date: { fontSize: 11, fontFamily: FONTS.body, color: COLORS.muted, marginTop: 8, textAlign: 'right' },
+  emptyText: { color: COLORS.muted, fontSize: 15, fontFamily: FONTS.body },
 });

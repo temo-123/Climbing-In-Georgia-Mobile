@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, RefreshControl,
+  View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
@@ -11,7 +10,12 @@ import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from '../../utils/offl
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
 import PendingAscentsBanner from '../../components/PendingAscentsBanner';
-import { COLORS } from '../../assets/styles/styles';
+import PageHead from '../../components/ui/PageHead';
+import Button from '../../components/ui/Button';
+import { SkeletonList } from '../../components/ui/Skeleton';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faQrcode, faMountain, faWifi } from '@fortawesome/free-solid-svg-icons';
+import { COLORS, FONTS, RADII, SHADOWS } from '../../assets/styles/styles';
 
 const API = `${API_BASE_URL}/summit`;
 
@@ -26,7 +30,7 @@ function SummitCard({ item, navigation, t, locale }) {
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <View style={styles.iconCircle}>
-          <Text style={styles.icon}>🏔️</Text>
+          <FontAwesomeIcon icon={faMountain} size={20} color={HEAD_VIOLET} />
         </View>
         <View style={styles.cardInfo}>
           <Text style={styles.title} numberOfLines={2}>{primaryTitle}</Text>
@@ -46,20 +50,19 @@ function SummitCard({ item, navigation, t, locale }) {
       )}
 
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.detailBtn}
+        <Button
+          small
+          variant="outline"
+          title={t('summit.details')}
+          style={styles.flex}
           onPress={() => navigation.navigate('summit_detail', { url_title: item.url_title, title: item.title })}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.detailBtnText}>{t('summit.details')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.ascentBtn}
+        />
+        <Button
+          small
+          title={t('summit.record_ascent')}
+          style={styles.flex}
           onPress={() => navigation.navigate('submit_ascent', { summit_id: item.id, url_title: item.url_title, title: item.title })}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.ascentBtnText}>{t('summit.record_ascent')}</Text>
-        </TouchableOpacity>
+        />
       </View>
     </View>
   );
@@ -110,7 +113,7 @@ export default function SummitsListScreen({ navigation }) {
     wasDeviceOffline.current = deviceOffline;
   }, [deviceOffline]);
 
-  if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>;
+  if (loading) return <SkeletonList count={4} />;
   if (noCache) return <OfflineError />;
 
   return (
@@ -118,23 +121,28 @@ export default function SummitsListScreen({ navigation }) {
       {isOffline && <OfflineBanner />}
       <PendingAscentsBanner />
 
-      <View style={styles.offlineHintBox}>
-        <Text style={styles.offlineHintText}>💡 {t('summit.offline_hint')}</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('offline_mode')} activeOpacity={0.7}>
-          <Text style={styles.offlineHintLink}>{t('summit.offline_hint_link')}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity
-        style={styles.qrBtn}
-        onPress={() => navigation.navigate('qr_scanner')}
-        activeOpacity={0.85}
-      >
-        <Text style={styles.qrIcon}>📷</Text>
-        <Text style={styles.qrBtnText}>{t('summit.scan_qr')}</Text>
-      </TouchableOpacity>
-
       <FlatList
+        ListHeaderComponent={
+          <View>
+            <PageHead art="summit" title={t('nav.summits')}>
+              <Button
+                variant="hold"
+                block={false}
+                icon={faQrcode}
+                title={t('summit.scan_qr')}
+                onPress={() => navigation.navigate('qr_scanner')}
+                style={styles.qrBtn}
+              />
+            </PageHead>
+            <View style={styles.offlineHintBox}>
+              <FontAwesomeIcon icon={faWifi} size={13} color={COLORS.primaryDark} />
+              <Text style={styles.offlineHintText}>{t('summit.offline_hint')}</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('offline_mode')} activeOpacity={0.7}>
+                <Text style={styles.offlineHintLink}>{t('summit.offline_hint_link')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        }
         data={summits}
         keyExtractor={item => String(item.id)}
         renderItem={({ item }) => <SummitCard item={item} navigation={navigation} t={t} locale={locale} />}
@@ -146,93 +154,63 @@ export default function SummitsListScreen({ navigation }) {
   );
 }
 
+const HEAD_VIOLET = '#6c45c4';
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6f8' },
+  container: { flex: 1, backgroundColor: COLORS.chalk },
+  flex: { flex: 1 },
   offlineHintBox: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    backgroundColor: '#e8f6fa',
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 10,
+    backgroundColor: COLORS.primarySoft,
+    borderRadius: RADII.md,
     paddingVertical: 10,
     paddingHorizontal: 14,
-    gap: 6,
+    marginBottom: 14,
+    gap: 8,
   },
-  offlineHintText: { fontSize: 12, color: '#1a6f85', flexShrink: 1 },
-  offlineHintLink: { fontSize: 12, color: COLORS.primary, fontWeight: '700', textDecorationLine: 'underline' },
+  offlineHintText: { fontSize: 12, fontFamily: FONTS.bodyMedium, color: COLORS.primaryDark, flexShrink: 1 },
+  offlineHintLink: { fontSize: 12, color: COLORS.primary, fontFamily: FONTS.bodyHeavy, textDecorationLine: 'underline' },
   // Extra bottom room so the last card never ends up under the floating
   // "Support Us" button (rendered globally in App.js, bottom-right).
-  list: { padding: 16, paddingTop: 8, paddingBottom: 120 },
+  list: { padding: 16, paddingBottom: 120 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  qrBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.primary,
-    margin: 16,
-    marginBottom: 8,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    gap: 10,
-  },
-  qrIcon: { fontSize: 22 },
-  qrBtnText: { color: '#fff', fontSize: 16, fontWeight: '700', flex: 1, textAlign: 'center' },
+  qrBtn: { marginTop: 16 },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    padding: 16,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADII.lg,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    padding: 14,
     marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.07,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    ...SHADOWS.sm,
   },
-  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   iconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#e8f6fa',
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: '#efeafa',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
-  icon: { fontSize: 24 },
   cardInfo: { flex: 1 },
-  title: { fontSize: 16, fontWeight: '700', color: '#1a1a1a', marginBottom: 2 },
-  kaTitle: { fontSize: 13, color: '#555', marginBottom: 2 },
-  region: { fontSize: 12, color: COLORS.primary, fontWeight: '600' },
+  title: { fontSize: 22, lineHeight: 25, fontFamily: FONTS.displayBold, color: COLORS.ink },
+  kaTitle: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.stone, marginTop: 1 },
+  region: { fontSize: 12, color: HEAD_VIOLET, fontFamily: FONTS.bodyBold, marginTop: 2 },
   heightBadge: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 8,
+    backgroundColor: COLORS.ink,
+    borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 6,
     alignItems: 'center',
-    minWidth: 52,
+    minWidth: 56,
   },
-  heightText: { fontSize: 16, fontWeight: '800', color: '#fff' },
-  heightUnit: { fontSize: 10, color: 'rgba(255,255,255,0.8)', fontWeight: '600' },
-  description: { fontSize: 13, color: '#666', lineHeight: 18, marginBottom: 12 },
+  heightText: { fontSize: 20, lineHeight: 22, fontFamily: FONTS.displayBold, color: COLORS.hold },
+  heightUnit: { fontSize: 10, color: 'rgba(255,255,255,0.75)', fontFamily: FONTS.bodyBold },
+  description: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.stone, lineHeight: 19, marginBottom: 12 },
   actions: { flexDirection: 'row', gap: 10 },
-  detailBtn: {
-    flex: 1,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    borderRadius: 8,
-    paddingVertical: 9,
-    alignItems: 'center',
-  },
-  detailBtnText: { color: COLORS.primary, fontWeight: '600', fontSize: 13 },
-  ascentBtn: {
-    flex: 1,
-    backgroundColor: COLORS.primary,
-    borderRadius: 8,
-    paddingVertical: 9,
-    alignItems: 'center',
-  },
-  ascentBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
-  emptyText: { color: '#888', fontSize: 15 },
+  emptyText: { color: COLORS.muted, fontSize: 15, fontFamily: FONTS.body },
 });

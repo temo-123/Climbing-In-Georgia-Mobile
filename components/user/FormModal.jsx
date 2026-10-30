@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 
 // Generic bottom-sheet form modal — chrome (backdrop/header/close/scroll) shared
 // by EditProfileModal and ChangePasswordModal.
@@ -29,9 +30,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: 18, paddingBottom: 10,
-    borderBottomWidth: 1, borderBottomColor: '#f0f0f0',
+    borderBottomWidth: 1, borderBottomColor: COLORS.line,
   },
-  title: { fontSize: 17, fontWeight: 'bold', color: '#222' },
-  closeIcon: { fontSize: 20, color: '#999' },
+  title: { fontSize: 17, fontFamily: FONTS.bodyBold, color: COLORS.ink },
+  closeIcon: { fontSize: 20, fontFamily: FONTS.body, color: COLORS.muted },
   content: { padding: 20, paddingBottom: 32 },
 });

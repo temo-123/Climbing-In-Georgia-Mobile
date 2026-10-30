@@ -1,0 +1,102 @@
+// Port of the website's mixins/grade_chart_mixin.js (+ the grade bands of
+// services/guide/routeFilters.js). Keep the tables identical to the site.
+
+const LEAD_FR_TO_YDS = {
+  '4': '5.6',
+  '5a': '5.7', '5a+': '5.7',
+  '5b': '5.8', '5b+': '5.8',
+  '5c': '5.9', '5c+': '5.9',
+  '6a': '5.10a', '6a+': '5.10b', '6b': '5.10c', '6b+': '5.10d',
+  '6c': '5.11a', '6c+': '5.11c', '7a': '5.11d', '7a+': '5.12a',
+  '7b': '5.12b', '7b+': '5.12c', '7c': '5.12d', '7c+': '5.13a',
+  '8a': '5.13b', '8a+': '5.13c', '8b': '5.13d', '8b+': '5.14a',
+  '8c': '5.14b', '8c+': '5.14c', '9a': '5.14d', '9a+': '5.15a',
+  '9b': '5.15b', '9b+': '5.15c', '9c': '5.15d', '9c+': '5.16a',
+};
+
+const LEAD_FR_TO_UIAA = {
+  '4': 'IV',
+  '5a': 'V+', '5a+': 'V+', '5b': 'VI-', '5b+': 'VI-', '5c': 'VI', '5c+': 'VI',
+  '6a': 'VI+', '6a+': 'VII-', '6b': 'VII', '6b+': 'VII+', '6c': 'VIII-', '6c+': 'VIII-',
+  '7a': 'VIII', '7a+': 'VIII+', '7b': 'IX-', '7b+': 'IX-', '7c': 'IX', '7c+': 'IX+',
+  '8a': 'X-', '8a+': 'X-', '8b': 'X', '8b+': 'X+', '8c': 'XI-', '8c+': 'XI',
+  '9a': 'XI+', '9a+': 'XII-', '9b': 'XII', '9b+': 'XII+', '9c': 'XIII',
+};
+
+// The website names this table "YDS" but it maps V-scale → Font grades;
+// it's what the boulder table's main grade column shows.
+const BOULDER_V_TO_FONT = {
+  VB: '4-', 'V0-': '4', V0: '4+', 'V0+': '5a',
+  V1: '5b', V2: '5c', V3: '6a', V4: '6b',
+  V5: '6c+', V6: '7a', V7: '7a+', V8: '7b',
+  V9: '7c', V10: '7c+', V11: '8a', V12: '8a+',
+  V13: '8b', V14: '8b+', V15: '8c', V16: '8c+',
+  V17: '9a',
+};
+
+const PROJECTS = ['Project', 'Open Project', 'Close Project'];
+
+export const LEAD_GRADES = Object.keys(LEAD_FR_TO_YDS);
+export const BOULDER_GRADES = Object.keys(BOULDER_V_TO_FONT);
+
+export function isProject(grade) {
+  return PROJECTS.includes(grade);
+}
+
+export function leadToYds(fr) {
+  if (isProject(fr)) return fr;
+  return LEAD_FR_TO_YDS[fr] ?? null;
+}
+export function leadToUiaa(fr) {
+  if (isProject(fr)) return fr;
+  return LEAD_FR_TO_UIAA[fr] ?? null;
+}
+export function boulderToFont(v) {
+  if (isProject(v)) return v;
+  return BOULDER_V_TO_FONT[v] ?? v;
+}
+
+// "7a / 7a+" when the route has an alternative grade.
+export function withAlt(grade, alt, map = (g) => g) {
+  const main = grade ? map(grade) : '–';
+  return alt ? `${main} / ${map(alt)}` : main;
+}
+
+// ---- Mountaineering (Russian ↔ French alpine scales) ----
+export const FRENCH_ALPINE_GRADES = ['F', 'PD-', 'PD', 'PD+', 'AD-', 'AD', 'AD+', 'D-', 'D', 'D+', 'TD-', 'TD', 'TD+', 'ED1', 'ED2', 'ED3', 'ED4', 'ABO'];
+export const RUSSIAN_ALPINE_GRADES = ['1А', '1Б', '2А', '2Б', '3А', '3Б', '4А', '4Б', '5А', '5Б', '6А', '6Б'];
+
+const ALPINE_RUSS_TO_EU = {
+  '1А': 'F', '1Б': 'F', '2А': 'PD-', '2Б': 'PD+', '3А': 'AD-', '3Б': 'AD+',
+  '4А': 'D-', '4Б': 'D+', '5А': 'TD-', '5Б': 'TD+', '6А': 'ED1', '6Б': 'ED3',
+};
+const ALPINE_EU_TO_RUSS = {
+  F: '1Б', 'PD-': '2А', PD: '2А', 'PD+': '2Б', 'AD-': '3А', AD: '3А', 'AD+': '3Б',
+  'D-': '4А', D: '4А', 'D+': '4Б', 'TD-': '5А', TD: '5А', 'TD+': '5Б',
+  ED1: '6А', ED2: '6А', ED3: '6Б', ED4: '6Б', ABO: '6Б',
+};
+
+export function getBothMountGrades(grade) {
+  if (RUSSIAN_ALPINE_GRADES.includes(grade)) return { russian: grade, french: ALPINE_RUSS_TO_EU[grade] ?? null };
+  if (FRENCH_ALPINE_GRADES.includes(grade)) return { french: grade, russian: ALPINE_EU_TO_RUSS[grade] ?? null };
+  return { french: null, russian: null };
+}
+
+// "AD- / 3А" — both alpine grades side by side.
+export function formatMountGradeSlash(grade) {
+  if (!grade) return null;
+  const both = getBothMountGrades(grade);
+  if (both.french && both.russian) return `${both.french} / ${both.russian}`;
+  return grade;
+}
+
+// ---- Grade bands (route finder chips, logbook) ----
+// Rank of a French sport grade for comparisons: 4 < 5a < 5a+ < … < 9c+.
+const LEAD_ORDER = LEAD_GRADES;
+export function leadRank(fr) {
+  const i = LEAD_ORDER.indexOf(String(fr || '').trim());
+  return i;
+}
+export function boulderRank(v) {
+  return BOULDER_GRADES.indexOf(String(v || '').trim());
+}

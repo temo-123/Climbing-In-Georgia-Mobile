@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import * as WebBrowser from 'expo-web-browser';
 import { useAuth } from '../../utils/AuthContext';
 import FormModal from './FormModal';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 
 // Same URL as Play Console → Data safety → Data deletion.
 const WEB_DELETE_URL = 'https://user.climbing.ge/delete-account';
@@ -60,7 +61,7 @@ export default function DeleteAccountModal({ visible, onClose, onDeleted }) {
       <TextInput
         style={styles.input}
         placeholder={t('auth.password')}
-        placeholderTextColor="#aaa"
+        placeholderTextColor={COLORS.muted}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -71,7 +72,7 @@ export default function DeleteAccountModal({ visible, onClose, onDeleted }) {
       <TextInput
         style={styles.input}
         placeholder="DELETE"
-        placeholderTextColor="#aaa"
+        placeholderTextColor={COLORS.muted}
         value={confirmText}
         onChangeText={setConfirmText}
         autoCapitalize="characters"
@@ -97,19 +98,19 @@ export default function DeleteAccountModal({ visible, onClose, onDeleted }) {
 }
 
 const styles = StyleSheet.create({
-  warning: { fontSize: 14, color: '#444', lineHeight: 20, marginBottom: 14 },
-  label: { fontSize: 13, color: '#444', fontWeight: '600', marginBottom: 6 },
+  warning: { fontSize: 14, fontFamily: FONTS.body, color: COLORS.stone, lineHeight: 20, marginBottom: 14 },
+  label: { fontSize: 13, color: COLORS.stone, fontFamily: FONTS.bodySemi, marginBottom: 6 },
   input: {
     borderWidth: 1.5, borderColor: DANGER, borderRadius: 10,
-    paddingHorizontal: 14, paddingVertical: 12, marginBottom: 6, fontSize: 15, color: '#222',
+    paddingHorizontal: 14, paddingVertical: 12, marginBottom: 6, fontSize: 15, fontFamily: FONTS.body, color: COLORS.ink,
   },
-  hint: { fontSize: 12, color: '#999', marginBottom: 14 },
+  hint: { fontSize: 12, fontFamily: FONTS.body, color: COLORS.muted, marginBottom: 14 },
   button: {
     backgroundColor: DANGER, borderRadius: 10, paddingVertical: 13,
     alignItems: 'center', marginTop: 8,
   },
   buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: '#fff', fontSize: 15, fontWeight: 'bold' },
-  error: { color: DANGER, marginTop: 6, marginBottom: 4, fontSize: 13 },
-  webLink: { color: '#888', textAlign: 'center', fontSize: 13, marginTop: 14, textDecorationLine: 'underline' },
+  buttonText: { color: '#fff', fontSize: 15, fontFamily: FONTS.bodyBold },
+  error: { color: DANGER, marginTop: 6, marginBottom: 4, fontSize: 13, fontFamily: FONTS.body },
+  webLink: { color: COLORS.muted, textAlign: 'center', fontSize: 13, fontFamily: FONTS.body, marginTop: 14, textDecorationLine: 'underline' },
 });

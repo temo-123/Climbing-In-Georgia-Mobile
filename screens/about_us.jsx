@@ -3,14 +3,15 @@ import api, { corsUrl, API_BASE_URL } from '../utils/api';
 import { StatusBar } from 'expo-status-bar';
 import {
   StyleSheet, Text, View, ScrollView, TouchableOpacity,
-  TextInput, ActivityIndicator, Alert, Linking,
+  TextInput, ActivityIndicator, Alert, Linking, useWindowDimensions,
 } from 'react-native';
 import HtmlContent from '../components/HtmlContent';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../utils/LocaleContext';
 import { withRecaptchaRetry } from '../utils/recaptcha';
-import { gStyle, COLORS } from '../assets/styles/styles';
+import { COLORS, FONTS, RADII, SHADOWS } from '../assets/styles/styles';
 import Preloader from '../components/Preloader';
+import PageHead from '../components/ui/PageHead';
 import PageFooter from '../components/PageFooter';
 import RouteAuthorsModal from '../components/RouteAuthorsModal';
 import LegalLinks from '../components/LegalLinks';
@@ -26,6 +27,7 @@ const SELLER_PHONE_TEL = '+995598457048';
 export default function App() {
   const { t } = useTranslation();
   const { locale } = useLocale();
+  const { width } = useWindowDimensions();
   const [aboutUsData, setAboutUsData] = useState([]);
   const [isLoading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -127,9 +129,11 @@ export default function App() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={gStyle.h1}>{t('article.about_us')}</Text>
+      <PageHead art="rope" title={t('article.about_us')} />
       {!!description && (
-        <HtmlContent html={description} />
+        <View style={styles.section}>
+          <HtmlContent html={description} contentWidth={width - 64} />
+        </View>
       )}
 
       <View style={styles.section}>
@@ -184,7 +188,7 @@ export default function App() {
         <TextInput
           style={styles.input}
           placeholder={`${t('auth.name')} *`}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={name}
           onChangeText={setName}
           autoCapitalize="words"
@@ -192,7 +196,7 @@ export default function App() {
         <TextInput
           style={styles.input}
           placeholder={`${t('auth.surname')} *`}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={surname}
           onChangeText={setSurname}
           autoCapitalize="words"
@@ -200,7 +204,7 @@ export default function App() {
         <TextInput
           style={styles.input}
           placeholder={`${t('auth.email')} *`}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -209,7 +213,7 @@ export default function App() {
         <TextInput
           style={styles.input}
           placeholder={`${t('about.phone_number')} *`}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={phone}
           onChangeText={setPhone}
           keyboardType="phone-pad"
@@ -217,14 +221,14 @@ export default function App() {
         <TextInput
           style={styles.input}
           placeholder={`${t('about.your_country')} *`}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={country}
           onChangeText={setCountry}
         />
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder={`${t('about.your_message')} *`}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={message}
           onChangeText={setMessage}
           multiline
@@ -259,76 +263,77 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   errorText: {
-    fontSize: 15,
-    color: '#666',
+    fontSize: 15, fontFamily: FONTS.body,
+    color: COLORS.stone,
     textAlign: 'center',
   },
   retryBtn: {
     backgroundColor: COLORS.primary,
-    borderRadius: 10,
+    borderRadius: 999,
     paddingVertical: 12,
     paddingHorizontal: 28,
   },
   retryBtnText: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: FONTS.bodyBold,
   },
   section: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADII.lg,
     padding: 16,
-    marginTop: 16,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#e8f6fa',
+    borderColor: COLORS.line,
+    ...SHADOWS.sm,
   },
-  sectionTitle: { fontSize: 16, fontWeight: '800', color: COLORS.primary, marginBottom: 10 },
+  sectionTitle: { fontSize: 23, fontFamily: FONTS.displayBold, color: COLORS.ink, marginBottom: 10 },
   contactRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: COLORS.line,
   },
-  contactLabel: { fontSize: 13, color: '#888', fontWeight: '600' },
-  contactValue: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
+  contactLabel: { fontSize: 13, color: COLORS.muted, fontFamily: FONTS.bodySemi },
+  contactValue: { fontSize: 13, color: COLORS.primary, fontFamily: FONTS.bodyBold },
   linkRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: COLORS.line,
     gap: 8,
   },
-  linkText: { flex: 1, fontSize: 13, color: '#222', fontWeight: '600' },
-  linkArrow: { fontSize: 14, color: COLORS.primary },
+  linkText: { flex: 1, fontSize: 13, color: COLORS.ink, fontFamily: FONTS.bodySemi },
+  linkArrow: { fontSize: 14, fontFamily: FONTS.body, color: COLORS.primary },
   authorsBtn: {
     backgroundColor: COLORS.primary,
-    borderRadius: 12,
+    borderRadius: 999,
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 16,
   },
-  authorsBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
-  messageSubtitle: { fontSize: 13, color: '#666', marginBottom: 14, lineHeight: 19 },
+  authorsBtnText: { color: '#fff', fontSize: 15, fontFamily: FONTS.bodyHeavy },
+  messageSubtitle: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.stone, marginBottom: 14, lineHeight: 19 },
   input: {
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 12, backgroundColor: COLORS.surface,
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 12,
-    fontSize: 15,
-    color: '#222',
+    fontSize: 15, fontFamily: FONTS.body,
+    color: COLORS.ink,
   },
   textArea: { height: 110, paddingTop: 12 },
   sendBtn: {
     backgroundColor: COLORS.primary,
-    borderRadius: 12,
+    borderRadius: 999,
     paddingVertical: 15,
     alignItems: 'center',
   },
-  sendBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  sendBtnText: { color: '#fff', fontSize: 16, fontFamily: FONTS.bodyHeavy },
 });

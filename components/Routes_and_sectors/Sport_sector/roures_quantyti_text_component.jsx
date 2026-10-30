@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { faRoute, faHandBackFist, faLayerGroup, faMountain } from '@fortawesome/free-solid-svg-icons';
+import StatTiles from '../../ui/StatTiles';
 import api, { corsUrl, API_BASE_URL } from '../../../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -33,29 +34,15 @@ export default function RoutesQuantityText() {
   const totalSectors = sportSectors + boulderSectors + mtpSectors;
   const totalRoutes  = sportRoutes + boulderRoutes + mtpRoutes;
 
+  const sectorsLabel = (n) => `${n} ${t('card.sectors')}`;
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>
-        {t('routes_count.sport', {
-          totalSectors, totalRoutes,
-          sportRoutes, sportSectors,
-          boulderRoutes, boulderSectors,
-          mtpRoutes, mtpSectors,
-        })}
-      </Text>
-    </View>
+    <StatTiles
+      items={[
+        { icon: faRoute, value: totalRoutes, label: t('card.routes'), sub: sectorsLabel(totalSectors) },
+        { icon: faLayerGroup, value: sportRoutes, label: t('site.guide.route_type_sport_climbing'), sub: sectorsLabel(sportSectors) },
+        { icon: faHandBackFist, value: boulderRoutes, label: t('site.guide.route_type_bouldering'), sub: sectorsLabel(boulderSectors) },
+        { icon: faMountain, value: mtpRoutes, label: t('site.guide.route_type_multi_pitch'), sub: sectorsLabel(mtpSectors) },
+      ]}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-});

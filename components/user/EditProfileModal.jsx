@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator 
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../utils/AuthContext';
 import api, { API_BASE_URL } from '../../utils/api';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 import FormModal from './FormModal';
 
 const API = API_BASE_URL;
@@ -73,16 +73,16 @@ export default function EditProfileModal({ visible, onClose }) {
 
   return (
     <FormModal visible={visible} title={t('user.profile_info')} onClose={onClose}>
-      <TextInput style={styles.input} placeholder={t('auth.name')} placeholderTextColor="#aaa" value={name} onChangeText={setName} autoCapitalize="words" />
-      <TextInput style={styles.input} placeholder={t('auth.surname')} placeholderTextColor="#aaa" value={surname} onChangeText={setSurname} autoCapitalize="words" />
-      <TextInput style={styles.input} placeholder={t('auth.email')} placeholderTextColor="#aaa" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-      <TextInput style={styles.input} placeholder={t('auth.country')} placeholderTextColor="#aaa" value={country} onChangeText={setCountry} autoCapitalize="words" />
-      <TextInput style={styles.input} placeholder={t('auth.city')} placeholderTextColor="#aaa" value={city} onChangeText={setCity} autoCapitalize="words" />
-      <TextInput style={styles.input} placeholder={t('auth.phone_number')} placeholderTextColor="#aaa" value={phoneNumber} onChangeText={setPhoneNumber} keyboardType="phone-pad" />
+      <TextInput style={styles.input} placeholder={t('auth.name')} placeholderTextColor={COLORS.muted} value={name} onChangeText={setName} autoCapitalize="words" />
+      <TextInput style={styles.input} placeholder={t('auth.surname')} placeholderTextColor={COLORS.muted} value={surname} onChangeText={setSurname} autoCapitalize="words" />
+      <TextInput style={styles.input} placeholder={t('auth.email')} placeholderTextColor={COLORS.muted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+      <TextInput style={styles.input} placeholder={t('auth.country')} placeholderTextColor={COLORS.muted} value={country} onChangeText={setCountry} autoCapitalize="words" />
+      <TextInput style={styles.input} placeholder={t('auth.city')} placeholderTextColor={COLORS.muted} value={city} onChangeText={setCity} autoCapitalize="words" />
+      <TextInput style={styles.input} placeholder={t('auth.phone_number')} placeholderTextColor={COLORS.muted} value={phoneNumber} onChangeText={setPhoneNumber} keyboardType="phone-pad" />
       <TextInput
         style={[styles.input, styles.bioInput]}
         placeholder={t('user.profile_bio')}
-        placeholderTextColor="#aaa"
+        placeholderTextColor={COLORS.muted}
         value={bio}
         onChangeText={setBio}
         multiline
@@ -99,14 +99,14 @@ export default function EditProfileModal({ visible, onClose }) {
 
 const styles = StyleSheet.create({
   input: {
-    borderWidth: 1.5, borderColor: COLORS.primary, borderRadius: 10,
-    paddingHorizontal: 14, paddingVertical: 12, marginBottom: 12, fontSize: 15, color: '#222',
+    borderWidth: 1, borderColor: COLORS.line, borderRadius: 12, backgroundColor: COLORS.surface,
+    paddingHorizontal: 14, paddingVertical: 12, marginBottom: 12, fontSize: 15, fontFamily: FONTS.body, color: COLORS.ink,
   },
   bioInput: { minHeight: 90, textAlignVertical: 'top' },
   button: {
-    backgroundColor: COLORS.primary, borderRadius: 10, paddingVertical: 13,
+    backgroundColor: COLORS.primary, borderRadius: 999, paddingVertical: 13,
     alignItems: 'center', marginTop: 4,
   },
-  buttonText: { color: '#fff', fontSize: 15, fontWeight: 'bold' },
-  error: { color: '#e74c3c', marginBottom: 10, fontSize: 13 },
+  buttonText: { color: '#fff', fontSize: 15, fontFamily: FONTS.bodyBold },
+  error: { color: COLORS.danger, marginBottom: 10, fontSize: 13, fontFamily: FONTS.body },
 });

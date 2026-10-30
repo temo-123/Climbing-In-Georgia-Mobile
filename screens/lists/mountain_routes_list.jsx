@@ -16,6 +16,10 @@ import Preloader from "../../components/Preloader";
 import OfflineBanner from "../../components/OfflineBanner";
 import OfflineError from "../../components/OfflineError";
 import PageFooter from "../../components/PageFooter";
+import FavoritesStrip from "../../components/guide/FavoritesStrip";
+import RecentlyViewed from "../../components/guide/RecentlyViewed";
+import ListSearchBar from "../../components/ListSearchBar";
+import { searchItems } from "../../utils/listSearch";
 
 const OTHER_MASSIF_KEY = '__other__';
 
@@ -29,6 +33,7 @@ export default function App() {
   const [noCache, setNoCache] = useState(false);
   const [selectedMassif, setSelectedMassif] = useState(null);
   const [sortAlpha, setSortAlpha] = useState(false);
+  const [query, setQuery] = useState('');
   const description = useSiteDescription('mount_route');
 
   function load() {
@@ -95,8 +100,8 @@ export default function App() {
       list = [...list].sort((a, b) =>
         (a.locale_data?.title || '').localeCompare(b.locale_data?.title || ''));
     }
-    return list;
-  }, [allRoutes, selectedMassif, sortAlpha]);
+    return searchItems(list, query);
+  }, [allRoutes, selectedMassif, sortAlpha, query]);
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;
@@ -110,9 +115,13 @@ export default function App() {
         ListHeaderComponent={
           <View>
             <Article_list_header_text
+              art="mountains"
               title={t('list.mountain_title')}
               description={description}
             />
+            <FavoritesStrip category="mount_route" />
+            <RecentlyViewed category="mount_route" />
+            <ListSearchBar value={query} onChange={setQuery} found={visibleRoutes.length} placeholder={t('site.guide.list_search.mountaineering')} />
             <FilterChips options={massifOptions} selected={selectedMassif} onSelect={setSelectedMassif} />
             <SortToggle
               active={sortAlpha}
@@ -124,6 +133,7 @@ export default function App() {
         renderItem={({ item }) => <MountCard cardData={item} />}
         ListEmptyComponent={<EmptyState message={t('empty.mountain')} />}
         ListFooterComponent={<PageFooter />}
+        ListFooterComponentStyle={styles.footer}
         contentContainerStyle={styles.container}
       />
     </View>
@@ -132,5 +142,6 @@ export default function App() {
 
 const styles = StyleSheet.create({
   wrapper: { flex: 1 },
-  container: { padding: 16 },
+  container: { padding: 16, flexGrow: 1 },
+  footer: { flexGrow: 1, justifyContent: 'flex-end' },
 });

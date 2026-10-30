@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Polygon, Line, Circle } from 'react-native-svg';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 
 // Pure inline-SVG 4-axis radar chart — no charting library, mirrors the
 // website's RadarStatsChartComponent.vue (labels/values/size/color props).
@@ -67,5 +67,5 @@ const styles = StyleSheet.create({
   legend: { marginTop: 8, alignItems: 'flex-start' },
   legendRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 1 },
   dot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
-  legendText: { fontSize: 11, color: '#888' },
+  legendText: { fontSize: 11, fontFamily: FONTS.body, color: COLORS.muted },
 });

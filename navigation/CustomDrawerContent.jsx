@@ -4,10 +4,14 @@ import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawe
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faWifi } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocale } from '../utils/LocaleContext';
 import { useAuth } from '../utils/AuthContext';
 import { useNetwork } from '../utils/NetworkContext';
-import { COLORS } from '../assets/styles/styles';
+import { COLORS, FONTS, RADII } from '../assets/styles/styles';
+import { SKETCHES } from '../components/ui/sketches';
+import Segmented from '../components/ui/Segmented';
+import { SvgXml } from 'react-native-svg';
 import { IMG_BASES, imgUri } from '../utils/api';
 
 function initialsOf(user) {
@@ -19,12 +23,16 @@ export default function CustomDrawerContent(props) {
   const { locale, setLocale } = useLocale();
   const { user } = useAuth();
   const { isOffline } = useNetwork();
+  const insets = useSafeAreaInsets();
 
   const avatarUri = user?.image ? imgUri(IMG_BASES.userProfile, user.image, user.updated_at) : null;
 
   return (
-    <DrawerContentScrollView {...props}>
-      <View style={styles.logoSection}>
+    <DrawerContentScrollView {...props} contentContainerStyle={styles.scroll}>
+      <View style={[styles.logoSection, { paddingTop: insets.top + 24 }]}>
+        <View pointerEvents="none" style={styles.sketch}>
+          <SvgXml xml={SKETCHES.mountains} width="100%" height="100%" />
+        </View>
         {user ? (
           <TouchableOpacity onPress={() => props.navigation.navigate('user_profile')} activeOpacity={0.8}>
             {avatarUri ? (
@@ -54,7 +62,9 @@ export default function CustomDrawerContent(props) {
         <Text style={styles.appTagline}>{t('nav.powered_by')}</Text>
       </View>
 
-      <DrawerItemList {...props} />
+      <View style={styles.items}>
+        <DrawerItemList {...props} />
+      </View>
 
       <View style={styles.section}>
         {user ? (
@@ -76,165 +86,102 @@ export default function CustomDrawerContent(props) {
 
       <View style={styles.section}>
         <Text style={styles.label}>{t('language')}</Text>
-        <View style={styles.buttons}>
-          <TouchableOpacity
-            style={[styles.btn, locale === 'en' && styles.btnActive]}
-            onPress={() => setLocale('en')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.btnText, locale === 'en' && styles.btnTextActive]}>EN</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.btn, locale === 'ka' && styles.btnActive]}
-            onPress={() => setLocale('ka')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.btnText, locale === 'ka' && styles.btnTextActive]}>KA</Text>
-          </TouchableOpacity>
-        </View>
+        <Segmented
+          options={[{ key: 'en', label: 'English' }, { key: 'ka', label: 'ქართული' }]}
+          value={locale}
+          onChange={setLocale}
+        />
       </View>
     </DrawerContentScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scroll: { paddingTop: 0, paddingHorizontal: 0, paddingStart: 0, paddingEnd: 0 },
+  items: { paddingHorizontal: 12 },
   logoSection: {
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingBottom: 22,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    marginBottom: 4,
-  },
-  logo: {
-    width: 72,
-    height: 72,
-    borderRadius: 16,
     marginBottom: 10,
+    backgroundColor: COLORS.ink,
+    borderBottomWidth: 3,
+    borderBottomColor: COLORS.primary,
+    overflow: 'hidden',
   },
+  sketch: { position: 'absolute', right: -30, bottom: -6, width: 190, height: 114, opacity: 0.35 },
+  logo: { width: 72, height: 72, borderRadius: 18, marginBottom: 10 },
   avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
     marginBottom: 10,
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: COLORS.primary,
   },
   avatarFallback: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
     marginBottom: 10,
     backgroundColor: COLORS.primary,
+    borderWidth: 3,
+    borderColor: 'rgba(255,255,255,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarFallbackText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
+  avatarFallbackText: { fontSize: 26, fontFamily: FONTS.displayBold, color: '#fff' },
   offlineChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     backgroundColor: '#fff3cd',
-    borderWidth: 1,
-    borderColor: '#ffc107',
-    borderRadius: 12,
+    borderRadius: RADII.pill,
     paddingVertical: 4,
     paddingHorizontal: 10,
-    marginBottom: 6,
+    marginBottom: 8,
   },
-  offlineChipText: {
-    fontSize: 11,
-    color: '#7a5c00',
-    fontWeight: '600',
-  },
+  offlineChipText: { fontSize: 11, color: '#7a5c00', fontFamily: FONTS.bodyBold },
   greeting: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.primary,
+    fontSize: 22,
+    fontFamily: FONTS.displayBold,
+    color: COLORS.hold,
     textAlign: 'center',
     marginBottom: 2,
   },
   appName: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#1a1a1a',
+    fontFamily: FONTS.bodySemi,
+    color: 'rgba(255,255,255,0.85)',
     textAlign: 'center',
-    letterSpacing: 0.2,
   },
-  appTagline: {
-    fontSize: 12,
-    color: COLORS.primary,
-    fontWeight: '500',
-    marginTop: 2,
-  },
+  appTagline: { fontSize: 12, color: COLORS.hold, fontFamily: FONTS.bodyBold, marginTop: 2 },
   section: {
     marginTop: 8,
-    paddingHorizontal: 16,
+    marginHorizontal: 12,
+    paddingHorizontal: 4,
     paddingVertical: 14,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: COLORS.line,
   },
   label: {
-    fontSize: 12,
-    color: '#999',
-    fontWeight: '600',
+    fontSize: 11,
+    color: COLORS.muted,
+    fontFamily: FONTS.bodyHeavy,
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: 12,
+    letterSpacing: 1.6,
+    marginBottom: 10,
   },
-  buttons: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  btn: {
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-  },
-  btnActive: {
-    backgroundColor: COLORS.primary,
-  },
-  btnText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-  },
-  btnTextActive: {
-    color: '#fff',
-  },
-  userName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 2,
-  },
-  userEmail: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 4,
-  },
-  profileLink: {
-    fontSize: 12,
-    color: COLORS.primary,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
+  userName: { fontSize: 18, fontFamily: FONTS.displayBold, color: COLORS.ink, marginBottom: 2 },
+  userEmail: { fontSize: 12, color: COLORS.stone, fontFamily: FONTS.body, marginBottom: 4 },
+  profileLink: { fontSize: 13, color: COLORS.primary, fontFamily: FONTS.bodyHeavy },
   loginBtn: {
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    borderRadius: 8,
-    paddingVertical: 9,
+    backgroundColor: COLORS.hold,
+    borderRadius: RADII.pill,
+    paddingVertical: 12,
     alignItems: 'center',
+    borderBottomWidth: 3,
+    borderBottomColor: 'rgba(0,0,0,0.14)',
   },
-  loginBtnText: {
-    color: COLORS.primary,
-    fontWeight: '600',
-    fontSize: 14,
-  },
+  loginBtnText: { color: COLORS.ink, fontFamily: FONTS.bodyHeavy, fontSize: 14 },
 });

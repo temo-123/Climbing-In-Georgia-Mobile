@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faUserSlash } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 
 // Shown in place of every user-panel screen while the device is offline.
 // The panel is entirely server-backed (profile, activity, settings), so there
@@ -30,17 +30,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 32,
     gap: 14,
-    backgroundColor: '#f4f6f8',
+    backgroundColor: COLORS.chalk,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 24,
+    fontFamily: FONTS.displayBold,
+    color: COLORS.ink,
     textAlign: 'center',
   },
   message: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 14, fontFamily: FONTS.body,
+    color: COLORS.stone,
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -53,8 +53,8 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   hint: {
-    fontSize: 13,
-    color: '#555',
+    fontSize: 13, fontFamily: FONTS.body,
+    color: COLORS.stone,
     lineHeight: 20,
   },
 });

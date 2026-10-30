@@ -11,7 +11,9 @@ import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
 import ClimberCard from '../../components/user/ClimberCard';
 import ClimberProfileModal from '../../components/user/ClimberProfileModal';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
+import { faTrophy } from '@fortawesome/free-solid-svg-icons';
+import IconText from '../../components/ui/IconText';
 
 const API = API_BASE_URL;
 const CACHE_KEY = '@climbers_list_cache';
@@ -93,7 +95,7 @@ export default function ClimbersListScreen() {
         <TextInput
           style={styles.searchInput}
           placeholder={t('user.search_climbers')}
-          placeholderTextColor="#999"
+          placeholderTextColor={COLORS.muted}
           value={search}
           onChangeText={setSearch}
         />
@@ -112,7 +114,7 @@ export default function ClimbersListScreen() {
           onPress={() => setSort('top_active')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.sortBtnText, sort === 'top_active' && styles.sortBtnTextActive]}>🏆 {t('user.sort_top_active')}</Text>
+          <IconText icon={faTrophy} iconColor={sort === 'top_active' ? '#fff' : COLORS.primary} style={[styles.sortBtnText, sort === 'top_active' && styles.sortBtnTextActive]}>{t('user.sort_top_active')}</IconText>
         </TouchableOpacity>
       </View>
 
@@ -149,19 +151,19 @@ export default function ClimbersListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f4f6f8' },
+  container: { flex: 1, backgroundColor: COLORS.chalk },
   searchRow: { paddingHorizontal: 16, paddingTop: 14 },
   searchInput: {
     backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10,
-    fontSize: 14, color: '#222', borderWidth: 1, borderColor: '#e4e4e4',
+    fontSize: 14, fontFamily: FONTS.body, color: COLORS.ink, borderWidth: 1, borderColor: COLORS.line,
   },
   sortRow: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 12, gap: 10 },
-  sortBtn: { flex: 1, backgroundColor: '#fff', borderRadius: 20, paddingVertical: 9, alignItems: 'center', borderWidth: 1, borderColor: '#e4e4e4' },
+  sortBtn: { flex: 1, backgroundColor: '#fff', borderRadius: 20, paddingVertical: 9, alignItems: 'center', borderWidth: 1, borderColor: COLORS.line },
   sortBtnActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  sortBtnText: { fontSize: 12, fontWeight: '700', color: '#555' },
+  sortBtnText: { fontSize: 12, fontFamily: FONTS.bodyBold, color: COLORS.stone },
   sortBtnTextActive: { color: '#fff' },
   list: { paddingHorizontal: 10, paddingBottom: 24 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  emptyText: { color: '#888', fontSize: 15 },
+  emptyText: { color: COLORS.muted, fontSize: 15, fontFamily: FONTS.body },
   footerLoader: { marginVertical: 16 },
 });

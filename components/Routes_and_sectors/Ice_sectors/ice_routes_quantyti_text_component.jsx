@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { faIcicles, faHammer } from '@fortawesome/free-solid-svg-icons';
+import StatTiles from '../../ui/StatTiles';
 import api, { corsUrl, API_BASE_URL } from '../../../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -27,23 +28,11 @@ export default function IceRoutesQuantityText() {
   const dtSectors  = drytooling.sectors  ?? drytooling.sectors_count  ?? 0;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>
-        {t('routes_count.ice', { dtRoutes, dtSectors, iceRoutes, iceSectors })}
-      </Text>
-    </View>
+    <StatTiles
+      items={[
+        { icon: faIcicles, value: iceRoutes, label: t('site.guide.route_type_ice_climbing'), sub: `${iceSectors} ${t('card.sectors')}` },
+        { icon: faHammer, value: dtRoutes, label: t('site.guide.route_type_dry_tooling'), sub: `${dtSectors} ${t('card.sectors')}` },
+      ]}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-});

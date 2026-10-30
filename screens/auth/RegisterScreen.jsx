@@ -4,11 +4,12 @@ import {
   ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import AuthHead from '../../components/auth/AuthHead';
 import { useAuth } from '../../utils/AuthContext';
 import SocialLoginButtons from '../../components/auth/SocialLoginButtons';
 import { useLocale } from '../../utils/LocaleContext';
 import { openPrivacyPolicy, openTermsOfUse } from '../../utils/legalLinks';
-import { COLORS } from '../../assets/styles/styles';
+import { COLORS, FONTS } from '../../assets/styles/styles';
 
 export default function RegisterScreen({ navigation }) {
   const { t } = useTranslation();
@@ -71,12 +72,12 @@ export default function RegisterScreen({ navigation }) {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>{t('auth.register')}</Text>
+        <AuthHead title={t('auth.register')} />
 
         <TextInput
           style={styles.input}
           placeholder={t('auth.name')}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={name}
           onChangeText={setName}
           autoCapitalize="words"
@@ -85,7 +86,7 @@ export default function RegisterScreen({ navigation }) {
         <TextInput
           style={styles.input}
           placeholder={t('auth.surname')}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={surname}
           onChangeText={setSurname}
           autoCapitalize="words"
@@ -94,7 +95,7 @@ export default function RegisterScreen({ navigation }) {
         <TextInput
           style={styles.input}
           placeholder={t('auth.email')}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -105,7 +106,7 @@ export default function RegisterScreen({ navigation }) {
         <TextInput
           style={styles.input}
           placeholder={t('auth.country')}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={country}
           onChangeText={setCountry}
           autoCapitalize="words"
@@ -114,7 +115,7 @@ export default function RegisterScreen({ navigation }) {
         <TextInput
           style={styles.input}
           placeholder={t('auth.city')}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={city}
           onChangeText={setCity}
           autoCapitalize="words"
@@ -123,7 +124,7 @@ export default function RegisterScreen({ navigation }) {
         <TextInput
           style={styles.input}
           placeholder={t('auth.phone_number')}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={phoneNumber}
           onChangeText={setPhoneNumber}
           keyboardType="phone-pad"
@@ -133,7 +134,7 @@ export default function RegisterScreen({ navigation }) {
         <TextInput
           style={styles.input}
           placeholder={t('auth.password')}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -142,7 +143,7 @@ export default function RegisterScreen({ navigation }) {
         <TextInput
           style={styles.input}
           placeholder={t('auth.confirm_password')}
-          placeholderTextColor="#aaa"
+          placeholderTextColor={COLORS.muted}
           value={passwordConfirm}
           onChangeText={setPasswordConfirm}
           secureTextEntry
@@ -220,28 +221,28 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 28,
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.chalk,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontFamily: FONTS.displayBold,
     color: COLORS.primary,
     marginBottom: 32,
     textAlign: 'center',
   },
   input: {
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 12, backgroundColor: COLORS.surface,
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 16,
-    fontSize: 16,
-    color: '#222',
+    fontSize: 16, fontFamily: FONTS.body,
+    color: COLORS.ink,
   },
   button: {
     backgroundColor: COLORS.primary,
-    borderRadius: 10,
+    borderRadius: 999,
     paddingVertical: 14,
     alignItems: 'center',
     marginBottom: 14,
@@ -273,33 +274,33 @@ const styles = StyleSheet.create({
   checkmark: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: FONTS.bodyBold,
   },
   checkLabel: {
     flex: 1,
-    fontSize: 14,
-    color: '#222',
+    fontSize: 14, fontFamily: FONTS.body,
+    color: COLORS.ink,
   },
   checkLink: {
     color: COLORS.primary,
-    fontWeight: '700',
+    fontFamily: FONTS.bodyBold,
     textDecorationLine: 'underline',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: FONTS.bodyBold,
   },
   link: {
     color: COLORS.primary,
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: 14, fontFamily: FONTS.body,
     marginTop: 4,
   },
   error: {
-    color: '#e74c3c',
+    color: COLORS.danger,
     marginBottom: 12,
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: 14, fontFamily: FONTS.body,
   },
 });
