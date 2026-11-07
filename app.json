@@ -3,7 +3,7 @@
     "name": "Climb Georgia",
     "slug": "climbing-in-georgia-mobile",
     "scheme": "climbinggeorgia",
-    "version": "2.0.30",
+    "version": "2.0.31",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "ge.climbing.app",
-      "buildNumber": "30",
+      "buildNumber": "31",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Used to view and attach climbing route photos.",
@@ -37,7 +37,7 @@
       },
       "package": "ge.climbing.app",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 30,
+      "versionCode": 31,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
