@@ -20,7 +20,7 @@ Documentation for the public climber-profile feature (points, followers, radar-c
 
 ## Overview
 
-Every registered user has a public "climber profile" — visible to anyone, logged in or not — showing their avatar, bio, social links, extra links, follower/following counts, a "points" activity score, a 4-axis radar chart (route reviews / MTP reviews / ascents / comments), and their 5 most recent items in each of those four categories. There's also a searchable/sortable directory of all climbers.
+Every registered user has a public "climber profile" — visible to anyone, logged in or not — showing their avatar, bio, social links, extra links, follower/following counts, a "points" activity score, a 6-axis radar chart (route reviews / MTP reviews / summit ascents / route ascents / MTP ascents / comments), and their 5 most recent items in each of those six categories. There's also a searchable/sortable directory of **active** climbers (points > 0).
 
 This is a thin client over a backend feature that already exists on climbing.ge (`/climber/:id` and `/climbers` on the guide SPA) — the mobile screens call the same public API the website uses, not a mobile-specific one.
 
@@ -37,7 +37,7 @@ This is a thin client over a backend feature that already exists on climbing.ge 
 | `components/user/ClimberProfileContent.jsx` | The actual data-fetching + rendering component, shared by the three screens above. Fetches `GET /get_climber_profile/{userId}` itself. Props: `userId`, `compact` (smaller radar + shows "View Full Profile" button, used inside the modal), `hideActivity` (suppresses the recent-activity list, used for the "my profile" summary), `onAvatarPress`, `onViewFullProfile`, `onOpenClimbersList` |
 | `components/user/ClimberProfileModal.jsx` | Bottom-sheet quick-view modal wrapping `ClimberProfileContent` (`compact`) — opened by tapping a card in the list, or the avatar in `UserProfileScreen` |
 | `components/user/ClimberCard.jsx` | Grid card for the directory list — avatar, name, followers count, points |
-| `components/user/RadarStatsChart.jsx` | Pure inline-SVG 4-axis radar chart (`react-native-svg`, no charting library). Axes run clockwise from the top: route reviews → MTP reviews → ascents → comments — must stay in that order to match the backend's `pointsOrderByExpression()` axis labels |
+| `components/user/RadarStatsChart.jsx` | Pure inline-SVG radar chart (`react-native-svg`, no charting library), one evenly spaced axis per value. The profile passes 6, clockwise from the top: route reviews → MTP reviews → summit ascents → route ascents → MTP ascents → comments — the same order as the website's radar (`global.follow.*_label`) |
 | `components/user/UserLinksManager.jsx` | CRUD list UI for the unlimited "extra links" feature (`/api/user_site`) |
 | `components/user/FormModal.jsx` | Generic bottom-sheet form-modal chrome (backdrop, header, close button, scroll) shared by `EditProfileModal` and `ChangePasswordModal` |
 | `components/user/EditProfileModal.jsx` | Profile-info edit form (name/surname/email/country/city/phone/bio) as a modal |
@@ -56,7 +56,7 @@ All under `https://climbing.ge/api`.
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
 | `GET` | `/get_climber_profile/{user_id}` | None (fully public) | Full profile — see response shape below |
-| `GET` | `/get_climber_profile/list` | Optional | `?page=&search=&sort=` — `sort=name` (default) or `sort=top_active`. Paginated, 24/page, standard Laravel paginator shape (`data`, `current_page`, `last_page`, ...). If a valid Bearer token is sent, the logged-in user's own row is excluded |
+| `GET` | `/get_climber_profile/list` | Optional | `?page=&search=&sort=` — `sort=name` (default) or `sort=top_active`. Only **active** climbers are returned (server-side `HAVING points > 0`) — registered users with no point-earning activity aren't listed, though their profile URL still works. Paginated, 24/page, standard Laravel paginator shape (`data`, `current_page`, `last_page`, ...). If a valid Bearer token is sent, the logged-in user's own row is excluded |
 | `POST` | `/set_user_follow/follow/{user_id}` | Required | 422 if following yourself, 404 if target doesn't exist, idempotent |
 | `DELETE` | `/set_user_follow/unfollow/{user_id}` | Required | Idempotent |
 | `GET` | `/set_user_follow/follow_status/{user_id}` | Required | `{ following: bool, is_self: bool }` |
@@ -82,7 +82,10 @@ All under `https://climbing.ge/api`.
   "recent_ascents": [ { "id": 1, "ascent_date": "...", "summit_title": "...", "summit_url_title": "..." } ],
   "recent_route_reviews": [ { "id": 1, "stars": 4, "text": "...", "created_at": "...", "route_name": "..." } ],
   "recent_mtp_reviews": [ { "id": 1, "stars": 5, "text": "...", "created_at": "...", "mtp_name": "..." } ],
+  "recent_route_ascents": [ { "id": 1, "ascent_date": "2026-10-25", "ascent_style": "redpoint", "route_name": "...", "route_grade": "6a" } ],
+  "recent_mtp_ascents": [ { "id": 1, "ascent_date": "2026-10-25", "ascent_style": "lead", "mtp_name": "..." } ],
   "comments_count": 34, "ascents_count": 7,
+  "route_ascents_count": 4, "mtp_ascents_count": 1,
   "route_reviews_count": 3, "mtp_reviews_count": 0
 }
 ```
@@ -123,9 +126,21 @@ Avatar images live under `public/images/user_profil_img/` (note the backend's ty
 
 ## The Points System
 
-Computed server-side on every request, not stored — see the backend's `config/user_points.php` for the per-action weights (route review, MTP review, ascent, comment). The mobile radar chart's 4 axes (`components/user/RadarStatsChart.jsx`) map 1:1 to the 4 categories that feed into `points_total`; changing the axis order would desync the chart from what the number actually represents.
+Computed server-side on every request, not stored (backend `User::pointsCategories()`, weights are admin-editable coefficients — defaults in `config/coefficients.php`). Updated on the website 2026-11-06:
 
----
+| Category | Count field | Coefficient | Default |
+|---|---|---|---|
+| Summit ascent | `ascents_count` | `points_ascent` | 10 |
+| MTP ascent | `mtp_ascents_count` | `points_mtp_ascent` | 8 |
+| Route ascent (logbook tick, any style) | `route_ascents_count` | `points_route_ascent` | 3 |
+| Route review | `route_reviews_count` | `points_route_review` | 5 |
+| MTP review | `mtp_reviews_count` | `points_mtp_review` | 5 |
+| Article comment | `comments_count` | `points_comment` | 2 |
+
+- Only visible activity counts: reviews and comments need `published = 1`, `admin_hidden = 0`; ascents always count. The `*_count` fields are exactly the numbers the points come from, so the radar always adds up to `points_total`.
+- The app never computes points itself — it just shows `points_total` (weights can change server-side at any time).
+- "No public activity yet" is shown exactly when `points_total` is 0 (website rule), not by checking the `recent_*` lists.
+- Ascent styles in the recent route/MTP ascent lists are labelled with the site's `site.guide.route_ascent.style.*` / `site.guide.mtp_ascent.style.*` strings.
 
 ## Known Backend Issues
 

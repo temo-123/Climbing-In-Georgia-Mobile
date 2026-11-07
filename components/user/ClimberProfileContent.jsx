@@ -5,7 +5,7 @@ import api, { API_BASE_URL, IMG_BASES, imgUri } from '../../utils/api';
 import { useAuth } from '../../utils/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faFacebookF, faInstagram, faYoutube } from '@fortawesome/free-brands-svg-icons';
-import { faGlobe, faLink, faUsers, faUserPlus, faStar, faFlag, faComment } from '@fortawesome/free-solid-svg-icons';
+import { faGlobe, faLink, faUsers, faUserPlus, faStar, faFlag, faComment, faCheck } from '@fortawesome/free-solid-svg-icons';
 import IconText from '../ui/IconText';
 import { COLORS, FONTS } from '../../assets/styles/styles';
 import RadarStatsChart from './RadarStatsChart';
@@ -103,11 +103,20 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
   const avatarUri = user.image ? imgUri(IMG_BASES.userProfile, user.image, user.updated_at) : null;
   const socialEntries = Object.entries(user.social_links || {}).filter(([, v]) => !!v);
 
-  const radarLabels = [t('user.route_reviews'), t('user.mtp_reviews'), t('user.ascents'), t('user.comments')];
-  const radarValues = [profile.route_reviews_count, profile.mtp_reviews_count, profile.ascents_count, profile.comments_count];
+  // Same 6 point categories as the website (User::pointsCategories()): the
+  // *_count fields are the exact visible-activity counts the points come from.
+  const radarLabels = [
+    t('user.route_reviews'), t('user.mtp_reviews'), t('user.summit_ascents'),
+    t('user.route_ascents'), t('user.mtp_ascents'), t('user.comments'),
+  ];
+  const radarValues = [
+    profile.route_reviews_count, profile.mtp_reviews_count, profile.ascents_count,
+    profile.route_ascents_count, profile.mtp_ascents_count, profile.comments_count,
+  ].map(v => Number(v) || 0);
 
-  const hasActivity = (profile.recent_route_reviews?.length || profile.recent_mtp_reviews?.length
-    || profile.recent_ascents?.length || profile.recent_comments?.length);
+  // Website rule: "No public activity yet" exactly when the climber has 0 points.
+  const hasActivity = Number(points_total) > 0;
+  const styleLabel = (kind, style) => t(`site.guide.${kind}.style.${style}`, { defaultValue: style });
 
   return (
     <View>
@@ -195,9 +204,37 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
 
           {profile.recent_ascents?.length > 0 && (
             <>
-              <Text style={styles.subsectionTitle}>{t('user.recent_ascents')}</Text>
+              <Text style={styles.subsectionTitle}>{t('user.recent_summit_ascents')}</Text>
               {profile.recent_ascents.map(a => (
                 <ActivityRow key={`a${a.id}`} icon={faFlag} primary={a.summit_title ?? '—'} date={a.ascent_date} />
+              ))}
+            </>
+          )}
+          {profile.recent_route_ascents?.length > 0 && (
+            <>
+              <Text style={styles.subsectionTitle}>{t('user.recent_route_ascents')}</Text>
+              {profile.recent_route_ascents.map(a => (
+                <ActivityRow
+                  key={`ra${a.id}`}
+                  icon={faCheck}
+                  primary={`${a.route_name ?? '—'}${a.route_grade ? ` (${a.route_grade})` : ''}`}
+                  secondary={a.ascent_style ? styleLabel('route_ascent', a.ascent_style) : null}
+                  date={a.ascent_date}
+                />
+              ))}
+            </>
+          )}
+          {profile.recent_mtp_ascents?.length > 0 && (
+            <>
+              <Text style={styles.subsectionTitle}>{t('user.recent_mtp_ascents')}</Text>
+              {profile.recent_mtp_ascents.map(a => (
+                <ActivityRow
+                  key={`ma${a.id}`}
+                  icon={faCheck}
+                  primary={a.mtp_name ?? '—'}
+                  secondary={a.ascent_style ? styleLabel('mtp_ascent', a.ascent_style) : null}
+                  date={a.ascent_date}
+                />
               ))}
             </>
           )}
@@ -266,8 +303,8 @@ const styles = StyleSheet.create({
   followBtnText: { color: '#fff', fontFamily: FONTS.bodyBold, fontSize: 13 },
   followingBtnText: { color: COLORS.stone },
   radarSection: { alignItems: 'center', paddingVertical: 16, borderTopWidth: 1, borderTopColor: COLORS.line, marginTop: 16 },
-  countsRow: { flexDirection: 'row', marginTop: 12 },
-  countCol: { alignItems: 'center', paddingHorizontal: 12 },
+  countsRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 12, paddingHorizontal: 12 },
+  countCol: { alignItems: 'center', width: '33%', paddingVertical: 6 },
   countNum: { fontSize: 18, fontFamily: FONTS.bodyBold, color: COLORS.primary },
   countLabel: { fontSize: 10, fontFamily: FONTS.body, color: COLORS.muted, marginTop: 2, textAlign: 'center', maxWidth: 70 },
   allUsersLink: { marginTop: 12 },

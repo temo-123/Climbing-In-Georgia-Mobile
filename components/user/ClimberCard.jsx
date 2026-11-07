@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { IMG_BASES, imgUri } from '../../utils/api';
 import { COLORS, FONTS } from '../../assets/styles/styles';
-import { faUsers } from '@fortawesome/free-solid-svg-icons';
+import { faUsers, faStar } from '@fortawesome/free-solid-svg-icons';
 import IconText from '../ui/IconText';
 
 function initialsOf(item) {
@@ -21,7 +21,7 @@ export default function ClimberCard({ item, onPress }) {
       <Text style={styles.name} numberOfLines={1}>{item.name} {item.surname}</Text>
       <View style={styles.statsRow}>
         <IconText icon={faUsers} style={styles.statText}>{item.followers_count ?? 0}</IconText>
-        <Text style={styles.statText}>⭐ {item.points_total ?? 0}</Text>
+        <IconText icon={faStar} iconColor={COLORS.hold} style={styles.statText}>{item.points_total ?? 0}</IconText>
       </View>
     </TouchableOpacity>
   );

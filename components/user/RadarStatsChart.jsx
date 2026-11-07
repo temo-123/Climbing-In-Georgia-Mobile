@@ -3,10 +3,14 @@ import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Polygon, Line, Circle } from 'react-native-svg';
 import { COLORS, FONTS } from '../../assets/styles/styles';
 
-// Pure inline-SVG 4-axis radar chart — no charting library, mirrors the
-// website's RadarStatsChartComponent.vue (labels/values/size/color props).
-// Axes run clockwise from the top: route reviews, mtp reviews, ascents, comments.
-const AXIS_ANGLES = [-90, 0, 90, 180]; // degrees, 0 = pointing right, -90 = up
+// Pure inline-SVG radar chart — no charting library, mirrors the website's
+// RadarStatsChartComponent.vue (labels/values/size/color props). One axis per
+// value, evenly spaced clockwise from the top (the profile uses 6: route
+// reviews, MTP reviews, summit ascents, route ascents, MTP ascents, comments).
+function axisAngles(n) {
+  // degrees, 0 = pointing right, -90 = up
+  return Array.from({ length: n }, (_, i) => -90 + (360 / n) * i);
+}
 
 function pointAt(cx, cy, radius, angleDeg) {
   const rad = (angleDeg * Math.PI) / 180;
@@ -18,6 +22,7 @@ export default function RadarStatsChart({ labels, values, size = 140, color = CO
   const cy = size / 2;
   const maxRadius = size / 2 - 4;
   const maxValue = Math.max(1, ...values);
+  const AXIS_ANGLES = axisAngles(values.length);
 
   const dataPoints = values.map((v, i) => {
     const radius = (Math.max(v, 0) / maxValue) * maxRadius;
