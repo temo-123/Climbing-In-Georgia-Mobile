@@ -2,6 +2,8 @@ import React from 'react';
 import { TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
+import { useAccount } from '../../utils/AuthContext';
+import { isGateHandled } from '../../utils/accountGate';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartOutline } from '@fortawesome/free-regular-svg-icons';
@@ -17,7 +19,8 @@ export default function FavoriteHeart({ articleId, size = 'md', style }) {
   const navigation = useNavigation();
   const toast = useToast();
   const { loggedIn, isFavorite } = useFavorites();
-  if (!articleId) return null;
+  const { isUnderage } = useAccount();
+  if (!articleId || isUnderage) return null;
   const on = isFavorite(articleId);
   const d = size === 'sm' ? 32 : 40;
 
@@ -40,8 +43,8 @@ export default function FavoriteHeart({ articleId, size = 'md', style }) {
         await addFavorite(articleId);
         toast.show({ message: t('site.guide.favorite.added') });
       }
-    } catch {
-      toast.show({ type: 'error', message: t('site.guide.favorite.error') });
+    } catch (err) {
+      if (!isGateHandled(err)) toast.show({ type: 'error', message: t('site.guide.favorite.error') });
     }
   }
 

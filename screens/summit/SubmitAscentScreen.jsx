@@ -7,7 +7,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
-import { useAuth } from '../../utils/AuthContext';
+import { useAuth, useAccount } from '../../utils/AuthContext';
+import AgeLockedNote from '../../components/account/AgeLockedNote';
 import { useNetwork } from '../../utils/NetworkContext';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { queueAscent, describeError } from '../../utils/ascentQueue';
@@ -36,7 +37,20 @@ function haversineMeters(a, b) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-export default function SubmitAscentScreen({ route, navigation }) {
+// Under-age accounts can't log ascents (QR codes still land here).
+export default function SubmitAscentScreen(props) {
+  const { isUnderage } = useAccount();
+  if (isUnderage) {
+    return (
+      <View style={{ flex: 1, padding: 20, backgroundColor: COLORS.chalk }}>
+        <AgeLockedNote />
+      </View>
+    );
+  }
+  return <SubmitAscentForm {...props} />;
+}
+
+function SubmitAscentForm({ route, navigation }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   // Shared connectivity state rather than a one-shot read at mount, so the

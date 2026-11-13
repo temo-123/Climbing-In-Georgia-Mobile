@@ -21,6 +21,8 @@ import { SCENES } from '../ui/scenes';
 import HtmlContent from '../HtmlContent';
 import ImageViewerModal from '../ImageViewerModal';
 import LoginPrompt from '../auth/LoginPrompt';
+import AgeLockedNote from '../account/AgeLockedNote';
+import { useAccount } from '../../utils/AuthContext';
 import AscentForm from './AscentForm';
 import AscentList from './AscentList';
 import ReviewList from './ReviewList';
@@ -69,6 +71,9 @@ export default function ClimbSheet({ kind = 'route', item: rawItem, title, onClo
   const navigation = useNavigation();
   const toast = useToast();
   const mine = useMyAscents();
+  // Under-age accounts: the guidebook is read-only (no log / review).
+  const { isUnderage } = useAccount();
+  const canWrite = mine.loggedIn && !isUnderage;
   const base = normalise(kind, rawItem);
   const [view, setView] = useState('details');
   const [detail, setDetail] = useState(null);
@@ -182,7 +187,7 @@ export default function ClimbSheet({ kind = 'route', item: rawItem, title, onClo
     if (view !== 'details') return null;
     return (
       <>
-        {mine.loggedIn ? (
+        {canWrite ? (
           <Button variant="hold" icon={faCheck} title={t(`${ascentI18n}.record_btn`)} onPress={() => setView('log')} />
         ) : null}
         <View style={s.footerRow}>
@@ -196,6 +201,7 @@ export default function ClimbSheet({ kind = 'route', item: rawItem, title, onClo
   function renderBody() {
     switch (view) {
       case 'log':
+        if (isUnderage) return <AgeLockedNote />;
         return mine.loggedIn ? (
           <AscentForm
             kind={kind}
@@ -224,13 +230,14 @@ export default function ClimbSheet({ kind = 'route', item: rawItem, title, onClo
       case 'reviews':
         return (
           <View>
-            {mine.loggedIn ? (
+            {canWrite ? (
               <Button small variant="ghost" icon={faPen} title={t('climb.write_review')} onPress={() => setView('review')} style={s.writeBtn} />
             ) : null}
             <ReviewList kind={kind} item={item} onOpenClimber={openClimber} />
           </View>
         );
       case 'review':
+        if (isUnderage) return <AgeLockedNote />;
         return mine.loggedIn ? (
           <ReviewForm
             kind={kind}
@@ -247,6 +254,7 @@ export default function ClimbSheet({ kind = 'route', item: rawItem, title, onClo
           <View>
             {renderDetails()}
             {!mine.loggedIn && <LoginPrompt message={t('climb.login_required')} onLogin={goLogin} />}
+            {isUnderage && <AgeLockedNote />}
           </View>
         );
     }

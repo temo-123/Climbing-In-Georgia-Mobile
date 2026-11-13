@@ -134,7 +134,8 @@
    "quick_stats_sectors": "Sectors",
    "quick_stats_routes": "Routes",
    "quick_stats_mtps": "Multi-pitches",
-   "live_camera": "Live camera"
+   "live_camera": "Live camera",
+   "unnamed_sector": "Sector {{n}}"
   },
   "title": {
    "news": "News",
@@ -391,7 +392,8 @@
     "status_open_now": "Open now",
     "status_working": "Hide closed and coming soon",
     "other_region": "Other"
-   }
+   },
+   "left_navbat_title": "Menu"
   },
   "breadcrumb home": "Home",
   "news_flag": "News",
@@ -838,7 +840,73 @@
    "from": "from {{price}}",
    "view": "View tour",
    "all": "See all tours"
-  }
+  },
+  "comments": {
+   "commenting_as": "Commenting as",
+   "guest_hint": "Log in to comment with your profile — or just fill in your details.",
+   "email_hint": "Not shown publicly. We send a link to confirm your first comment.",
+   "profile_incomplete": "Your profile is missing your name or surname.",
+   "open_profile": "Complete profile",
+   "replying_to": "Replying to {{name}}",
+   "cancel_reply": "Cancel reply",
+   "text_label": "Your comment",
+   "text_placeholder": "Share beta, conditions or a question…",
+   "reply_placeholder": "Write your reply…",
+   "rules": "Be kind and stay on topic.",
+   "send": "Post comment",
+   "send_reply": "Post reply",
+   "empty": "No comments yet — be the first to share beta.",
+   "guest_badge": "Guest",
+   "reply": "Reply",
+   "report": "Report",
+   "report_title": "Report this comment",
+   "report_send": "Send report",
+   "report_text": "Tell us what is wrong with this comment. A moderator will check it.",
+   "report_pick": "Please pick a reason.",
+   "report_done": "Thanks — we will review it.",
+   "required": "Required",
+   "email_invalid": "Enter a valid email address",
+   "sent": "Thanks! Your comment is posted.",
+   "sent_guest": "Thanks! Check your email to confirm the comment.",
+   "send_error": "Could not send. Please try again.",
+   "confirm_delete": "Delete this comment?"
+  },
+  "sector_view": {
+   "label": "Sectors",
+   "full": "Full",
+   "routes": "routes",
+   "mtps": "multi-pitch",
+   "tiles": "Tiles",
+   "table": "Table",
+   "tabs": "Tabs",
+   "sector": "Sector",
+   "grade": "Grade",
+   "all_sectors": "All sectors",
+   "shown": "{{n}} of {{total}} routes"
+  },
+  "article_view": {
+   "label": "View",
+   "plain": "Text",
+   "cards": "Cards"
+  },
+  "massif": {
+   "eyebrow": "Mountain massif",
+   "all_routes": "All {{count}} routes in this massif",
+   "open_summit": "Open summit page",
+   "tab_about": "About",
+   "tab_season": "Best season",
+   "tab_getting": "Getting there",
+   "tab_gear": "What to bring",
+   "tab_weather": "Weather",
+   "tab_map": "Map",
+   "map_google": "Google Map",
+   "map_osm": "OpenStreetMap",
+   "read_about": "Read about {{name}}",
+   "hide": "Hide details",
+   "show_more": "Show more",
+   "show_less": "Show less"
+  },
+  "serch": "Search"
  },
  "common": {
   "error": "Error",
@@ -1189,6 +1257,95 @@
    "review_hidden_by_admin": "This review was hidden by an admin.",
    "confirm_show_review": "Make this review visible again?",
    "confirm_delete_review": "Are you sure you want to delete this review?"
+  },
+  "nav": {
+   "account_alert": {
+    "birthday": "Date of birth missing",
+    "email": "E-mail not verified",
+    "name": "Name or surname missing",
+    "location": "Country or city missing",
+    "image": "No profile photo"
+   },
+   "account_alerts": "{{n}} to fix in your profile"
+  }
+ },
+ "global": {
+  "age_restriction": {
+   "title": "climbing.ge accounts are for ages {{age}}+",
+   "text": "Your account was created, but by the date of birth you entered you are younger than {{age}}. Account functions (comments, reviews, ascents, follows, favorites, orders, reservations and the user panel) open only from the age of {{age}}. You can still browse the sites as a guest.",
+   "wrong_birthday": "Entered the wrong date of birth? Contact us through the contact form and we'll fix it.",
+   "bar_title": "Account functions open from the age of {{age}}.",
+   "bar_text": "You can browse the site, but actions are not available for your account.",
+   "modal_title": "Age restriction",
+   "inline": "You must be at least {{age}} years old to use this feature.",
+   "logout": "Log out",
+   "delete_account": "Delete account"
+  },
+  "email_verify": {
+   "bar_title": "Please verify your e-mail.",
+   "bar_text": "Comments, reviews, ascents and other actions open once it's confirmed.",
+   "resend_btn": "Send new verification e-mail",
+   "sending": "Sending…",
+   "sent": "A new verification e-mail is on its way — check your inbox (and the spam folder).",
+   "sent_wait": "Sent — resend in {{s}}s",
+   "already": "Your e-mail is already verified. Thanks!",
+   "send_error": "Couldn't send the e-mail right now. Please try again in a moment.",
+   "modal_title": "Verify your e-mail first",
+   "modal_text": "To post comments, reviews and feedback, log ascents, follow, save favorites or make reservations, please confirm your e-mail address:",
+   "modal_hint": "Click the link in the verification e-mail we sent you. Didn't get it or the link expired? Send a new one below.",
+   "change_email": "Change e-mail",
+   "inline": "Please verify your e-mail address to use this feature."
+  },
+  "follow": {
+   "follow_btn": "Follow",
+   "unfollow_btn": "Unfollow",
+   "profile_not_found": "This climber's profile couldn't be found.",
+   "followers_label": "Followers",
+   "following_label": "Following",
+   "recent_reviews_title": "Recent route & MTP reviews",
+   "recent_ascents_title": "Recent summit ascents",
+   "recent_route_ascents_title": "Recent route ascents",
+   "recent_mtp_ascents_title": "Recent MTP ascents",
+   "recent_comments_title": "Recent comments",
+   "no_activity": "No public activity yet.",
+   "no_followers": "No followers yet.",
+   "no_following": "Not following anyone yet.",
+   "all_climbers_title": "All Climbers",
+   "search_climbers_placeholder": "Search climbers by name...",
+   "points_label": "Points",
+   "sort_flat_list_btn": "All (A-Z)",
+   "sort_top_active_btn": "Top Active Users",
+   "guest_prompt_text": "For full functionality, log in or register.",
+   "register_btn": "Register",
+   "no_climbers_found": "No climbers found.",
+   "load_more_btn": "Load more",
+   "profile_modal_title": "Climber Profile",
+   "all_users_btn": "All users",
+   "view_full_profile_btn": "View full profile",
+   "activity_chart_title": "Activity",
+   "route_reviews_label": "Route Reviews",
+   "mtp_reviews_label": "MTP Reviews",
+   "ascents_label": "Summit Ascents",
+   "route_ascents_label": "Route Ascents",
+   "mtp_ascents_label": "MTP Ascents",
+   "comments_label": "Comments",
+   "climbers_meta_description": "Browse active climbers on climbing.ge — follow them and see their ascents, comments, and route/MTP reviews.",
+   "climber_meta_description": "See {{name}}'s comments, ascents, and route/MTP reviews on climbing.ge — follow them to get notified about their activity."
+  }
+ },
+ "shop": {
+  "product": {
+   "feedback": {
+    "reasons": {
+     "hostile": "Hostile remarks",
+     "off_topic": "Does not match the theme of the site",
+     "spam": "Spam",
+     "sexual_content": "Sexual content",
+     "anger": "Expression of anger",
+     "conflict": "Conflict with other members of the site",
+     "language": "The language of the feedback does not match the requirements of the site"
+    }
+   }
   }
  }
 }

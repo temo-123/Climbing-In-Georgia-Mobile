@@ -110,9 +110,22 @@ export const isRecaptchaScoreFailure = isRecaptchaFailure;
 // secrets it can validate against server-side (see verifySmart() above) — on
 // a recaptcha-specific 422 (not a validation/network error), mint a fresh
 // token and retry once before surfacing the failure to the user.
+//
+// Never blocks a submit: if no token can be minted (WebView not ready, offline
+// page load, missing site key, timeout) the request goes out with
+// `recaptcha_token: null` and the server decides — it fails open when its own
+// key is broken, and answers 422 when it really wants a token.
+export async function getRecaptchaTokenOrNull(action) {
+  try {
+    return await getRecaptchaToken(action);
+  } catch {
+    return null;
+  }
+}
+
 export async function withRecaptchaRetry(action, requestFn, maxAttempts = 2) {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const token = await getRecaptchaToken(action);
+    const token = await getRecaptchaTokenOrNull(action);
     try {
       return await requestFn(token);
     } catch (err) {

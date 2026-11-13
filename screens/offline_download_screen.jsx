@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
   ScrollView, ActivityIndicator,
@@ -12,11 +12,24 @@ import { useTranslation } from 'react-i18next';
 import { useLocale } from '../utils/LocaleContext';
 import { downloadAllData, getLastDownloadTime } from '../utils/offlineStorage';
 import PageFooter from '../components/PageFooter';
+import OfflineDataStatus from '../components/user/OfflineDataStatus';
+import LoginPrompt from '../components/auth/LoginPrompt';
+import Button from '../components/ui/Button';
+import { useAuth, useAccount } from '../utils/AuthContext';
+import { reportOfflineDownload } from '../utils/offlineAccountSync';
+import { faUserPlus } from '@fortawesome/free-solid-svg-icons';
 import { COLORS, FONTS } from '../assets/styles/styles';
 
-export default function OfflineDownloadScreen() {
+// Offline mode needs an account: guests get login / register instead of the
+// download button. After a successful download the time is saved on the
+// account (users.use_offline_data_on_mobile, utils/offlineAccountSync.js).
+// `route.params.autoStart` (a timestamp) starts the download right away — sent
+// after login when the account has a download but this phone doesn't.
+export default function OfflineDownloadScreen({ route, navigation }) {
   const { t } = useTranslation();
   const { locale } = useLocale();
+  const { user, refreshUser } = useAuth();
+  const { canAct } = useAccount();
   const [lastDownload, setLastDownload] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [currentLabel, setCurrentLabel] = useState('');
@@ -26,7 +39,17 @@ export default function OfflineDownloadScreen() {
     getLastDownloadTime().then(t => setLastDownload(t));
   }, []);
 
+  const autoStart = route?.params?.autoStart;
+  const startedFor = useRef(null);
+  useEffect(() => {
+    if (!autoStart || !user || startedFor.current === autoStart || isDownloading) return;
+    startedFor.current = autoStart;
+    handleDownload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart]);
+
   async function handleDownload() {
+    if (!user) return;
     setIsDownloading(true);
     setCurrentLabel(t('offline_screen.starting'));
     setResult(null);
@@ -35,6 +58,10 @@ export default function OfflineDownloadScreen() {
 
     setIsDownloading(false);
     setResult(res);
+    if (res.completed > 0 && canAct) {
+      // Under-age accounts can't write to the account — they keep the local copy only.
+      reportOfflineDownload().then((ok) => ok && refreshUser().catch(() => {}));
+    }
     if (res.completed > 0) {
       getLastDownloadTime().then(t => setLastDownload(t));
     }
@@ -71,17 +98,38 @@ export default function OfflineDownloadScreen() {
         </Text>
       </View>
 
-      <TouchableOpacity
-        style={[styles.button, isDownloading && styles.buttonDisabled]}
-        onPress={handleDownload}
-        disabled={isDownloading}
-        activeOpacity={0.8}
-      >
-        {isDownloading
-          ? <ActivityIndicator color="#fff" />
-          : <Text style={styles.buttonText}>{t('offline_screen.download_btn')}</Text>
-        }
-      </TouchableOpacity>
+      {!user ? (
+        <View style={styles.loginBox}>
+          <LoginPrompt message={t('account.offline_login_required')} onLogin={() => navigation.navigate('login')} />
+          <Button
+            variant="outline"
+            icon={faUserPlus}
+            title={t('auth.register')}
+            onPress={() => navigation.navigate('register')}
+            style={styles.registerBtn}
+          />
+        </View>
+      ) : (
+        <>
+          <OfflineDataStatus
+            style={styles.prefBox}
+            hideDownload
+            onCleared={() => { setLastDownload(null); setResult(null); }}
+          />
+
+          <TouchableOpacity
+            style={[styles.button, isDownloading && styles.buttonDisabled]}
+            onPress={handleDownload}
+            disabled={isDownloading}
+            activeOpacity={0.8}
+          >
+            {isDownloading
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={styles.buttonText}>{t('offline_screen.download_btn')}</Text>
+            }
+          </TouchableOpacity>
+        </>
+      )}
 
       {isDownloading && (
         <View style={styles.progressBox}>
@@ -181,6 +229,12 @@ const styles = StyleSheet.create({
   },
   infoText: { fontSize: 14, fontFamily: FONTS.body, color: COLORS.primary, flex: 1 },
   infoTextMuted: { color: COLORS.muted },
+  loginBox: { alignSelf: 'stretch', marginBottom: 20 },
+  registerBtn: { marginTop: 10 },
+  prefBox: {
+    alignSelf: 'stretch', backgroundColor: COLORS.surface, borderRadius: 12, borderWidth: 1,
+    borderColor: COLORS.line, padding: 14, marginBottom: 16,
+  },
   button: {
     backgroundColor: COLORS.primary,
     borderRadius: 14,

@@ -18,6 +18,8 @@ import { RecaptchaHost } from './utils/recaptcha';
 import DonationButton from './components/donation/DonationButton';
 import { ToastProvider } from './components/ui/Toast';
 import './utils/i18n';
+// Installs the global API error handler (banned / age / e-mail / 401).
+import './utils/accountGate';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'

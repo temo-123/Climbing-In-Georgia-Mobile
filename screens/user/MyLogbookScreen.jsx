@@ -8,6 +8,7 @@ import { useMyAscents, reloadMyAscents } from '../../utils/myAscents';
 import { useLocale } from '../../utils/LocaleContext';
 import { toDate, dayMonthYear } from '../../utils/eventDates';
 import { apiErrorMessage } from '../../utils/apiError';
+import { bumpStats } from '../../utils/statsVersion';
 import { boulderToFont, BOULDER_GRADES } from '../../utils/grades';
 import PageHead from '../../components/ui/PageHead';
 import StatTiles from '../../components/ui/StatTiles';
@@ -55,6 +56,7 @@ export default function MyLogbookScreen() {
         onPress: async () => {
           try {
             await api.delete(`${API_BASE_URL}/set_route_ascent/del_my_route_ascent/${a.id}`);
+            bumpStats();
             toast.show({ message: t('climb.deleted') });
             reloadMyAscents();
           } catch (err) {

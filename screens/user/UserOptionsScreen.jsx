@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, Image,
   ScrollView, ActivityIndicator, Alert,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faCakeCandles, faEnvelopeCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../utils/AuthContext';
 import api, { API_BASE_URL, IMG_BASES, imgUri } from '../../utils/api';
@@ -15,6 +17,11 @@ import ChangePasswordModal from '../../components/user/ChangePasswordModal';
 import UserLinksManager from '../../components/user/UserLinksManager';
 import LegalLinks from '../../components/LegalLinks';
 import DeleteAccountModal from '../../components/user/DeleteAccountModal';
+import OfflineDataStatus from '../../components/user/OfflineDataStatus';
+import ResendVerifyButton from '../../components/account/ResendVerifyButton';
+import Button from '../../components/ui/Button';
+import { useLocale } from '../../utils/LocaleContext';
+import { dayMonthYear } from '../../utils/eventDates';
 
 const API = API_BASE_URL;
 
@@ -31,14 +38,38 @@ function Row({ label, value }) {
   );
 }
 
+function formatBirthday(value, locale) {
+  const [y, m, d] = String(value || '').slice(0, 10).split('-').map(Number);
+  return y ? dayMonthYear(new Date(y, m - 1, d), locale) : '';
+}
+
+// route.params.focus ('name' | 'location' | 'email' | 'birthday' | 'image')
+// opens the matching edit field — sent by the account alerts.
 export default function UserOptionsScreen() {
   const { t } = useTranslation();
+  const { locale } = useLocale();
   const { user, refreshUser } = useAuth();
+  const route = useRoute();
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [editProfileVisible, setEditProfileVisible] = useState(false);
+  const [editFocus, setEditFocus] = useState(null);
   const [changePasswordVisible, setChangePasswordVisible] = useState(false);
   const [deleteAccountVisible, setDeleteAccountVisible] = useState(false);
   const navigation = useNavigation();
+
+  function openEdit(focus = null) {
+    setEditFocus(focus);
+    setEditProfileVisible(true);
+  }
+
+  const focusParam = route.params?.focus;
+  const focusAt = route.params?.at;
+  useEffect(() => {
+    if (!focusParam) return;
+    if (focusParam === 'image') confirmPickAvatar();
+    else openEdit(focusParam);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusParam, focusAt]);
 
   function handleAccountDeleted() {
     setDeleteAccountVisible(false);
@@ -118,19 +149,49 @@ export default function UserOptionsScreen() {
           </TouchableOpacity>
         </View>
 
+        {!user.email_verified_at && (
+          <View style={[styles.card, styles.alertCard]}>
+            <View style={styles.alertHead}>
+              <FontAwesomeIcon icon={faEnvelopeCircleCheck} size={18} color={COLORS.danger} />
+              <Text style={[styles.sectionTitle, styles.dangerTitle]}>{t('account.confirm_email_title')}</Text>
+            </View>
+            <Text style={styles.alertText}>{t('account.confirm_email_text', { email: user.email })}</Text>
+            <ResendVerifyButton onAlready={() => refreshUser().catch(() => {})} />
+          </View>
+        )}
+
+        {!user.birthday && (
+          <View style={[styles.card, styles.calloutCard]}>
+            <View style={styles.alertHead}>
+              <FontAwesomeIcon icon={faCakeCandles} size={18} color={COLORS.ink} />
+              <Text style={[styles.sectionTitle, styles.calloutTitle]}>{t('account.add_birthday_title')}</Text>
+            </View>
+            <Text style={styles.alertText}>{t('account.add_birthday_text')}</Text>
+            <Button variant="hold" title={t('account.add_birthday_btn')} onPress={() => openEdit('birthday')} />
+          </View>
+        )}
+
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <Text style={styles.sectionTitle}>{t('user.profile_info')}</Text>
-            <TouchableOpacity onPress={() => setEditProfileVisible(true)}>
+            <TouchableOpacity onPress={() => openEdit()}>
               <Text style={styles.editLink}>{t('user.edit')}</Text>
             </TouchableOpacity>
           </View>
           <Row label={t('auth.name')} value={`${user.name ?? ''} ${user.surname ?? ''}`.trim()} />
           <Row label={t('auth.email')} value={user.email} />
+          <Row label={t('account.birthday')} value={formatBirthday(user.birthday, locale)} />
           <Row label={t('auth.country')} value={user.country} />
           <Row label={t('auth.city')} value={user.city} />
           <Row label={t('auth.phone_number')} value={user.phone_number} />
           {!!user.my_bio && <Row label={t('user.profile_bio')} value={user.my_bio} />}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={[styles.sectionTitle, { marginBottom: 10 }]}>{t('account.preferences_title')}</Text>
+          <OfflineDataStatus
+            onWantDownload={() => navigation.navigate('HomeDrawer', { screen: 'offline_mode', params: { autoStart: Date.now() } })}
+          />
         </View>
 
         <View style={styles.card}>
@@ -161,7 +222,7 @@ export default function UserOptionsScreen() {
 
       </ScrollView>
 
-      <EditProfileModal visible={editProfileVisible} onClose={() => setEditProfileVisible(false)} />
+      <EditProfileModal visible={editProfileVisible} focusField={editFocus} onClose={() => { setEditProfileVisible(false); setEditFocus(null); }} />
       <ChangePasswordModal visible={changePasswordVisible} onClose={() => setChangePasswordVisible(false)} />
       <DeleteAccountModal
         visible={deleteAccountVisible}
@@ -205,5 +266,10 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: '#fff', fontSize: 15, fontFamily: FONTS.bodyBold },
   dangerTitle: { color: COLORS.danger, marginBottom: 4 },
+  alertCard: { borderWidth: 1, borderColor: '#f1c4c6', backgroundColor: '#fdf1f1' },
+  calloutCard: { borderWidth: 1, borderColor: COLORS.hold, backgroundColor: '#fff8e6' },
+  calloutTitle: { color: COLORS.ink, marginBottom: 4 },
+  alertHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+  alertText: { fontSize: 13, lineHeight: 19, fontFamily: FONTS.body, color: COLORS.ink2, marginBottom: 12 },
   dangerButton: { backgroundColor: COLORS.danger },
 });

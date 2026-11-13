@@ -26,6 +26,8 @@ export function ToastProvider({ children }) {
   }, [anim]);
 
   const show = useCallback(({ message, type = 'success', duration, action }) => {
+    // Empty = an error the account gate already explained (apiErrorMessage → '').
+    if (!message) return;
     clearTimeout(timer.current);
     setToast({ message, type, action, key: Date.now() });
     anim.setValue(0);

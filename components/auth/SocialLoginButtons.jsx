@@ -2,69 +2,80 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../utils/AuthContext';
-import { getSocialLoginStatus, startSocialLogin } from '../../utils/socialAuth';
+import { getSocialLoginStatus, startSocialLogin, SocialLoginError } from '../../utils/socialAuth';
+import { isGateHandled } from '../../utils/accountGate';
 import { GoogleIcon, FacebookIcon } from './ProviderIcons';
 import { COLORS, FONTS } from '../../assets/styles/styles';
 
-// Renders Google/Facebook buttons only for providers the backend reports as
-// configured (GET /login/status) — so an unset client_id/secret on the
-// backend hides the button instead of showing one that always fails.
-//
-// Dev-only exception: EXPO_PUBLIC_GOOGLE_CLIENT_ID / EXPO_PUBLIC_FACEBOOK_CLIENT_ID
-// (see .env.example) force a provider's button to render in __DEV__ builds
-// even if the backend isn't configured yet, so the UI can be previewed
-// without real credentials. __DEV__ is false in release builds, so this
-// never affects production — but the backend still won't complete a login
-// for a provider it hasn't configured, so tapping the button will surface
-// whatever error the backend actually returns.
-const devForcedStatus = __DEV__ && {
-  google: !!process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-  facebook: !!process.env.EXPO_PUBLIC_FACEBOOK_CLIENT_ID,
-};
-
-function mergeDevOverride(backendStatus) {
-  if (!devForcedStatus) return backendStatus;
-  return {
-    google: backendStatus.google || devForcedStatus.google,
-    facebook: backendStatus.facebook || devForcedStatus.facebook,
-  };
+// Google / Facebook buttons (browser flow, utils/socialAuth.js). A provider is
+// shown only when GET /login/status reports it configured AND `mobile: true`
+// — the backend's app-redirect flow. Without that flag the plain web flow
+// would end on the website's login form, so no button is better than a
+// broken one.
+function visibleProviders(data) {
+  const mobile = !!data?.mobile;
+  return { google: mobile && !!data?.google, facebook: mobile && !!data?.facebook };
 }
 
-export default function SocialLoginButtons({ onLoggedIn, onNeedsPassword, style }) {
+// `birthday` (YYYY-MM-DD, optional): sent along so a NEW social account gets
+// it right away (the sign-up form passes the date already picked).
+export default function SocialLoginButtons({ onLoggedIn, onNeedsPassword, birthday, style }) {
   const { t } = useTranslation();
   const { loginWithToken } = useAuth();
   const [status, setStatus] = useState(null);
   const [busyProvider, setBusyProvider] = useState(null);
   const [error, setError] = useState('');
+  const [detail, setDetail] = useState('');
 
   useEffect(() => {
     let cancelled = false;
     getSocialLoginStatus()
-      .then((data) => { if (!cancelled) setStatus(mergeDevOverride(data)); })
-      .catch(() => { if (!cancelled) setStatus(mergeDevOverride({ google: false, facebook: false })); });
+      .then((data) => { if (!cancelled) setStatus(visibleProviders(data)); })
+      .catch(() => { if (!cancelled) setStatus({ google: false, facebook: false }); });
     return () => { cancelled = true; };
   }, []);
 
   async function handlePress(provider) {
     setError('');
+    setDetail('');
     setBusyProvider(provider);
     try {
-      const result = await startSocialLogin(provider);
+      const result = await startSocialLogin(provider, { birthday });
 
       if (result.status === 'login' && result.token) {
         await loginWithToken(result.token);
         onLoggedIn?.();
       } else if (result.status === 'registratione' && result.new_user_email) {
-        onNeedsPassword?.(result.new_user_email);
+        // setup_key: one-time (1 h) proof that this sign-up may set the password.
+        onNeedsPassword?.(result.new_user_email, result.setup_key);
       } else if (result.message) {
         setError(result.message);
       } else {
         setError(t('auth.generic_error'));
       }
     } catch (err) {
-      if (err?.message !== 'social_login_cancelled') {
-        setError(t('auth.generic_error'));
+      if (err?.message === 'social_login_cancelled' || isGateHandled(err)) return; // banned (exchange) → gate sheet
+      const status = err?.response?.status;
+      let text;
+      if (err instanceof SocialLoginError) {
+        // Error code from the deep link (backend mobile_callback).
+        text = err.message === 'no_email' ? t('account.social_no_email') : t('account.social_token_rejected');
+      } else if (status === 422) {
+        text = err?.response?.data?.message && err.step === 'start' ? err.response.data.message : t('account.social_no_email');
+      } else if (status === 401 || status === 403 || status === 410) {
+        text = t('account.social_token_rejected');
+      } else if (typeof err?.response?.data?.message === 'string' && err.response.data.message) {
+        text = err.response.data.message;
+      } else if (err?.isAxiosError && !err.response) {
+        text = t('account.social_network');
+      } else {
+        text = t('auth.generic_error');
       }
+      setError(text);
+      // Where it broke, for support / bug reports: "google · exchange · 500".
+      const code = err instanceof SocialLoginError ? err.message : (status || err?.code || err?.message || '');
+      setDetail([provider, err?.step, code].filter(Boolean).join(' · ').slice(0, 120));
+      if (__DEV__) console.warn('[social login]', provider, err?.step, status, err?.message, err?.response?.data);
     } finally {
       setBusyProvider(null);
     }
@@ -83,6 +94,7 @@ export default function SocialLoginButtons({ onLoggedIn, onNeedsPassword, style 
       </View>
 
       {!!error && <Text style={styles.error}>{error}</Text>}
+      {!!error && !!detail && <Text style={styles.detail}>{detail}</Text>}
 
       {status.google && (
         <TouchableOpacity
@@ -167,6 +179,13 @@ const styles = StyleSheet.create({
   },
   facebookButtonText: {
     color: '#fff',
+  },
+  detail: {
+    color: COLORS.muted,
+    marginTop: -8,
+    marginBottom: 12,
+    textAlign: 'center',
+    fontSize: 11, fontFamily: FONTS.body,
   },
   error: {
     color: COLORS.danger,

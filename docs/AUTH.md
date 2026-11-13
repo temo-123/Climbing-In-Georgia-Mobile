@@ -249,80 +249,23 @@ navigation.goBack()
 
 ## Social Login (Google/Facebook)
 
-The backend already runs a standard web OAuth flow for climbing.ge (Laravel Socialite: redirect to provider → provider redirects back to a backend callback → callback exchanges the code and returns the result). The mobile app reuses that **exact same flow** through an in-app browser rather than talking to Google/Facebook directly — no native Google Sign-In / FBSDK, no separate mobile OAuth client, no client-side `client_id`.
+> Console setup, the backend flow it needs (with a ready prompt), testing and troubleshooting: [OAUTH.md](OAUTH.md).
 
-### Why an in-app browser, not a native SDK
-
-A native SDK (`@react-native-google-signin/google-signin`, `react-native-fbsdk-next`) needs its own OAuth client per platform (Android SHA-1 fingerprint, iOS bundle ID, FB key hash) and a backend endpoint that verifies a native ID/access token — a different code path than the Socialite flow the backend already has for web. Reusing the web flow via [`expo-web-browser`](https://docs.expo.dev/versions/latest/sdk/webbrowser/)'s `openAuthSessionAsync` needed only one small backend change (below) and no new credentials.
-
-### The one thing that had to change on the backend
-
-`SocialController::callback()` normally returns raw JSON — fine for the web SPA reading the response body directly, useless for a React Native in-app browser session, which only ever gets handed the *final URL* it landed on (`WebBrowser.openAuthSessionAsync` cannot read a response body). So:
-
-1. The app requests the authorize URL with `GET /login/{provider}?mobile=1`.
-2. The backend folds `mobile=1` into OAuth's `state` parameter (`?state=mobile`) — the one custom value providers echo back unchanged — since Socialite's `stateless()` mode has no session to carry a flag through otherwise.
-3. In the callback, if `state=mobile`, the backend responds with a `302` to `{MOBILE_APP_SCHEME}://oauth-callback?...` (the same data as the JSON body, as query params) instead of JSON. That custom scheme is what `openAuthSessionAsync` is watching for — the moment the in-app browser navigates there, Expo closes it and hands the URL back to the app.
-
-Web behavior (no `state=mobile`) is completely unchanged — same JSON responses as before.
+No native SDK and **no keys in the app**: the backend's OAuth flow runs in a system browser tab (`expo-web-browser` `openAuthSessionAsync`) and ends on `climbinggeorgia://oauth-callback`.
 
 ```
-MOBILE                              BACKEND                          GOOGLE/FACEBOOK
-  │                                    │                                    │
-  ├─ GET /login/google?mobile=1 ─────▶│                                    │
-  │◀──────────── { url } ─────────────┤                                    │
-  │                                    │                                    │
-  ├─ WebBrowser.openAuthSessionAsync(url, 'climbinggeorgia://oauth-callback')
-  │                                    │                                    │
-  ├───────────────── in-app browser opens `url` ─────────────────────────▶│
-  │                                    │◀────── user approves ─────────────┤
-  │                                    │◀── GET .../callback?code=...&state=mobile
-  │                                    ├─ exchanges code, finds/creates user
-  │◀── 302 climbinggeorgia://oauth-callback?status=login&token=... ────────┤
-  │  (Expo detects the scheme match, closes the browser, returns the URL)  │
-  ├─ parse query params from result.url                                    │
+SocialLoginButtons → startSocialLogin(provider, { birthday })   (utils/socialAuth.js)
+  ├─ GET /api/login/{provider}?mobile=1&nonce=N[&birthday]  → { url }
+  ├─ browser tab → provider → /api/login/{provider}/mobile_callback
+  ├─ 302 climbinggeorgia://oauth-callback?code=C&nonce=N   (or ?message=…[&is_banned=1])
+  └─ POST /api/login/mobile/exchange { code: C, nonce: N }
+       ├─ { status: 'login', token, is_underage }                → loginWithToken(token)
+       └─ { status: 'registratione', new_user_email, setup_key } → social_create_password
 ```
 
-### Outcomes
+`social_create_password` (`screens/auth/SocialCreatePasswordScreen.jsx`) → `POST /api/login/social/create_password/{email}` with `{ setup_key, data: { password, password_confirmation } }` → `{ token }`; `403` = key expired → *Sign in again*.
 
-`startSocialLogin(provider)` (in `utils/socialAuth.js`) resolves to one of:
-
-| Result | Meaning | App behavior |
-|---|---|---|
-| `{ status: 'login', token }` | Existing user (matched by email) | `loginWithToken(token)` → fetches `/auth_user`, completes session |
-| `{ status: 'registratione', new_user_email }` | Brand-new user — backend already created the `User` row (with an unusable random password) and a `social_accounts` row | Navigate to `social_create_password` with that email |
-| `{ message, is_banned? }` (no `status`) | Provider error, no email returned, or the matched user is banned | Shown inline as an error under the buttons |
-| *(throws)* `social_login_cancelled` | User closed the in-app browser before finishing | Swallowed silently — no error shown |
-
-### Finishing a new signup
-
-`social_create_password` (`screens/auth/SocialCreatePasswordScreen.jsx`) collects a password + confirmation and calls:
-
-```json
-// POST /login/social/create_password/{email}
-// Request — note the `data` wrapper; the backend reads $request->data['password']
-{ "data": { "password": "...", "password_confirmation": "..." } }
-
-// Response 200
-{ "message": "Password created successfully", "token": "6|abc123..." }
-```
-
-The returned token goes through the same `loginWithToken()` as an existing-user social login.
-
-### Configuration
-
-| Where | Var | Notes |
-|---|---|---|
-| Backend `.env` | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_URL` | Same OAuth client used by the web frontend — no separate mobile client |
-| Backend `.env` | `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET` / `FACEBOOK_URL` | Same idea |
-| Backend `.env` | `MOBILE_APP_SCHEME` | Must equal this app's `expo.scheme` (`app.json`) — defaults to `climbinggeorgia` |
-| `app.json` | `expo.scheme` | `"climbinggeorgia"` — must match `MOBILE_APP_SCHEME` on the backend and the hardcoded `REDIRECT_URL` in `utils/socialAuth.js` |
-| Mobile `.env` | `EXPO_PUBLIC_GOOGLE_CLIENT_ID` / `EXPO_PUBLIC_FACEBOOK_CLIENT_ID` | **Dev-only UI preview**, not real config — any non-empty value force-shows that provider's button in a `__DEV__` build even if the backend reports it unconfigured, so the button can be styled/tested before real backend credentials exist. No effect in release builds; tapping the button still hits the real backend and won't complete a login for an unconfigured provider. |
-
-`GET /login/status` returns `false` for a provider unless *all three* of its `client_id`/`client_secret`/`redirect` are set (and not the literal placeholder `"..."`) — see `SocialController::isProviderConfigured()` in the backend repo. `SocialLoginButtons` hides a provider's button entirely when its status is `false` (dev override aside), and hides itself completely if both are `false`.
-
-> **Testing note:** `expo-web-browser` itself works in Expo Go, but the `climbinggeorgia://` scheme redirect that closes the browser and returns control to the app is only registered at the OS level in a real dev-client/EAS build — **not** in plain Expo Go. Verify this flow with `eas build --profile preview` (or a dev client), not `npx expo start`.
-
----
+The buttons render only when `GET /api/login/status` returns `mobile: true` and the provider is configured. On a backend without the mobile flow they're hidden, rather than opening the website's login form.
 
 ## File Reference
 

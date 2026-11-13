@@ -18,6 +18,11 @@ const USER_KEYS = [
   'route_ascents', 'mtp_ascents', 'climbing_stats', 'preferences',
   'notification_settings', 'favorites', 'overview', 'ascents', 'my_comments',
 ];
+// Single sub-trees taken by dotted path (kept at the same path under `site`).
+const EXTRA_PATHS = [
+  'global.age_restriction', 'global.email_verify', 'global.follow',
+  'shop.product.feedback.reasons', 'user.nav.account_alert', 'user.nav.account_alerts',
+];
 
 const src = process.argv[2];
 if (!src) {
@@ -53,6 +58,14 @@ for (const lang of ['en', 'ka']) {
   for (const ns of NAMESPACES) if (root[ns]) out[ns] = mapTree(root[ns], root);
   out.user = {};
   for (const k of USER_KEYS) if (root.user?.[k]) out.user[k] = mapTree(root.user[k], root);
+  for (const p of EXTRA_PATHS) {
+    const v = get(root, p);
+    if (v === undefined) continue;
+    const keys = p.split('.');
+    let node = out;
+    for (const k of keys.slice(0, -1)) node = node[k] = node[k] || {};
+    node[keys[keys.length - 1]] = mapTree(v, root);
+  }
   const dest = path.join(__dirname, '..', 'locales', `site.${lang}.json`);
   fs.writeFileSync(dest, JSON.stringify(out, null, 1) + '\n');
   console.log(`${lang}: ${(fs.statSync(dest).size / 1024).toFixed(1)} KB → ${path.relative(process.cwd(), dest)}`);

@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Linking } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api, { API_BASE_URL, IMG_BASES, imgUri } from '../../utils/api';
-import { useAuth } from '../../utils/AuthContext';
+import { useAuth, useAccount } from '../../utils/AuthContext';
+import { useStatsVersion } from '../../utils/statsVersion';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faFacebookF, faInstagram, faYoutube } from '@fortawesome/free-brands-svg-icons';
 import { faGlobe, faLink, faUsers, faUserPlus, faStar, faFlag, faComment, faCheck } from '@fortawesome/free-solid-svg-icons';
@@ -42,6 +43,8 @@ function ActivityRow({ icon, primary, secondary, date }) {
 export default function ClimberProfileContent({ userId, compact, hideActivity, onViewFullProfile, onOpenClimbersList, onAvatarPress }) {
   const { t } = useTranslation();
   const { user: authUser } = useAuth();
+  const { canAct } = useAccount();
+  const statsVersion = useStatsVersion();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -57,6 +60,12 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [userId]);
+
+  // Quiet re-read after a delete elsewhere (points drop at once server-side).
+  useEffect(() => {
+    if (!statsVersion || !userId) return;
+    api.get(`${API}/get_climber_profile/${userId}`).then(res => setProfile(res.data)).catch(() => {});
+  }, [statsVersion, userId]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -106,8 +115,9 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
   // Same 6 point categories as the website (User::pointsCategories()): the
   // *_count fields are the exact visible-activity counts the points come from.
   const radarLabels = [
-    t('user.route_reviews'), t('user.mtp_reviews'), t('user.summit_ascents'),
-    t('user.route_ascents'), t('user.mtp_ascents'), t('user.comments'),
+    t('site.global.follow.route_reviews_label'), t('site.global.follow.mtp_reviews_label'),
+    t('site.global.follow.ascents_label'), t('site.global.follow.route_ascents_label'),
+    t('site.global.follow.mtp_ascents_label'), t('site.global.follow.comments_label'),
   ];
   const radarValues = [
     profile.route_reviews_count, profile.mtp_reviews_count, profile.ascents_count,
@@ -162,7 +172,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
           <View style={[styles.chip, styles.pointsChip]}><IconText icon={faStar} iconColor={COLORS.ink} style={[styles.chipText, styles.pointsChipText]}>{points_total} {t('user.points')}</IconText></View>
         </View>
 
-        {!isSelf && authUser && (
+        {!isSelf && authUser && canAct && (
           <TouchableOpacity
             style={[styles.followBtn, following && styles.followingBtn]}
             onPress={toggleFollow}
@@ -181,15 +191,8 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
       </View>
 
       <View style={styles.radarSection}>
-        <RadarStatsChart labels={radarLabels} values={radarValues} size={compact ? 130 : 160} />
-        <View style={styles.countsRow}>
-          {radarValues.map((v, i) => (
-            <View key={i} style={styles.countCol}>
-              <Text style={styles.countNum}>{v}</Text>
-              <Text style={styles.countLabel}>{radarLabels[i]}</Text>
-            </View>
-          ))}
-        </View>
+        <Text style={styles.chartTitle}>{t('site.global.follow.activity_chart_title')}</Text>
+        <RadarStatsChart labels={radarLabels} values={radarValues} size={compact ? 120 : 150} />
         {onOpenClimbersList && (
           <TouchableOpacity onPress={onOpenClimbersList} style={styles.allUsersLink}>
             <Text style={styles.allUsersLinkText}>{t('user.all_users')} ›</Text>
@@ -200,11 +203,11 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
       {!hideActivity && (
         <View style={styles.activitySection}>
           <Text style={styles.sectionTitle}>{t('user.recent_activity')}</Text>
-          {!hasActivity && <Text style={styles.emptyText}>{t('user.no_activity')}</Text>}
+          {!hasActivity && <Text style={styles.emptyText}>{t('site.global.follow.no_activity')}</Text>}
 
           {profile.recent_ascents?.length > 0 && (
             <>
-              <Text style={styles.subsectionTitle}>{t('user.recent_summit_ascents')}</Text>
+              <Text style={styles.subsectionTitle}>{t('site.global.follow.recent_ascents_title')}</Text>
               {profile.recent_ascents.map(a => (
                 <ActivityRow key={`a${a.id}`} icon={faFlag} primary={a.summit_title ?? '—'} date={a.ascent_date} />
               ))}
@@ -212,7 +215,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
           )}
           {profile.recent_route_ascents?.length > 0 && (
             <>
-              <Text style={styles.subsectionTitle}>{t('user.recent_route_ascents')}</Text>
+              <Text style={styles.subsectionTitle}>{t('site.global.follow.recent_route_ascents_title')}</Text>
               {profile.recent_route_ascents.map(a => (
                 <ActivityRow
                   key={`ra${a.id}`}
@@ -226,7 +229,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
           )}
           {profile.recent_mtp_ascents?.length > 0 && (
             <>
-              <Text style={styles.subsectionTitle}>{t('user.recent_mtp_ascents')}</Text>
+              <Text style={styles.subsectionTitle}>{t('site.global.follow.recent_mtp_ascents_title')}</Text>
               {profile.recent_mtp_ascents.map(a => (
                 <ActivityRow
                   key={`ma${a.id}`}
@@ -240,7 +243,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
           )}
           {profile.recent_route_reviews?.length > 0 && (
             <>
-              <Text style={styles.subsectionTitle}>{t('user.my_route_reviews')}</Text>
+              <Text style={styles.subsectionTitle}>{t('site.global.follow.route_reviews_label')}</Text>
               {profile.recent_route_reviews.map(r => (
                 <ActivityRow key={`r${r.id}`} icon={faStar} primary={r.route_name ?? '—'} secondary={r.text} date={r.created_at} />
               ))}
@@ -248,7 +251,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
           )}
           {profile.recent_mtp_reviews?.length > 0 && (
             <>
-              <Text style={styles.subsectionTitle}>{t('user.mtp_reviews')}</Text>
+              <Text style={styles.subsectionTitle}>{t('site.global.follow.mtp_reviews_label')}</Text>
               {profile.recent_mtp_reviews.map(r => (
                 <ActivityRow key={`m${r.id}`} icon={faStar} primary={r.mtp_name ?? '—'} secondary={r.text} date={r.created_at} />
               ))}
@@ -256,7 +259,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
           )}
           {profile.recent_comments?.length > 0 && (
             <>
-              <Text style={styles.subsectionTitle}>{t('user.my_comments')}</Text>
+              <Text style={styles.subsectionTitle}>{t('site.global.follow.recent_comments_title')}</Text>
               {profile.recent_comments.map(c => (
                 <ActivityRow key={`c${c.id}`} icon={faComment} primary={c.text} date={c.created_at} />
               ))}
@@ -302,6 +305,7 @@ const styles = StyleSheet.create({
   followingBtn: { backgroundColor: COLORS.line },
   followBtnText: { color: '#fff', fontFamily: FONTS.bodyBold, fontSize: 13 },
   followingBtnText: { color: COLORS.stone },
+  chartTitle: { fontSize: 12, fontFamily: FONTS.bodyHeavy, color: COLORS.muted, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 2 },
   radarSection: { alignItems: 'center', paddingVertical: 16, borderTopWidth: 1, borderTopColor: COLORS.line, marginTop: 16 },
   countsRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 12, paddingHorizontal: 12 },
   countCol: { alignItems: 'center', width: '33%', paddingVertical: 6 },

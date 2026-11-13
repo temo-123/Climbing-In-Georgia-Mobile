@@ -7,7 +7,7 @@ import {
   faTrashCan, faUser, faAddressCard,
 } from '@fortawesome/free-solid-svg-icons';
 import api, { API_BASE_URL, corsUrl } from '../utils/api';
-import { useAuth } from '../utils/AuthContext';
+import { useAuth, useAccount } from '../utils/AuthContext';
 import { useLocale } from '../utils/LocaleContext';
 import { toDate, dayMonth, dayMonthYear, startOfDay } from '../utils/eventDates';
 import { timeAgo } from '../utils/timeAgo';
@@ -35,6 +35,7 @@ export default function PartnersScreen({ navigation }) {
   const { t } = useTranslation();
   const { locale } = useLocale();
   const { user } = useAuth();
+  const { isUnderage } = useAccount();
   const toast = useToast();
   const [posts, setPosts] = useState(null);
   const [mine, setMine] = useState([]);
@@ -144,7 +145,7 @@ export default function PartnersScreen({ navigation }) {
   const header = (
     <View>
       <PageHead art="partners" title={t('site.guide.partners.title')} lead={t('site.guide.partners.lead')}>
-        <Button variant="hold" block={false} icon={faPlus} title={t('site.guide.partners.new_post')} onPress={startPost} style={styles.cta} />
+        {!isUnderage && <Button variant="hold" block={false} icon={faPlus} title={t('site.guide.partners.new_post')} onPress={startPost} style={styles.cta} />}
       </PageHead>
       {!user && (
         <View style={styles.gate}>

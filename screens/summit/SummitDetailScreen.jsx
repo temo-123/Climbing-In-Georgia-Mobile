@@ -8,9 +8,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from '../../utils/api';
 import { useLocale } from '../../utils/LocaleContext';
 import { useNetwork } from '../../utils/NetworkContext';
+import { useAccount } from '../../utils/AuthContext';
 import { loadSummitData, loadSummitAscentsData } from '../../utils/offlineStorage';
 import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
+import NotFoundMoved from '../../components/NotFoundMoved';
+import { useRenamableSlug } from '../../utils/renamedSlug';
 import ReportButton from '../../components/ReportButton';
 import { COLORS, FONTS, HEAD_COLORS, RADII } from '../../assets/styles/styles';
 import { SvgXml } from 'react-native-svg';
@@ -131,7 +134,10 @@ export default function SummitDetailScreen({ route, navigation }) {
   const { t } = useTranslation();
   const { locale } = useLocale();
   const { isOffline: deviceOffline } = useNetwork();
-  const { url_title, title } = route.params;
+  const { isUnderage } = useAccount();
+  const { url_title: paramSlug, title } = route.params;
+  // Renamed slugs: a 404 is retried with the slug the website redirects to.
+  const { slug: url_title, handle404, notFoundUrl } = useRenamableSlug('summit', paramSlug);
   const [summit, setSummit] = useState(null);
   const [ascents, setAscents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -151,7 +157,8 @@ export default function SummitDetailScreen({ route, navigation }) {
       setSummit(s.data);
       const data = a.data?.ascents ?? a.data ?? [];
       setAscents(Array.isArray(data) ? data : []);
-    }).catch(async () => {
+    }).catch(async (err) => {
+      if (await handle404(err)) return;
       // Offline (or the request failed) — fall back to whatever the Offline
       // Mode download cached. Ascent history is a best-effort "last seen"
       // snapshot here (it's inherently live/social data), but the summit's
@@ -184,6 +191,7 @@ export default function SummitDetailScreen({ route, navigation }) {
   }, [deviceOffline, load]);
 
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>;
+  if (notFoundUrl) return <NotFoundMoved url={notFoundUrl} />;
   if (noCache || !summit) return <OfflineError />;
 
   const photoAscents = ascents.filter(a => !!a.photo);
@@ -232,13 +240,15 @@ export default function SummitDetailScreen({ route, navigation }) {
         </View>
       )}
 
-      <TouchableOpacity
-        style={styles.recordBtn}
-        onPress={() => navigation.navigate('submit_ascent', { summit_id: summit.id, url_title: summit.url_title, title: summit.title })}
-        activeOpacity={0.85}
-      >
-        <Text style={styles.recordBtnText}>{t('summit.record_ascent')}</Text>
-      </TouchableOpacity>
+      {!isUnderage && (
+        <TouchableOpacity
+          style={styles.recordBtn}
+          onPress={() => navigation.navigate('submit_ascent', { summit_id: summit.id, url_title: summit.url_title, title: summit.title })}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.recordBtnText}>{t('summit.record_ascent')}</Text>
+        </TouchableOpacity>
+      )}
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>

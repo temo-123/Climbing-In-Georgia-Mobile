@@ -6,6 +6,8 @@ import { useLocale } from '../../utils/LocaleContext';
 import ArticleBlock from "../../components/article/articl_block";
 import Preloader from "../../components/Preloader";
 import OfflineError from "../../components/OfflineError";
+import NotFoundMoved from "../../components/NotFoundMoved";
+import { useRenamableSlug } from "../../utils/renamedSlug";
 import PageFooter from "../../components/PageFooter";
 import ArticleComments from "../../components/guide/ArticleComments";
 
@@ -16,6 +18,8 @@ import { useRefetchOnReconnect } from "../../utils/useRefetchOnReconnect";
 const IMG_BASE = IMG_BASES.other;
 
 export default function App({ route }) {
+  // Renamed slugs: a 404 is retried with the slug the website redirects to.
+  const { slug, handle404, notFoundUrl } = useRenamableSlug('other', route.params);
   const { locale } = useLocale();
   const [globalOtherData, setGlobalOtherData] = useState({});
   const [localeOtherData, setLocaleOtherData] = useState({});
@@ -23,15 +27,16 @@ export default function App({ route }) {
   const [noCache, setNoCache] = useState(false);
 
   const load = useCallback(() => {
-    api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/other/${locale}/` + route.params))
+    api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/other/${locale}/` + slug))
       .then(({ data }) => {
         setGlobalOtherData(data);
         setLocaleOtherData(data.locale_data || {});
-        saveArticleData('other', route.params, data);
+        saveArticleData('other', slug, data);
         setLoading(false);
       })
-      .catch(async () => {
-        const cached = await loadArticleData('other', route.params);
+      .catch(async (err) => {
+        if (await handle404(err)) { setLoading(false); return; }
+        const cached = await loadArticleData('other', slug);
         if (cached) {
           setGlobalOtherData(cached);
           setLocaleOtherData(cached.locale_data || {});
@@ -40,12 +45,13 @@ export default function App({ route }) {
         }
         setLoading(false);
       });
-  }, [locale, route.params]);
+  }, [locale, slug]);
 
   useEffect(() => { setLoading(true); load(); }, [load]);
   useRefetchOnReconnect(load);
 
   if (isLoading) return <Preloader />;
+  if (notFoundUrl) return <NotFoundMoved url={notFoundUrl} />;
   if (noCache) return <OfflineError />;
 
   return (

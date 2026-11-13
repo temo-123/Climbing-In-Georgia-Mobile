@@ -11,6 +11,8 @@ import ArticleSection, { SECTION_PADDING } from "../../components/article/Articl
 import HtmlContent from "../../components/HtmlContent";
 import Preloader from "../../components/Preloader";
 import OfflineError from "../../components/OfflineError";
+import NotFoundMoved from "../../components/NotFoundMoved";
+import { useRenamableSlug } from "../../utils/renamedSlug";
 import PageFooter from "../../components/PageFooter";
 import EmptyState from "../../components/EmptyState";
 import Button from "../../components/ui/Button";
@@ -33,6 +35,8 @@ const IMG_BASE = IMG_BASES.indoor;
 // top, live open badge, then the article with "Opening hours" and "Price"
 // right after "How to get there". Coming-soon gyms have no page yet.
 export default function IndoorGymPage({ route }) {
+  // Renamed slugs: a 404 is retried with the slug the website redirects to.
+  const { slug, handle404, notFoundUrl } = useRenamableSlug('indoor', route.params);
   const { t } = useTranslation();
   const { locale } = useLocale();
   const { width } = useWindowDimensions();
@@ -48,16 +52,17 @@ export default function IndoorGymPage({ route }) {
   useRememberViewed('indoor', globalIndoorData.global_data, localeIndoorData.title);
 
   const load = useCallback(() => {
-    api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/indoor/${locale}/` + route.params))
+    api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/indoor/${locale}/` + slug))
       .then(({ data }) => {
         setGlobalIndoorData(data);
         setLocaleIndoorData(data.locale_data || {});
         setGlobalIndoorInfoData(data.general_info || {});
-        saveArticleData('indoor', route.params, data);
+        saveArticleData('indoor', slug, data);
         setLoading(false);
       })
-      .catch(async () => {
-        const cached = await loadArticleData('indoor', route.params);
+      .catch(async (err) => {
+        if (await handle404(err)) { setLoading(false); return; }
+        const cached = await loadArticleData('indoor', slug);
         if (cached) {
           setGlobalIndoorData(cached);
           setLocaleIndoorData(cached.locale_data || {});
@@ -67,7 +72,7 @@ export default function IndoorGymPage({ route }) {
         }
         setLoading(false);
       });
-  }, [locale, route.params]);
+  }, [locale, slug]);
 
   useEffect(() => { setLoading(true); load(); }, [load]);
   useRefetchOnReconnect(load);
@@ -78,6 +83,7 @@ export default function IndoorGymPage({ route }) {
   }, [gd.id]);
 
   if (isLoading) return <Preloader />;
+  if (notFoundUrl) return <NotFoundMoved url={notFoundUrl} />;
   if (noCache) return <OfflineError />;
 
   if (gd.work_status === 'coming_soon') {

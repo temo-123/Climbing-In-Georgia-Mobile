@@ -23,8 +23,9 @@
     "@fortawesome/react-native-fontawesome": "^0.3.0",
     "@native-html/iframe-plugin": "^2.6.1",
     "@react-native-async-storage/async-storage": "2.2.0",
-    "@react-native-firebase/analytics": "^24.0.0",
-    "@react-native-firebase/app": "^24.0.0",
+    "@react-native-firebase/analytics": "^20.1.0",
+    "@react-native-firebase/app": "^20.1.0",
+    "@react-native-google-signin/google-signin": "^17.0.0",
     "@react-navigation/bottom-tabs": "^7.16.1",
     "@react-navigation/drawer": "^7.10.2",
     "@react-navigation/native": "^7.2.4",
@@ -55,6 +56,7 @@
     "react-i18next": "^17.0.8",
     "react-native": "0.88.1",
     "react-native-countdown-circle-timer": "^3.2.1",
+    "react-native-fbsdk-next": "^13.4.3",
     "react-native-gesture-handler": "~3.3.0",
     "react-native-reanimated": "4.7.1",
     "react-native-reanimated-table": "^0.0.2",
@@ -71,7 +73,7 @@
   "devDependencies": {
     "@babel/core": "^7.29.7",
     "@expo/config-plugins": "~58.0.0",
-    "babel-plugin-module-resolver": "^5.0.3",
+    "babel-plugin-module-resolver": "^5.0.0",
     "babel-preset-expo": "~58.0.0"
   },
   "private": true

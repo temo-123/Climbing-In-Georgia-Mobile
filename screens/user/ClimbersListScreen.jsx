@@ -14,6 +14,8 @@ import ClimberProfileModal from '../../components/user/ClimberProfileModal';
 import { COLORS, FONTS } from '../../assets/styles/styles';
 import { faTrophy } from '@fortawesome/free-solid-svg-icons';
 import IconText from '../../components/ui/IconText';
+import MyStatsCard from '../../components/user/MyStatsCard';
+import { useAuth } from '../../utils/AuthContext';
 
 const API = API_BASE_URL;
 const CACHE_KEY = '@climbers_list_cache';
@@ -34,6 +36,7 @@ export default function ClimbersListScreen() {
   const [noCache, setNoCache] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const debounceRef = useRef(null);
+  const { user } = useAuth();
 
   const fetchPage = useCallback((targetPage, { append } = {}) => {
     const setLoadingFlag = append ? setLoadingMore : setLoading;
@@ -118,13 +121,19 @@ export default function ClimbersListScreen() {
         </TouchableOpacity>
       </View>
 
-      {loading ? (
-        <View style={styles.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>
-      ) : data.length === 0 ? (
-        <View style={styles.center}><Text style={styles.emptyText}>{t('user.no_climbers')}</Text></View>
-      ) : (
+      {(
         <FlatList
-          data={data}
+          data={loading ? [] : data}
+          ListHeaderComponent={(
+            <MyStatsCard
+              onLogin={() => navigation.navigate('login')}
+              onRegister={() => navigation.navigate('register')}
+              onOpenProfile={user ? () => navigation.navigate('climber_profile', { userId: user.id }) : undefined}
+            />
+          )}
+          ListEmptyComponent={loading
+            ? <View style={styles.center}><ActivityIndicator size="large" color={COLORS.primary} /></View>
+            : <View style={styles.center}><Text style={styles.emptyText}>{t('site.global.follow.no_climbers_found')}</Text></View>}
           keyExtractor={(item, i) => String(item.id ?? i)}
           numColumns={2}
           renderItem={({ item }) => (

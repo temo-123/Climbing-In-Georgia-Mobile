@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { StyleSheet, View, SectionList, Text } from 'react-native';
+import { StyleSheet, View, SectionList } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { useSiteDescription } from '../../utils/useSiteData';
@@ -8,7 +8,7 @@ import { useNetwork } from '../../utils/NetworkContext';
 import { loadOfflineData, saveOfflineData, OFFLINE_KEYS } from '../../utils/offlineStorage';
 import { useRegions, regionIdsOf } from '../../utils/useRegions';
 import { searchItems } from '../../utils/listSearch';
-import { COLORS, FONTS } from '../../assets/styles/styles';
+import { regionOptionsFor, filterByRegion, regionSections } from '../../utils/regionSections';
 
 import IceCard from "../../components/cards/ice_card_component";
 import Article_list_header_text from "../../components/article_list_header_text_component";
@@ -21,10 +21,7 @@ import PageFooter from "../../components/PageFooter";
 import FavoritesStrip from "../../components/guide/FavoritesStrip";
 import RecentlyViewed from "../../components/guide/RecentlyViewed";
 import ListSearchBar from "../../components/ListSearchBar";
-import FilterChips from "../../components/FilterChips";
-import Segmented from "../../components/ui/Segmented";
-
-const OTHER = '__other__';
+import RegionGroupControls, { RegionSectionHeader } from "../../components/RegionGroupControls";
 
 export default function App() {
   const { t } = useTranslation();
@@ -41,32 +38,27 @@ export default function App() {
   const [flat, setFlat] = useState(false);
 
   // The website's IceListComponent: region filter (regions with a spot
-  // only), search, and while all regions are shown a By region / Flat toggle.
-  const regionOptions = useMemo(() => {
-    const ids = new Set((ice_data || []).flatMap(regionIdsOf));
-    return [{ key: null, label: t('filter.all') }, ...[...ids].filter((id) => regions[id]).map((id) => ({ key: id, label: regions[id] }))];
-  }, [ice_data, regions, t]);
-
-  const visible = useMemo(() => {
-    let list = (ice_data || []).filter((i) => i?.global_data);
-    if (region != null) list = list.filter((i) => regionIdsOf(i).includes(region));
-    return searchItems(list, query);
-  }, [ice_data, region, query]);
-
+  // only), search, and while all regions are shown a By region / Flat toggle
+  // — shared with the outdoor and indoor lists (utils/regionSections.js).
+  const regionOf = (i) => regionIdsOf(i).find((r) => regions[r]) ?? null;
+  const otherLabel = t('site.guide.article.indoor_filter.other_region');
+  const items = useMemo(() => (ice_data || []).filter((i) => i?.global_data), [ice_data]);
+  const regionOptions = useMemo(
+    () => regionOptionsFor(items, regionOf, regions, t('filter.all'), otherLabel),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [items, regions, t],
+  );
+  const visible = useMemo(
+    () => searchItems(filterByRegion(items, regionOf, region), query),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [items, region, query, regions],
+  );
   const grouped = region == null && !flat && !query.trim() && regionOptions.length > 2;
-  const sections = useMemo(() => {
-    if (!visible.length) return [];
-    if (!grouped) return [{ key: 'all', title: null, data: visible }];
-    const by = new Map();
-    visible.forEach((i) => {
-      const id = regionIdsOf(i).find((r) => regions[r]) ?? OTHER;
-      if (!by.has(id)) by.set(id, []);
-      by.get(id).push(i);
-    });
-    return [...by.entries()]
-      .sort(([a], [b]) => (a === OTHER) - (b === OTHER))
-      .map(([id, items]) => ({ key: String(id), title: id === OTHER ? t('site.guide.article.indoor_filter.other_region') : regions[id], data: items }));
-  }, [grouped, visible, regions, t]);
+  const sections = useMemo(
+    () => regionSections(visible, regionOf, regions, grouped, otherLabel),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [visible, grouped, regions, otherLabel],
+  );
 
   function load() {
     setLoading(true);
@@ -109,7 +101,7 @@ export default function App() {
       <SectionList
         sections={sections}
         stickySectionHeadersEnabled={false}
-        renderSectionHeader={({ section }) => (section.title ? <Text style={styles.sectionTitle}>{section.title}</Text> : null)}
+        renderSectionHeader={RegionSectionHeader}
         keyExtractor={(item) => item.global_data.id.toString()}
         ListHeaderComponent={
           <View>
@@ -122,19 +114,14 @@ export default function App() {
             <RecentlyViewed category="ice" />
             <IceRoutesQuantityText />
             <ListSearchBar value={query} onChange={setQuery} found={visible.length} placeholder={t('site.guide.list_search.ice')} />
-            {regionOptions.length > 2 && (
-              <View style={styles.gap}>
-                <FilterChips options={regionOptions} selected={region} onSelect={setRegion} />
-              </View>
-            )}
-            {region == null && !query.trim() && regionOptions.length > 2 && (
-              <Segmented
-                style={styles.gap}
-                options={[{ key: false, label: t('site.guide.group.by_region') }, { key: true, label: t('site.guide.group.flat') }]}
-                value={flat}
-                onChange={setFlat}
-              />
-            )}
+            <RegionGroupControls
+              options={regionOptions}
+              region={region}
+              onRegion={setRegion}
+              flat={flat}
+              onFlat={setFlat}
+              searching={!!query.trim()}
+            />
           </View>
         }
         renderItem={({ item }) => <IceCard cardData={item} />}
@@ -151,15 +138,4 @@ const styles = StyleSheet.create({
   wrapper: { flex: 1 },
   container: { padding: 16, flexGrow: 1 },
   footer: { flexGrow: 1, justifyContent: 'flex-end' },
-  gap: { marginBottom: 12 },
-  sectionTitle: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 22,
-    color: COLORS.ink,
-    marginTop: 6,
-    marginBottom: 10,
-    paddingLeft: 10,
-    borderLeftWidth: 3,
-    borderLeftColor: COLORS.hold,
-  },
 });

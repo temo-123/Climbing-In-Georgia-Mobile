@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform,
@@ -7,8 +8,10 @@ import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import AuthHead from '../../components/auth/AuthHead';
-import { useAuth } from '../../utils/AuthContext';
+import { useAuth, LAST_LOGIN_EMAIL_KEY } from '../../utils/AuthContext';
 import SocialLoginButtons from '../../components/auth/SocialLoginButtons';
+import { isGateHandled } from '../../utils/accountGate';
+import { isRecaptchaFailure } from '../../utils/recaptcha';
 import { COLORS, FONTS } from '../../assets/styles/styles';
 
 export default function LoginScreen({ navigation }) {
@@ -16,6 +19,13 @@ export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // After a session ended, start with the last account's e-mail.
+  useEffect(() => {
+    AsyncStorage.getItem(LAST_LOGIN_EMAIL_KEY)
+      .then((v) => { if (v) setEmail((cur) => cur || v); })
+      .catch(() => {});
+  }, []);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -31,6 +41,9 @@ export default function LoginScreen({ navigation }) {
       await login(email.trim(), password);
       navigation.goBack();
     } catch (err) {
+      // Banned → the account gate shows "Account suspended" instead.
+      if (isGateHandled(err)) { setError(''); return; }
+      if (isRecaptchaFailure(err)) { setError(t('climb.recaptcha_failed')); return; }
       if (!err.isAxiosError) {
         // Not an HTTP error — reCAPTCHA token generation itself failed
         // (WebView not ready, timed out, etc.), not a server rejection.
@@ -110,7 +123,7 @@ export default function LoginScreen({ navigation }) {
 
         <SocialLoginButtons
           onLoggedIn={() => navigation.goBack()}
-          onNeedsPassword={(email) => navigation.navigate('social_create_password', { email })}
+          onNeedsPassword={(email, setupKey) => navigation.navigate('social_create_password', { email, setupKey })}
         />
       </ScrollView>
     </KeyboardAvoidingView>

@@ -18,6 +18,11 @@ export default function SocialCreatePasswordScreen({ navigation, route }) {
   const { t } = useTranslation();
   const { loginWithToken } = useAuth();
   const email = route.params?.email;
+  // One-time key from the social callback (valid 1 h, single use). Without it
+  // — or once it expired — the backend answers 403 and the sign-in has to
+  // be started again.
+  const setupKey = route.params?.setupKey;
+  const [expired, setExpired] = useState(!setupKey);
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,12 +45,18 @@ export default function SocialCreatePasswordScreen({ navigation, route }) {
     setLoading(true);
     try {
       const res = await api.post(`${API_BASE}/login/social/create_password/${encodeURIComponent(email)}`, {
+        setup_key: setupKey,
         data: { password, password_confirmation: passwordConfirm },
       });
       await loginWithToken(res.data.token);
       navigation.popToTop();
     } catch (err) {
-      setError(err?.response?.data?.message || t('auth.generic_error'));
+      if (err?.response?.status === 403) {
+        setExpired(true);
+        setError(t('account.social_link_expired'));
+      } else {
+        setError(err?.response?.data?.message || t('auth.generic_error'));
+      }
     } finally {
       setLoading(false);
     }
@@ -77,12 +88,21 @@ export default function SocialCreatePasswordScreen({ navigation, route }) {
 
         {!!error && <Text style={styles.error}>{error}</Text>}
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading} activeOpacity={0.8}>
-          {loading
-            ? <ActivityIndicator color="#fff" />
-            : <Text style={styles.buttonText}>{t('auth.create_password_title')}</Text>
-          }
-        </TouchableOpacity>
+        {expired ? (
+          <>
+            {!error && <Text style={styles.error}>{t('account.social_link_expired')}</Text>}
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('login')} activeOpacity={0.8}>
+              <Text style={styles.buttonText}>{t('account.social_sign_in_again')}</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading} activeOpacity={0.8}>
+            {loading
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={styles.buttonText}>{t('auth.create_password_title')}</Text>
+            }
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );

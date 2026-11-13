@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { StyleSheet, View, SectionList, Text } from 'react-native';
+import { StyleSheet, View, SectionList } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { useSiteDescription } from '../../utils/useSiteData';
@@ -19,18 +19,18 @@ import PageFooter from "../../components/PageFooter";
 import FavoritesStrip from "../../components/guide/FavoritesStrip";
 import RecentlyViewed from "../../components/guide/RecentlyViewed";
 import ListSearchBar from "../../components/ListSearchBar";
-import FilterChips from "../../components/FilterChips";
+import RegionGroupControls, { RegionSectionHeader } from "../../components/RegionGroupControls";
+import { regionOptionsFor, filterByRegion, regionSections } from "../../utils/regionSections";
 import Segmented from "../../components/ui/Segmented";
 import ChoiceChips from "../../components/ui/ChoiceChips";
 import { SkeletonList } from "../../components/ui/Skeleton";
-import { COLORS, FONTS } from '../../assets/styles/styles';
-
-const OTHER = '__other__';
 const SORTS = ['newest', 'name', 'open_now', 'price'];
 
 // The website's IndoorListComponent: search, region (only regions with a
 // gym), status (all / open now / hide closed), sort (newest / name / open
 // now first / price) and, while all regions are shown, grouping by region.
+// The region part is shared with the ice and outdoor lists
+// (utils/regionSections.js, RegionGroupControls) so all three look the same.
 // Closed and coming-soon gyms sort after working ones.
 export default function IndoorGymsList() {
   const { t } = useTranslation();
@@ -84,17 +84,16 @@ export default function IndoorGymsList() {
 
   const gymOf = (item) => ({ ...item.global_data, weekly_hours: weeks[item.global_data.id] || null });
 
-  const regionOptions = useMemo(() => {
-    const ids = new Set(data.flatMap(regionIdsOf));
-    return [
-      { key: null, label: t('filter.all') },
-      ...[...ids].filter((id) => regions[id]).map((id) => ({ key: id, label: regions[id] })),
-    ];
-  }, [data, regions, t]);
+  const regionOf = (i) => regionIdsOf(i).find((r) => regions[r]) ?? null;
+  const otherLabel = t('site.guide.article.indoor_filter.other_region');
+  const regionOptions = useMemo(
+    () => regionOptionsFor(data.filter((i) => i?.global_data), regionOf, regions, t('filter.all'), otherLabel),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data, regions, t],
+  );
 
   const visible = useMemo(() => {
-    let list = data.filter((i) => i?.global_data);
-    if (region != null) list = list.filter((i) => regionIdsOf(i).includes(region));
+    let list = filterByRegion(data.filter((i) => i?.global_data), regionOf, region);
     if (status === 'open_now') list = list.filter((i) => isOpenNow(gymOf(i), now));
     if (status === 'working') list = list.filter((i) => !ALERT_STATUSES.includes(i.global_data.work_status));
     list = searchItems(list, query);
@@ -108,21 +107,15 @@ export default function IndoorGymsList() {
       list = [...list].sort((a, b) => closedLast(a) - closedLast(b) || price(a) - price(b));
     }
     return list;
-  }, [data, region, status, sort, query, weeks, now]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, region, status, sort, query, weeks, now, regions]);
 
   const grouped = region == null && !flat && !query.trim() && regionOptions.length > 2;
-  const sections = useMemo(() => {
-    if (!grouped) return [{ key: 'all', title: null, data: visible }];
-    const by = new Map();
-    visible.forEach((i) => {
-      const id = regionIdsOf(i).find((r) => regions[r]) ?? OTHER;
-      if (!by.has(id)) by.set(id, []);
-      by.get(id).push(i);
-    });
-    return [...by.entries()]
-      .sort(([a], [b]) => (a === OTHER) - (b === OTHER))
-      .map(([id, items]) => ({ key: String(id), title: id === OTHER ? t('site.guide.article.indoor_filter.other_region') : regions[id], data: items }));
-  }, [grouped, visible, regions, t]);
+  const sections = useMemo(
+    () => regionSections(visible, regionOf, regions, grouped, otherLabel),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [visible, grouped, regions, otherLabel],
+  );
 
   if (isLoading) return <SkeletonList count={3} />;
   if (noCache) return <OfflineError />;
@@ -131,7 +124,7 @@ export default function IndoorGymsList() {
     <View style={styles.wrapper}>
       {isOffline && <OfflineBanner />}
       <SectionList
-        sections={visible.length ? sections : []}
+        sections={sections}
         keyExtractor={(item) => item.global_data.id.toString()}
         stickySectionHeadersEnabled={false}
         ListHeaderComponent={
@@ -144,11 +137,14 @@ export default function IndoorGymsList() {
             <FavoritesStrip category="indoor" />
             <RecentlyViewed category="indoor" />
             <ListSearchBar value={query} onChange={setQuery} found={visible.length} placeholder={t('site.guide.list_search.indoor')} />
-            {regionOptions.length > 2 && (
-              <View style={styles.gap}>
-                <FilterChips options={regionOptions} selected={region} onSelect={setRegion} />
-              </View>
-            )}
+            <RegionGroupControls
+              options={regionOptions}
+              region={region}
+              onRegion={setRegion}
+              flat={flat}
+              onFlat={setFlat}
+              searching={!!query.trim()}
+            />
             <Segmented
               style={styles.gap}
               options={[
@@ -167,17 +163,9 @@ export default function IndoorGymsList() {
                 onChange={setSort}
               />
             </View>
-            {region == null && !query.trim() && regionOptions.length > 2 && (
-              <Segmented
-                style={styles.gap}
-                options={[{ key: false, label: t('site.guide.group.by_region') }, { key: true, label: t('site.guide.group.flat') }]}
-                value={flat}
-                onChange={setFlat}
-              />
-            )}
           </View>
         }
-        renderSectionHeader={({ section }) => (section.title ? <Text style={styles.sectionTitle}>{section.title}</Text> : null)}
+        renderSectionHeader={RegionSectionHeader}
         renderItem={({ item }) => <IndoorCard cardData={item} week={weeks[item.global_data.id]} now={now} />}
         ListEmptyComponent={<EmptyState message={t('empty.indoor')} />}
         ListFooterComponent={<PageFooter />}
@@ -193,14 +181,4 @@ const styles = StyleSheet.create({
   container: { padding: 16, flexGrow: 1 },
   footer: { flexGrow: 1, justifyContent: 'flex-end' },
   gap: { marginBottom: 12 },
-  sectionTitle: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 22,
-    color: COLORS.ink,
-    marginTop: 6,
-    marginBottom: 10,
-    paddingLeft: 10,
-    borderLeftWidth: 3,
-    borderLeftColor: COLORS.hold,
-  },
 });

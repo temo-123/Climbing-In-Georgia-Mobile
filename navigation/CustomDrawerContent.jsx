@@ -13,6 +13,7 @@ import { SKETCHES } from '../components/ui/sketches';
 import Segmented from '../components/ui/Segmented';
 import { SvgXml } from 'react-native-svg';
 import { IMG_BASES, imgUri } from '../utils/api';
+import { accountAlerts } from '../utils/accountAlerts';
 
 function initialsOf(user) {
   return `${user?.name?.[0] ?? ''}${user?.surname?.[0] ?? ''}`.toUpperCase();
@@ -71,7 +72,12 @@ export default function CustomDrawerContent(props) {
           <TouchableOpacity onPress={() => props.navigation.navigate('user_profile')} activeOpacity={0.7}>
             <Text style={styles.userName}>{user.name} {user.surname}</Text>
             <Text style={styles.userEmail}>{user.email}</Text>
-            <Text style={styles.profileLink}>{t('auth.profile')} ›</Text>
+            <View style={styles.profileRow}>
+              <Text style={styles.profileLink}>{t('auth.profile')} ›</Text>
+              {accountAlerts(user).length > 0 && (
+                <View style={styles.alertBadge}><Text style={styles.alertBadgeText}>{accountAlerts(user).length}</Text></View>
+              )}
+            </View>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -175,6 +181,9 @@ const styles = StyleSheet.create({
   userName: { fontSize: 18, fontFamily: FONTS.displayBold, color: COLORS.ink, marginBottom: 2 },
   userEmail: { fontSize: 12, color: COLORS.stone, fontFamily: FONTS.body, marginBottom: 4 },
   profileLink: { fontSize: 13, color: COLORS.primary, fontFamily: FONTS.bodyHeavy },
+  profileRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  alertBadge: { minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 5, backgroundColor: COLORS.danger, alignItems: 'center', justifyContent: 'center' },
+  alertBadgeText: { color: '#fff', fontFamily: FONTS.bodyHeavy, fontSize: 10 },
   loginBtn: {
     backgroundColor: COLORS.hold,
     borderRadius: RADII.pill,

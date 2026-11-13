@@ -34,6 +34,9 @@ import QRScannerScreen from '../screens/summit/QRScannerScreen';
 
 import DrawerNavigator from './DrawerNavigator';
 import withOfflineGuard from '../components/user/withOfflineGuard';
+import withAccountGate from '../components/account/withAccountGate';
+import AccountGateHost from '../components/account/AccountGateHost';
+import OfflinePromoHost from '../components/offline/OfflinePromoHost';
 import { headerOptions, navTheme } from './theme';
 
 const Stack = createNativeStackNavigator();
@@ -42,17 +45,23 @@ const Stack = createNativeStackNavigator();
 // the device is offline these render a "not available offline" notice instead
 // of mounting screens whose every request is guaranteed to fail. Wrapped once
 // at module level so the screen identity stays stable across re-renders.
-const OfflineGuardedUserProfileScreen = withOfflineGuard(UserProfileScreen);
-const OfflineGuardedUserOptionsScreen = withOfflineGuard(UserOptionsScreen);
-const OfflineGuardedUserCommentsScreen = withOfflineGuard(UserCommentsScreen);
-const OfflineGuardedUserRouteReviewsScreen = withOfflineGuard(UserRouteReviewsScreen);
-const OfflineGuardedUserAscentsScreen = withOfflineGuard(UserAscentsScreen);
-const OfflineGuardedUserDonationsScreen = withOfflineGuard(UserDonationsScreen);
-const OfflineGuardedUserFavoritesScreen = withOfflineGuard(UserFavoritesScreen);
+//
+// The panel screens are also account-gated (withAccountGate): under-age →
+// only the age panel, unverified e-mail → the verify panel (Options stays
+// open so the address can be changed). The climbers directory / profiles are
+// public guidebook pages, so they're not gated.
+const userPanel = (Screen, opts) => withOfflineGuard(withAccountGate(Screen, opts));
+const OfflineGuardedUserProfileScreen = userPanel(UserProfileScreen);
+const OfflineGuardedUserOptionsScreen = userPanel(UserOptionsScreen, { allowUnverified: true });
+const OfflineGuardedUserCommentsScreen = userPanel(UserCommentsScreen);
+const OfflineGuardedUserRouteReviewsScreen = userPanel(UserRouteReviewsScreen);
+const OfflineGuardedUserAscentsScreen = userPanel(UserAscentsScreen);
+const OfflineGuardedUserDonationsScreen = userPanel(UserDonationsScreen);
+const OfflineGuardedUserFavoritesScreen = userPanel(UserFavoritesScreen);
 const OfflineGuardedClimbersListScreen = withOfflineGuard(ClimbersListScreen);
 const OfflineGuardedClimberProfileScreen = withOfflineGuard(ClimberProfileScreen);
-const OfflineGuardedMyLogbookScreen = withOfflineGuard(MyLogbookScreen);
-const OfflineGuardedMyMtpAscentsScreen = withOfflineGuard(MyMtpAscentsScreen);
+const OfflineGuardedMyLogbookScreen = userPanel(MyLogbookScreen);
+const OfflineGuardedMyMtpAscentsScreen = userPanel(MyMtpAscentsScreen);
 
 
 export const Navigation = () => {
@@ -172,6 +181,8 @@ export const Navigation = () => {
           options={{ title: t('summit.scan_qr'), ...headerOptions }}
         />
       </Stack.Navigator>
+      <AccountGateHost navigationRef={navigationRef} />
+      <OfflinePromoHost navigationRef={navigationRef} />
     </NavigationContainer>
   );
 };

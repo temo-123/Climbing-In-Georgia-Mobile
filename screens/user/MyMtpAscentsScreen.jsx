@@ -8,6 +8,7 @@ import { useMyAscents, reloadMyAscents } from '../../utils/myAscents';
 import { useLocale } from '../../utils/LocaleContext';
 import { toDate, dayMonthYear } from '../../utils/eventDates';
 import { apiErrorMessage } from '../../utils/apiError';
+import { bumpStats } from '../../utils/statsVersion';
 import PageHead from '../../components/ui/PageHead';
 import Chip from '../../components/ui/Chip';
 import EmptyState from '../../components/EmptyState';
@@ -37,6 +38,7 @@ export default function MyMtpAscentsScreen() {
         onPress: async () => {
           try {
             await api.delete(`${API_BASE_URL}/set_mtp_ascent/del_my_mtp_ascent/${a.id}`);
+            bumpStats();
             toast.show({ message: t('climb.deleted') });
             reloadMyAscents();
           } catch (err) {

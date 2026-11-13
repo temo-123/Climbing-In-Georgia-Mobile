@@ -6,26 +6,32 @@ import { useTranslation } from 'react-i18next';
 
 const CATEGORIES_URL = `${API_BASE_URL}/get_sector/sectors_and_routes_quantity_by_categories/`;
 
+// POST get_sector/sectors_and_routes_quantity_by_categories
+//   { route_categories: ['ice', 'dry'] }
+//   → { categories: { ice: { sectors, ice_routes }, dry: { sectors, dry_routes } } }
+// (backend SectorController: the dry-tooling category key is `dry`, and the
+// numbers are under `categories` — same shape as the sport tiles.)
 export default function IceRoutesQuantityText() {
   const { t } = useTranslation();
   const [data, setData] = useState(null);
 
   useEffect(() => {
     api
-      .post(corsUrl(CATEGORIES_URL), { route_categories: ['ice', 'drytooling'] })
+      .post(corsUrl(CATEGORIES_URL), { route_categories: ['ice', 'dry'] })
       .then(({ data }) => setData(data))
       .catch(() => {});
   }, []);
 
   if (!data) return null;
 
-  const ice = data.ice || {};
-  const drytooling = data.drytooling || {};
+  const categories = data.categories || {};
+  const ice = categories.ice || {};
+  const dry = categories.dry || {};
 
-  const iceRoutes  = ice.routes   ?? ice.routes_count   ?? 0;
-  const iceSectors = ice.sectors  ?? ice.sectors_count  ?? 0;
-  const dtRoutes   = drytooling.routes   ?? drytooling.routes_count   ?? 0;
-  const dtSectors  = drytooling.sectors  ?? drytooling.sectors_count  ?? 0;
+  const iceRoutes  = Number(ice.ice_routes) || 0;
+  const iceSectors = Number(ice.sectors) || 0;
+  const dtRoutes   = Number(dry.dry_routes) || 0;
+  const dtSectors  = Number(dry.sectors) || 0;
 
   return (
     <StatTiles

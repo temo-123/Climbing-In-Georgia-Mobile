@@ -8,7 +8,7 @@ import {
   faBullhorn, faPaperPlane, faClock, faTrashCan,
 } from '@fortawesome/free-solid-svg-icons';
 import api, { API_BASE_URL } from '../../utils/api';
-import { useAuth } from '../../utils/AuthContext';
+import { useAuth, useAccount } from '../../utils/AuthContext';
 import { useLocale } from '../../utils/LocaleContext';
 import { timeAgo } from '../../utils/timeAgo';
 import { apiErrorMessage } from '../../utils/apiError';
@@ -42,6 +42,7 @@ export default function AreaConditions({ articleId, category = 'outdoor' }) {
   const { t } = useTranslation();
   const { locale } = useLocale();
   const { user } = useAuth();
+  const { isUnderage } = useAccount();
   const navigation = useNavigation();
   const toast = useToast();
   const [reports, setReports] = useState(null);
@@ -136,7 +137,7 @@ export default function AreaConditions({ articleId, category = 'outdoor' }) {
       <View style={styles.card}>
         <View style={styles.head}>
           <Text style={styles.title}>{t('site.guide.conditions.title')}</Text>
-          {!form && (
+          {!form && !isUnderage && (
             <Button small block={false} variant="hold" icon={faBullhorn} title={t('site.guide.conditions.report')} onPress={openForm} />
           )}
         </View>

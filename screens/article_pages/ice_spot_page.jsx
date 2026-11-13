@@ -11,6 +11,8 @@ import ArticleImageGrid from "../../components/article/ArticleImageGrid";
 import ImageViewerModal from "../../components/ImageViewerModal";
 import Preloader from "../../components/Preloader";
 import OfflineError from "../../components/OfflineError";
+import NotFoundMoved from "../../components/NotFoundMoved";
+import { useRenamableSlug } from "../../utils/renamedSlug";
 import PageFooter from "../../components/PageFooter";
 import { useRememberViewed } from "../../utils/recentlyViewed";
 import ArticleComments from "../../components/guide/ArticleComments";
@@ -25,6 +27,8 @@ const GALLERY_BASE = IMG_BASES.gallery;
 const IMG_BASE = IMG_BASES.ice;
 
 export default function App({ route }) {
+  // Renamed slugs: a 404 is retried with the slug the website redirects to.
+  const { slug, handle404, notFoundUrl } = useRenamableSlug('ice', route.params);
   const { t } = useTranslation();
   const { locale } = useLocale();
   const [globalIceData, setGlobalIceData] = useState({});
@@ -37,16 +41,17 @@ export default function App({ route }) {
   useRememberViewed('ice', globalIceData.global_data, localeIceData.title);
 
   const load = useCallback(() => {
-    api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/ice/${locale}/` + route.params))
+    api.get(corsUrl(`${API_BASE_URL}/get_article/get_locale_article_on_page/ice/${locale}/` + slug))
       .then(({ data }) => {
         setGlobalIceData(data);
         setLocaleIceData(data.locale_data || {});
         setGlobalIceInfoData(data.general_info || {});
-        saveArticleData('ice', route.params, data);
+        saveArticleData('ice', slug, data);
         setLoading(false);
       })
-      .catch(async () => {
-        const cached = await loadArticleData('ice', route.params);
+      .catch(async (err) => {
+        if (await handle404(err)) { setLoading(false); return; }
+        const cached = await loadArticleData('ice', slug);
         if (cached) {
           setGlobalIceData(cached);
           setLocaleIceData(cached.locale_data || {});
@@ -56,12 +61,13 @@ export default function App({ route }) {
         }
         setLoading(false);
       });
-  }, [locale, route.params]);
+  }, [locale, slug]);
 
   useEffect(() => { setLoading(true); load(); }, [load]);
   useRefetchOnReconnect(load);
 
   if (isLoading) return <Preloader />;
+  if (notFoundUrl) return <NotFoundMoved url={notFoundUrl} />;
   if (noCache) return <OfflineError />;
 
   const galleryUris = (globalIceData.gallery_images || [])

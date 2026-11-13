@@ -15,9 +15,11 @@ import { useRefetchOnReconnect } from "../../utils/useRefetchOnReconnect";
 import IceSectors from "../../components/Routes_and_sectors/Ice_sectors/ice_sectors";
 import ArticleBlock from "../../components/article/articl_block";
 import ArticleImageGrid from "../../components/article/ArticleImageGrid";
-import MassiveSection from "../../components/article/mount_masive/mount_masive_description_for_article_page_component";
+import MountMassifCard from "../../components/article/mount_masive/MountMassifCard";
 import Preloader from "../../components/Preloader";
 import OfflineError from "../../components/OfflineError";
+import NotFoundMoved from "../../components/NotFoundMoved";
+import { useRenamableSlug } from "../../utils/renamedSlug";
 import PageFooter from "../../components/PageFooter";
 import { useRememberViewed } from "../../utils/recentlyViewed";
 import ArticleComments from "../../components/guide/ArticleComments";
@@ -31,8 +33,9 @@ const GALLERY_BASE       = IMG_BASES.gallery;
 export default function MountainRoutePage({ route }) {
   const { t } = useTranslation();
   const { locale } = useLocale();
-  const urlTitle    = typeof route.params === 'object' ? route.params.url_title : route.params;
-  const mountMasive = typeof route.params === 'object' ? route.params.mount_masive : null;
+  const paramSlug   = typeof route.params === 'object' ? route.params.url_title : route.params;
+  // Renamed slugs: a 404 is retried with the slug the website redirects to.
+  const { slug: urlTitle, handle404, notFoundUrl } = useRenamableSlug('mount_route', paramSlug);
 
   const [globalData, setGlobalData]           = useState({});
   const [localeData, setLocaleData]           = useState({});
@@ -53,7 +56,8 @@ export default function MountainRoutePage({ route }) {
         saveArticleData('mount_route', urlTitle, data);
         setLoading(false);
       })
-      .catch(async () => {
+      .catch(async (err) => {
+        if (await handle404(err)) { setLoading(false); return; }
         const cached = await loadArticleData('mount_route', urlTitle);
         if (cached) {
           setGlobalData(cached);
@@ -91,6 +95,7 @@ export default function MountainRoutePage({ route }) {
   useRefetchOnReconnect(loadRouteImages);
 
   if (isLoading) return <Preloader />;
+  if (notFoundUrl) return <NotFoundMoved url={notFoundUrl} />;
   if (noCache) return <OfflineError />;
 
   const routeImageUris = routeImages
@@ -130,12 +135,7 @@ export default function MountainRoutePage({ route }) {
         headerExtra={!!globalData.global_data?.mount_grade && (
           <GradeTape grade={formatMountGradeSlash(globalData.global_data.mount_grade)} />
         )}
-        afterImageContent={mountMasive ? (
-          <MassiveSection
-            mountMasiveName={mountMasive}
-            articleId={globalData.global_data?.id}
-          />
-        ) : null}
+        afterImageContent={<MountMassifCard articleId={globalData.global_data?.id} />}
       />
 
       <ArticleImageGrid

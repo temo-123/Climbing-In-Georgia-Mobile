@@ -10,14 +10,17 @@ import {
 import { COLORS, FONTS, RADII, SHADOWS } from '../../assets/styles/styles';
 import ClimberProfileContent from '../../components/user/ClimberProfileContent';
 import ClimberProfileModal from '../../components/user/ClimberProfileModal';
+import AccountAlertsCard from '../../components/user/AccountAlertsCard';
+import { accountAlerts } from '../../utils/accountAlerts';
 
-function MenuItem({ icon, label, onPress, danger }) {
+function MenuItem({ icon, label, onPress, danger, badge }) {
   return (
     <TouchableOpacity style={styles.menuItem} onPress={onPress} activeOpacity={0.7}>
       <View style={[styles.menuIcon, danger && styles.menuIconDanger]}>
         <FontAwesomeIcon icon={icon} size={15} color={danger ? COLORS.danger : COLORS.primaryDark} />
       </View>
       <Text style={[styles.menuLabel, danger && styles.dangerText]}>{label}</Text>
+      {!!badge && <View style={styles.badge}><Text style={styles.badgeText}>{badge}</Text></View>}
       {!danger && <FontAwesomeIcon icon={faChevronRight} size={12} color={COLORS.muted} />}
     </TouchableOpacity>
   );
@@ -41,6 +44,10 @@ export default function UserProfileScreen({ navigation }) {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+      <AccountAlertsCard
+        onOpen={(key) => navigation.navigate('user_options', key === 'email' ? {} : { focus: key, at: Date.now() })}
+      />
+
       <View style={styles.profileCard}>
         <ClimberProfileContent
           userId={user.id}
@@ -65,6 +72,7 @@ export default function UserProfileScreen({ navigation }) {
         <MenuItem
           icon={faGear}
           label={t('user.options')}
+          badge={accountAlerts(user).length}
           onPress={() => navigation.navigate('user_options')}
         />
 
@@ -174,5 +182,7 @@ const styles = StyleSheet.create({
   menuIconDanger: { backgroundColor: '#fbe9ea' },
   menuLabel: { flex: 1, fontSize: 15, color: COLORS.ink, fontFamily: FONTS.bodySemi },
   dangerText: { color: COLORS.danger },
+  badge: { minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 6, backgroundColor: COLORS.danger, alignItems: 'center', justifyContent: 'center' },
+  badgeText: { color: '#fff', fontFamily: FONTS.bodyHeavy, fontSize: 11 },
   divider: { height: 1, backgroundColor: COLORS.line, marginVertical: 6, marginHorizontal: 18 },
 });

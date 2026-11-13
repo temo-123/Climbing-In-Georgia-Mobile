@@ -2,6 +2,8 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, Alert, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
+import { useAccount } from '../../utils/AuthContext';
+import { isGateHandled } from '../../utils/accountGate';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartOutline } from '@fortawesome/free-regular-svg-icons';
@@ -17,7 +19,8 @@ export default function InterestedButton({ event, variant = 'card' }) {
   const navigation = useNavigation();
   const toast = useToast();
   const { loggedIn, isInterested, count } = useInterested();
-  if (!event?.id) return null;
+  const { isUnderage } = useAccount();
+  if (!event?.id || isUnderage) return null;
   const on = isInterested(event.id);
   const n = count(event);
 
@@ -37,8 +40,8 @@ export default function InterestedButton({ event, variant = 'card' }) {
           message: t('site.guide.events.interested_removed'),
           action: { label: t('site.guide.favorite.undo'), handler: () => toggleInterested(event.id).catch(() => {}) },
         });
-    } catch {
-      toast.show({ type: 'error', message: t('site.guide.favorite.error') });
+    } catch (err) {
+      if (!isGateHandled(err)) toast.show({ type: 'error', message: t('site.guide.favorite.error') });
     }
   }
 

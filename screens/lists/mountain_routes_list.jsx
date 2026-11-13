@@ -23,7 +23,9 @@ import { searchItems } from "../../utils/listSearch";
 
 const OTHER_MASSIF_KEY = '__other__';
 
-export default function App() {
+// route.params.massifId (from a route page's massif card) preselects that
+// massif's filter chip.
+export default function App({ route }) {
   const { t } = useTranslation();
   const { locale } = useLocale();
   const { isOffline: deviceOffline } = useNetwork();
@@ -31,7 +33,12 @@ export default function App() {
   const [isLoading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
   const [noCache, setNoCache] = useState(false);
-  const [selectedMassif, setSelectedMassif] = useState(null);
+  const [selectedMassif, setSelectedMassif] = useState(route?.params?.massifId ?? null);
+  const massifParam = route?.params?.massifId;
+  const massifParamAt = route?.params?.at;
+  useEffect(() => {
+    if (massifParam != null) setSelectedMassif(massifParam);
+  }, [massifParam, massifParamAt]);
   const [sortAlpha, setSortAlpha] = useState(false);
   const [query, setQuery] = useState('');
   const description = useSiteDescription('mount_route');

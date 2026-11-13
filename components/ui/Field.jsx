@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { COLORS, FONTS, RADII } from '../../assets/styles/styles';
 
@@ -17,12 +17,13 @@ export function FieldLabel({ label, required, hint }) {
   );
 }
 
-export default function Field({ label, required, hint, children, style, multiline, ...inputProps }) {
+function Field({ label, required, hint, children, style, multiline, ...inputProps }, ref) {
   return (
     <View style={[styles.field, style]}>
       {!!label && <FieldLabel label={label} required={required} hint={hint} />}
       {children ?? (
         <TextInput
+          ref={ref}
           style={[styles.input, multiline && styles.multiline]}
           placeholderTextColor={COLORS.muted}
           multiline={multiline}
@@ -33,6 +34,8 @@ export default function Field({ label, required, hint, children, style, multilin
     </View>
   );
 }
+
+export default forwardRef(Field);
 
 export const inputStyle = {
   borderWidth: 1,

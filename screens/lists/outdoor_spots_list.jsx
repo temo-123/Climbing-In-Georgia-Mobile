@@ -1,4 +1,4 @@
-import { StyleSheet, View, FlatList } from 'react-native';
+import { StyleSheet, View, SectionList } from 'react-native';
 import { faUserPen } from '@fortawesome/free-solid-svg-icons';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,8 +11,7 @@ import { loadOutdoorByRegionData, saveOutdoorByRegionData } from '../../utils/of
 import OutdoorCard from "../../components/cards/outdoor_card_component";
 import Article_list_header_text from "../../components/article_list_header_text_component";
 import RoutesQuantityText from "../../components/Routes_and_sectors/Sport_sector/roures_quantyti_text_component";
-import FilterChips from "../../components/FilterChips";
-import SortToggle from "../../components/SortToggle";
+import RegionGroupControls, { RegionSectionHeader } from "../../components/RegionGroupControls";
 import EmptyState from "../../components/EmptyState";
 import Preloader from "../../components/Preloader";
 import OfflineBanner from "../../components/OfflineBanner";
@@ -25,8 +24,8 @@ import ListSearchBar from "../../components/ListSearchBar";
 import { searchItems } from "../../utils/listSearch";
 import RouteAuthorsModal from "../../components/RouteAuthorsModal";
 import Button from "../../components/ui/Button";
-
-const OTHER_REGION_KEY = '__other__';
+import { useRegions } from "../../utils/useRegions";
+import { regionOptionsFor, filterByRegion, regionSections } from "../../utils/regionSections";
 
 export default function App() {
   const { t } = useTranslation();
@@ -38,7 +37,8 @@ export default function App() {
   const [noCache, setNoCache] = useState(false);
   const [authorsVisible, setAuthorsVisible] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState(null);
-  const [sortAlpha, setSortAlpha] = useState(false);
+  const [flat, setFlat] = useState(false);
+  const siteRegions = useRegions();
   const [query, setQuery] = useState('');
   const description = useSiteDescription('outdoor');
 
@@ -75,13 +75,15 @@ export default function App() {
     wasDeviceOffline.current = deviceOffline;
   }, [deviceOffline]);
 
-  // Every spot, tagged with its region key, regardless of grouping — the
-  // region filter chips narrow this down; "All" (selectedRegion === null)
-  // shows it as-is.
+  // Every spot, tagged with its region id (null = the API's "other" bucket).
+  // Outdoor list articles don't carry outdoor_region, so the grouping comes
+  // from get_spots_by_regions itself. Same region UI as the ice and indoor
+  // lists (utils/regionSections.js).
   const allSpots = useMemo(() => {
     const items = [];
     for (const group of byRegion) {
-      const regionKey = group.region?.id ?? OTHER_REGION_KEY;
+      const isOther = !group.region || group.region.name === 'other';
+      const regionKey = isOther ? null : group.region.id;
       for (const spot of (group.spots || [])) {
         if (spot?.area) items.push({ ...spot.area, _regionKey: regionKey });
       }
@@ -89,29 +91,34 @@ export default function App() {
     return items;
   }, [byRegion]);
 
-  const regionOptions = useMemo(() => {
-    const options = [{ key: null, label: t('filter.all') }];
+  // Names from the grouped answer, overridden by get_local_regions (which
+  // also gives the canonical order) once it has loaded.
+  const regions = useMemo(() => {
+    const fromGroups = {};
     for (const group of byRegion) {
-      if (!group.spots || group.spots.length === 0) continue;
-      const isOther = group.region?.name === 'other';
-      options.push({
-        key: group.region?.id ?? OTHER_REGION_KEY,
-        label: isOther ? t('filter.other_region') : (group.region?.name ?? '—'),
-      });
+      if (group.region && group.region.name !== 'other') fromGroups[group.region.id] = group.region.name;
     }
-    return options;
-  }, [byRegion, t]);
+    return { ...fromGroups, ...siteRegions };
+  }, [byRegion, siteRegions]);
 
-  const visibleSpots = useMemo(() => {
-    let list = selectedRegion == null
-      ? allSpots
-      : allSpots.filter((item) => item._regionKey === selectedRegion);
-    if (sortAlpha) {
-      list = [...list].sort((a, b) =>
-        (a.locale_data?.title || '').localeCompare(b.locale_data?.title || ''));
-    }
-    return searchItems(list, query);
-  }, [allSpots, selectedRegion, sortAlpha, query]);
+  const regionOf = (item) => item._regionKey;
+  const otherLabel = t('filter.other_region');
+  const regionOptions = useMemo(
+    () => regionOptionsFor(allSpots, regionOf, regions, t('filter.all'), otherLabel),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allSpots, regions, t],
+  );
+  const visibleSpots = useMemo(
+    () => searchItems(filterByRegion(allSpots, regionOf, selectedRegion), query),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allSpots, selectedRegion, query],
+  );
+  const grouped = selectedRegion == null && !flat && !query.trim() && regionOptions.length > 2;
+  const sections = useMemo(
+    () => regionSections(visibleSpots, regionOf, regions, grouped, otherLabel),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [visibleSpots, grouped, regions, otherLabel],
+  );
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;
@@ -119,8 +126,10 @@ export default function App() {
   return (
     <View style={styles.wrapper}>
       {isOffline && <OfflineBanner />}
-      <FlatList
-        data={visibleSpots}
+      <SectionList
+        sections={sections}
+        stickySectionHeadersEnabled={false}
+        renderSectionHeader={RegionSectionHeader}
         keyExtractor={(item) => item.global_data.id.toString()}
         ListHeaderComponent={
           <View>
@@ -141,11 +150,13 @@ export default function App() {
               style={styles.authorsBtn}
             />
             <ListSearchBar value={query} onChange={setQuery} found={visibleSpots.length} placeholder={t('site.guide.list_search.outdoor')} />
-            <FilterChips options={regionOptions} selected={selectedRegion} onSelect={setSelectedRegion} />
-            <SortToggle
-              active={sortAlpha}
-              onToggle={() => setSortAlpha((v) => !v)}
-              label={sortAlpha ? t('filter.sort_az') : t('filter.sort_default')}
+            <RegionGroupControls
+              options={regionOptions}
+              region={selectedRegion}
+              onRegion={setSelectedRegion}
+              flat={flat}
+              onFlat={setFlat}
+              searching={!!query.trim()}
             />
           </View>
         }

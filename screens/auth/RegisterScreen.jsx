@@ -9,6 +9,9 @@ import { useAuth } from '../../utils/AuthContext';
 import SocialLoginButtons from '../../components/auth/SocialLoginButtons';
 import { useLocale } from '../../utils/LocaleContext';
 import { openPrivacyPolicy, openTermsOfUse } from '../../utils/legalLinks';
+import DateField from '../../components/ui/DateField';
+import { fieldErrors, apiErrorMessage } from '../../utils/apiError';
+import { BIRTHDAY_MIN, BIRTHDAY_INITIAL_VIEW, birthdayMax, apiLang } from '../../utils/birthday';
 import { COLORS, FONTS } from '../../assets/styles/styles';
 
 export default function RegisterScreen({ navigation }) {
@@ -16,6 +19,8 @@ export default function RegisterScreen({ navigation }) {
   const { register } = useAuth();
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
+  const [birthday, setBirthday] = useState('');
+  const [fieldErrs, setFieldErrs] = useState({});
   const [email, setEmail] = useState('');
   const [country, setCountry] = useState('');
   const [city, setCity] = useState('');
@@ -30,16 +35,22 @@ export default function RegisterScreen({ navigation }) {
   const acceptedAll = acceptedTerms && acceptedPrivacy;
 
   async function handleRegister() {
-    if (!name.trim() || !surname.trim() || !email.trim() || !country.trim() || !city.trim() || !phoneNumber.trim() || !password || !passwordConfirm) {
+    setFieldErrs({});
+    if (!name.trim() || !surname.trim() || !email.trim() || !password || !passwordConfirm) {
       setError(t('auth.fill_all_fields'));
+      return;
+    }
+    if (!birthday) {
+      setFieldErrs({ birthday: t('account.birthday_required') });
+      setError('');
       return;
     }
     if (password !== passwordConfirm) {
       setError(t('auth.passwords_no_match'));
       return;
     }
-    if (password.length < 6) {
-      setError(t('auth.password_min'));
+    if (password.length < 8) {
+      setError(t('auth.password_min_8'));
       return;
     }
     if (!acceptedAll) {
@@ -49,21 +60,26 @@ export default function RegisterScreen({ navigation }) {
     setError('');
     setLoading(true);
     try {
-      await register(name.trim(), surname.trim(), email.trim(), country.trim(), city.trim(), phoneNumber.trim(), password, passwordConfirm);
+      await register({
+        name: name.trim(),
+        surname: surname.trim(),
+        birthday,
+        email: email.trim(),
+        country: country.trim(),
+        city: city.trim(),
+        phoneNumber: phoneNumber.trim(),
+        password,
+        passwordConfirmation: passwordConfirm,
+        lang: apiLang(locale),
+      });
       navigation.goBack();
     } catch (err) {
-      if (!err.isAxiosError) {
-        // Not an HTTP error — reCAPTCHA token generation itself failed
-        // (WebView not ready, timed out, etc.), not a server rejection.
-        setError(t('auth.generic_error'));
-        return;
-      }
-      if (err?.response?.data?.errors) {
-        const errs = Object.values(err.response.data.errors).flat();
-        setError(errs.join('\n'));
-      } else {
-        setError(err?.response?.data?.message || t('auth.generic_error'));
-      }
+      // Field errors go under their field (birthday) — the rest on top.
+      const fe = fieldErrors(err);
+      setFieldErrs(fe);
+      const { birthday: _b, ...rest } = fe;
+      const restText = Object.values(rest).join('\n');
+      setError(restText || (fe.birthday ? '' : apiErrorMessage(err, t)));
     } finally {
       setLoading(false);
     }
@@ -92,6 +108,20 @@ export default function RegisterScreen({ navigation }) {
           autoCapitalize="words"
         />
 
+        <Text style={styles.label}>{t('account.birthday')}</Text>
+        <DateField
+          value={birthday}
+          onChange={(v) => { setBirthday(v); setFieldErrs((e) => ({ ...e, birthday: undefined })); }}
+          min={BIRTHDAY_MIN}
+          max={birthdayMax()}
+          initialView={BIRTHDAY_INITIAL_VIEW}
+          placeholder={t('account.birthday_placeholder')}
+          error={!!fieldErrs.birthday}
+        />
+        {fieldErrs.birthday
+          ? <Text style={styles.fieldError}>{fieldErrs.birthday}</Text>
+          : <Text style={styles.fieldHint}>{t('account.birthday_hint')}</Text>}
+
         <TextInput
           style={styles.input}
           placeholder={t('auth.email')}
@@ -105,7 +135,7 @@ export default function RegisterScreen({ navigation }) {
 
         <TextInput
           style={styles.input}
-          placeholder={t('auth.country')}
+          placeholder={`${t('auth.country')} (${t('account.optional')})`}
           placeholderTextColor={COLORS.muted}
           value={country}
           onChangeText={setCountry}
@@ -114,7 +144,7 @@ export default function RegisterScreen({ navigation }) {
 
         <TextInput
           style={styles.input}
-          placeholder={t('auth.city')}
+          placeholder={`${t('auth.city')} (${t('account.optional')})`}
           placeholderTextColor={COLORS.muted}
           value={city}
           onChangeText={setCity}
@@ -123,7 +153,7 @@ export default function RegisterScreen({ navigation }) {
 
         <TextInput
           style={styles.input}
-          placeholder={t('auth.phone_number')}
+          placeholder={`${t('auth.phone_number')} (${t('account.optional')})`}
           placeholderTextColor={COLORS.muted}
           value={phoneNumber}
           onChangeText={setPhoneNumber}
@@ -185,8 +215,9 @@ export default function RegisterScreen({ navigation }) {
         {/* Social signup creates an account too, so it needs the same consent. */}
         <View pointerEvents={acceptedAll ? 'auto' : 'none'} style={!acceptedAll && styles.disabled}>
           <SocialLoginButtons
+            birthday={birthday || undefined}
             onLoggedIn={() => navigation.goBack()}
-            onNeedsPassword={(email) => navigation.navigate('social_create_password', { email })}
+            onNeedsPassword={(email, setupKey) => navigation.navigate('social_create_password', { email, setupKey })}
           />
         </View>
       </ScrollView>
@@ -297,6 +328,9 @@ const styles = StyleSheet.create({
     fontSize: 14, fontFamily: FONTS.body,
     marginTop: 4,
   },
+  label: { fontFamily: FONTS.bodyBold, fontSize: 13, color: COLORS.ink2, marginBottom: 6 },
+  fieldError: { fontFamily: FONTS.bodySemi, fontSize: 12, color: COLORS.danger, marginTop: 6, marginBottom: 14 },
+  fieldHint: { fontFamily: FONTS.body, fontSize: 12, color: COLORS.muted, marginTop: 6, marginBottom: 14 },
   error: {
     color: COLORS.danger,
     marginBottom: 12,

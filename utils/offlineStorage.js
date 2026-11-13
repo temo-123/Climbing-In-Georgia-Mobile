@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api, { corsUrl, imgUri, API_BASE_URL, IMG_BASES } from './api';
-import { downloadImages } from './imageCache';
+import { downloadImages, clearImageCache } from './imageCache';
 
 export const OFFLINE_KEYS = {
   outdoor:      '@offline_outdoor',
@@ -146,6 +146,27 @@ function buildArticleConfigs(locale) {
       hasSectors: false,
     },
   ];
+}
+
+// --- Remove the offline guidebook ---
+
+// Every guidebook cache key (bulk download + pages cached while browsing).
+// Account data (token, ascent queue, favourites, logbook caches, locale,
+// recently viewed) is deliberately not in here.
+const GUIDE_CACHE_PREFIXES = [
+  '@offline_', '@article_', '@sectors_', '@spot_rocks_images_', '@route_images_',
+  '@massive_', '@outdoor_by_region_', '@mount_routes_by_massif_', '@summit_', '@regions_',
+];
+
+// "Remove offline data" (OfflineDataStatus): the phone goes back to loading
+// everything online; the account's download time is cleared separately.
+export async function clearOfflineData() {
+  try {
+    const keys = await AsyncStorage.getAllKeys();
+    const guideKeys = keys.filter((k) => GUIDE_CACHE_PREFIXES.some((p) => k.startsWith(p)));
+    if (guideKeys.length) await AsyncStorage.multiRemove(guideKeys);
+  } catch (_) {}
+  await clearImageCache();
 }
 
 // --- Low-level helpers ---
