@@ -5,10 +5,11 @@ import FilterChips from './FilterChips';
 import Segmented from './ui/Segmented';
 import { COLORS, FONTS } from '../assets/styles/styles';
 
-// Region chips + "By region / Flat" switch — identical on the outdoor, ice
-// and indoor lists (see utils/regionSections.js). The switch shows only while
-// All regions are selected and nothing is searched.
-export default function RegionGroupControls({ options, region, onRegion, flat, onFlat, searching }) {
+// Region chips + "By region / Flat" switch — identical on the outdoor, ice,
+// indoor and mountaineering lists (see utils/regionSections.js). The switch
+// shows only while All is selected and nothing is searched. `groupLabel`
+// replaces "By region" (the mountaineering list groups by mountain).
+export default function RegionGroupControls({ options, region, onRegion, flat, onFlat, searching, groupLabel }) {
   const { t } = useTranslation();
   if (options.length <= 2) return null;
   return (
@@ -19,7 +20,7 @@ export default function RegionGroupControls({ options, region, onRegion, flat, o
       {region == null && !searching && (
         <Segmented
           style={styles.gap}
-          options={[{ key: false, label: t('site.guide.group.by_region') }, { key: true, label: t('site.guide.group.flat') }]}
+          options={[{ key: false, label: groupLabel || t('site.guide.group.by_region') }, { key: true, label: t('site.guide.group.flat') }]}
           value={flat}
           onChange={onFlat}
         />

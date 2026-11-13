@@ -1,6 +1,6 @@
 {
   "name": "climb_georgia",
-  "version": "2.0.31",
+  "version": "2.0.32",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "npx expo start",

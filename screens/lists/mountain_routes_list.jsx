@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { StyleSheet, View, FlatList } from 'react-native';
+import { StyleSheet, View, SectionList } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { useSiteDescription } from '../../utils/useSiteData';
@@ -9,8 +9,8 @@ import { loadMountRoutesByMassifData, saveMountRoutesByMassifData } from '../../
 
 import MountCard from "../../components/cards/mount_route_card_component";
 import Article_list_header_text from "../../components/article_list_header_text_component";
-import FilterChips from "../../components/FilterChips";
-import SortToggle from "../../components/SortToggle";
+import RegionGroupControls, { RegionSectionHeader } from "../../components/RegionGroupControls";
+import { regionOptionsFor, filterByRegion, regionSections } from "../../utils/regionSections";
 import EmptyState from "../../components/EmptyState";
 import Preloader from "../../components/Preloader";
 import OfflineBanner from "../../components/OfflineBanner";
@@ -21,8 +21,9 @@ import RecentlyViewed from "../../components/guide/RecentlyViewed";
 import ListSearchBar from "../../components/ListSearchBar";
 import { searchItems } from "../../utils/listSearch";
 
-const OTHER_MASSIF_KEY = '__other__';
-
+// Same list structure as the outdoor / ice / indoor lists, grouped by
+// mountain massif instead of region (utils/regionSections.js): massif chips,
+// "By Mountain / Flat" switch, section headers with counts.
 // route.params.massifId (from a route page's massif card) preselects that
 // massif's filter chip.
 export default function App({ route }) {
@@ -39,7 +40,7 @@ export default function App({ route }) {
   useEffect(() => {
     if (massifParam != null) setSelectedMassif(massifParam);
   }, [massifParam, massifParamAt]);
-  const [sortAlpha, setSortAlpha] = useState(false);
+  const [flat, setFlat] = useState(false);
   const [query, setQuery] = useState('');
   const description = useSiteDescription('mount_route');
 
@@ -47,7 +48,6 @@ export default function App({ route }) {
     setLoading(true);
     setIsOffline(false);
     setNoCache(false);
-    setSelectedMassif(null);
     api.get(corsUrl(`${API_BASE_URL}/get_mount_route/get_mount_routes_by_maunt/${locale}`))
       .then(({ data }) => {
         setByMassif(Array.isArray(data) ? data : []);
@@ -76,10 +76,11 @@ export default function App({ route }) {
     wasDeviceOffline.current = deviceOffline;
   }, [deviceOffline]);
 
+  // Every route tagged with its massif id (null = routes without a massif).
   const allRoutes = useMemo(() => {
     const items = [];
     for (const group of byMassif) {
-      const massifKey = group.mount?.global_data?.id ?? OTHER_MASSIF_KEY;
+      const massifKey = group.mount?.global_data?.id ?? null;
       for (const route of (group.mount_route || [])) {
         items.push({ ...route, _massifKey: massifKey });
       }
@@ -87,28 +88,40 @@ export default function App({ route }) {
     return items;
   }, [byMassif]);
 
-  const massifOptions = useMemo(() => {
-    const options = [{ key: null, label: t('filter.all') }];
+  // Massif names + the API's order (newest massif first, as on the website).
+  const { massifs, massifOrder } = useMemo(() => {
+    const names = {};
+    const order = [];
     for (const group of byMassif) {
-      if (!group.mount_route || group.mount_route.length === 0) continue;
-      options.push({
-        key: group.mount?.global_data?.id ?? OTHER_MASSIF_KEY,
-        label: group.mount ? (group.mount.locale_data?.title ?? '—') : t('filter.other_massif'),
-      });
+      const id = group.mount?.global_data?.id;
+      if (id == null || !(group.mount_route || []).length) continue;
+      names[id] = group.mount.locale_data?.title ?? '—';
+      order.push(id);
     }
-    return options;
-  }, [byMassif, t]);
+    return { massifs: names, massifOrder: order };
+  }, [byMassif]);
 
-  const visibleRoutes = useMemo(() => {
-    let list = selectedMassif == null
-      ? allRoutes
-      : allRoutes.filter((item) => item._massifKey === selectedMassif);
-    if (sortAlpha) {
-      list = [...list].sort((a, b) =>
-        (a.locale_data?.title || '').localeCompare(b.locale_data?.title || ''));
-    }
-    return searchItems(list, query);
-  }, [allRoutes, selectedMassif, sortAlpha, query]);
+  const massifOf = (item) => item._massifKey;
+  const otherLabel = t('filter.other_massif');
+  const massifOptions = useMemo(
+    () => regionOptionsFor(allRoutes, massifOf, massifs, t('filter.all'), otherLabel, massifOrder),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allRoutes, massifs, massifOrder, t],
+  );
+  // A preselected massif that isn't in the list (any more) falls back to All.
+  const massifValid = selectedMassif == null || massifOptions.some((o) => o.key === selectedMassif);
+  const activeMassif = massifValid ? selectedMassif : null;
+  const visibleRoutes = useMemo(
+    () => searchItems(filterByRegion(allRoutes, massifOf, activeMassif), query),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allRoutes, activeMassif, query],
+  );
+  const grouped = activeMassif == null && !flat && !query.trim() && massifOptions.length > 2;
+  const sections = useMemo(
+    () => regionSections(visibleRoutes, massifOf, massifs, grouped, otherLabel, massifOrder),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [visibleRoutes, grouped, massifs, massifOrder, otherLabel],
+  );
 
   if (isLoading) return <Preloader />;
   if (noCache) return <OfflineError />;
@@ -116,8 +129,10 @@ export default function App({ route }) {
   return (
     <View style={styles.wrapper}>
       {isOffline && <OfflineBanner />}
-      <FlatList
-        data={visibleRoutes}
+      <SectionList
+        sections={sections}
+        stickySectionHeadersEnabled={false}
+        renderSectionHeader={RegionSectionHeader}
         keyExtractor={(item) => item.global_data.id.toString()}
         ListHeaderComponent={
           <View>
@@ -129,11 +144,14 @@ export default function App({ route }) {
             <FavoritesStrip category="mount_route" />
             <RecentlyViewed category="mount_route" />
             <ListSearchBar value={query} onChange={setQuery} found={visibleRoutes.length} placeholder={t('site.guide.list_search.mountaineering')} />
-            <FilterChips options={massifOptions} selected={selectedMassif} onSelect={setSelectedMassif} />
-            <SortToggle
-              active={sortAlpha}
-              onToggle={() => setSortAlpha((v) => !v)}
-              label={sortAlpha ? t('filter.sort_az') : t('filter.sort_default')}
+            <RegionGroupControls
+              options={massifOptions}
+              region={activeMassif}
+              onRegion={setSelectedMassif}
+              flat={flat}
+              onFlat={setFlat}
+              searching={!!query.trim()}
+              groupLabel={t('site.guide.group.by_mountain')}
             />
           </View>
         }

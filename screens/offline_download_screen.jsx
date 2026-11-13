@@ -189,13 +189,15 @@ export default function OfflineDownloadScreen({ route, navigation }) {
         <Text style={styles.tipText}>{t('offline_screen.how_2')}</Text>
         <Text style={styles.tipText}>{t('offline_screen.how_3')}</Text>
       </View>
-      <PageFooter bleed={24} />
+      <PageFooter bleed={24} style={styles.footer} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, alignItems: 'center' },
+  // flexGrow: the footer sits at the bottom of a short page (marginTop: 'auto').
+  container: { padding: 24, alignItems: 'center', flexGrow: 1, backgroundColor: COLORS.chalk },
+  footer: { marginTop: 'auto', paddingTop: 24 },
   iconBox: {
     marginTop: 16,
     marginBottom: 16,
