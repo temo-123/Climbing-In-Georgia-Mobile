@@ -14,7 +14,8 @@ import OfflineBanner from '../../components/OfflineBanner';
 import OfflineError from '../../components/OfflineError';
 import NotFoundMoved from '../../components/NotFoundMoved';
 import { useRenamableSlug } from '../../utils/renamedSlug';
-import ReportButton from '../../components/ReportButton';
+import ModerationActions from '../../components/moderation/ModerationActions';
+import { useBlockedUsers, authorIdOf } from '../../utils/blockedUsers';
 import { COLORS, FONTS, HEAD_COLORS, RADII } from '../../assets/styles/styles';
 import { SvgXml } from 'react-native-svg';
 import { SKETCHES } from '../../components/ui/sketches';
@@ -112,10 +113,12 @@ function AscentDetailsModal({ ascent, onClose, t }) {
                 </View>
               )}
 
-              <ReportButton
+              <ModerationActions
                 type="summit_ascent"
                 id={ascent.id}
                 label={`${ascent.name ?? ''} ${ascent.surname ?? ''}`.trim()}
+                author={authorIdOf(ascent) ? { id: authorIdOf(ascent), name: ascent.name, surname: ascent.surname } : null}
+                onBlocked={onClose}
                 style={styles.modalReport}
               />
 
@@ -139,11 +142,12 @@ export default function SummitDetailScreen({ route, navigation }) {
   // Renamed slugs: a 404 is retried with the slug the website redirects to.
   const { slug: url_title, handle404, notFoundUrl } = useRenamableSlug('summit', paramSlug);
   const [summit, setSummit] = useState(null);
-  const [ascents, setAscents] = useState([]);
+  const [allAscents, setAscents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
   const [noCache, setNoCache] = useState(false);
   const [selectedAscent, setSelectedAscent] = useState(null);
+  const { isBlocked } = useBlockedUsers();
   const isFirstLoad = useRef(true);
 
   const load = useCallback(() => {
@@ -194,6 +198,8 @@ export default function SummitDetailScreen({ route, navigation }) {
   if (notFoundUrl) return <NotFoundMoved url={notFoundUrl} />;
   if (noCache || !summit) return <OfflineError />;
 
+  // Blocked climbers' ascents (and photos) are hidden.
+  const ascents = allAscents.filter(a => !isBlocked(authorIdOf(a)));
   const photoAscents = ascents.filter(a => !!a.photo);
 
   // The API sends both `title` and (when set) `ka_title` in one payload rather

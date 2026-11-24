@@ -16,6 +16,7 @@ import { AuthProvider } from './utils/AuthContext';
 import { getQueue, syncQueue } from './utils/ascentQueue';
 import { RecaptchaHost } from './utils/recaptcha';
 import DonationButton from './components/donation/DonationButton';
+import { DONATIONS_ENABLED } from './utils/storeRules';
 import { ToastProvider } from './components/ui/Toast';
 import './utils/i18n';
 // Installs the global API error handler (banned / age / e-mail / 401).
@@ -108,7 +109,7 @@ export default function App() {
               <ToastProvider>
                 <RecaptchaHost />
                 <Navigation />
-                <DonationButton />
+                {DONATIONS_ENABLED && <DonationButton />}
               </ToastProvider>
             </AuthProvider>
           </NetworkProvider>

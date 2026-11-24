@@ -7,6 +7,8 @@ import { toDate, dayMonthYear } from '../../utils/eventDates';
 import Avatar from '../ui/Avatar';
 import { StarsShow } from '../ui/Stars';
 import { SkeletonBlock } from '../ui/Skeleton';
+import ModerationActions from '../moderation/ModerationActions';
+import { useBlockedUsers, authorIdOf } from '../../utils/blockedUsers';
 import { KINDS } from './kinds';
 import { COLORS, FONTS, RADII } from '../../assets/styles/styles';
 
@@ -16,6 +18,7 @@ export default function ReviewList({ kind, item, onOpenClimber }) {
   const { t } = useTranslation();
   const { locale } = useLocale();
   const [list, setList] = useState(null);
+  const { isBlocked } = useBlockedUsers();
 
   useEffect(() => {
     let alive = true;
@@ -34,11 +37,12 @@ export default function ReviewList({ kind, item, onOpenClimber }) {
     );
   }
 
-  if (list.length === 0) return <Text style={s.empty}>{t('site.guide.route.no_feedbacks_message')}</Text>;
+  const visible = list.filter((r) => !isBlocked(authorIdOf(r)));
+  if (visible.length === 0) return <Text style={s.empty}>{t('site.guide.route.no_feedbacks_message')}</Text>;
 
   return (
     <View>
-      {list.map((r) => {
+      {visible.map((r) => {
         const d = toDate(r.created_at);
         return (
           <View key={r.id} style={s.row}>
@@ -53,6 +57,13 @@ export default function ReviewList({ kind, item, onOpenClimber }) {
               <StarsShow stars={r.stars} size={13} showEmpty />
             </TouchableOpacity>
             {!!r.text && <Text style={s.text}>{r.text}</Text>}
+            <ModerationActions
+              type={kind === 'route' ? 'route_review' : 'mtp_review'}
+              id={r.id}
+              author={r.user}
+              label={r.user ? `${r.user.name ?? ''} ${r.user.surname ?? ''}`.trim() : null}
+              compact
+            />
           </View>
         );
       })}

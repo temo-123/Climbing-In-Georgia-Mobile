@@ -3,7 +3,7 @@
     "name": "Climb Georgia",
     "slug": "climbing-in-georgia-mobile",
     "scheme": "climbinggeorgia",
-    "version": "2.0.32",
+    "version": "2.0.33",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -14,16 +14,17 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
+      "icon": "./assets/icon-ios-1024.png",
       "bundleIdentifier": "ge.climbing.app",
-      "buildNumber": "32",
+      "buildNumber": "33",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "Used to view and attach climbing route photos.",
-        "NSPhotoLibraryAddUsageDescription": "Used to save climbing route photos.",
+        "NSPhotoLibraryUsageDescription": "Used to choose a photo for your ascent or your profile picture.",
         "NSCameraUsageDescription": "Used to scan summit QR codes and take a photo of your ascent.",
         "CFBundleLocalizations": [
-          "en"
+          "en",
+          "ka"
         ],
         "CFBundleDevelopmentRegion": "en",
         "ITSAppUsesNonExemptEncryption": false,
@@ -37,7 +38,7 @@
       },
       "package": "ge.climbing.app",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 32,
+      "versionCode": 33,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
@@ -72,7 +73,7 @@
         {
           "cameraPermission": "Used to scan summit QR codes and take a photo of your ascent.",
           "microphonePermission": false,
-          "photosPermission": "Used to attach a photo to your ascent."
+          "photosPermission": "Used to choose a photo for your ascent or your profile picture."
         }
       ],
       [
@@ -115,6 +116,9 @@
           "android": {
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true
+          },
+          "ios": {
+            "useFrameworks": "static"
           }
         }
       ],

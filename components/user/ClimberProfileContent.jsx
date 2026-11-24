@@ -10,7 +10,8 @@ import { faGlobe, faLink, faUsers, faUserPlus, faStar, faFlag, faComment, faChec
 import IconText from '../ui/IconText';
 import { COLORS, FONTS } from '../../assets/styles/styles';
 import RadarStatsChart from './RadarStatsChart';
-import ReportButton from '../ReportButton';
+import ModerationActions from '../moderation/ModerationActions';
+import { useBlockedUsers, unblockUser } from '../../utils/blockedUsers';
 
 const API = API_BASE_URL;
 
@@ -51,6 +52,7 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
   const [following, setFollowing] = useState(false);
   const [isSelf, setIsSelf] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const { isBlocked } = useBlockedUsers();
 
   const load = useCallback(() => {
     setLoading(true);
@@ -109,6 +111,22 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
   }
 
   const { user, points_total, followers_count, following_count } = profile;
+  // `blocked_by_me`: the server knows about a block made on the website / another phone.
+  const blocked = !isSelf && (isBlocked(user.id) || !!profile.blocked_by_me);
+
+  // Blocked climber: no bio, links, stats or activity — just the way back.
+  if (blocked) {
+    return (
+      <View style={styles.header}>
+        <View style={[styles.avatarFallback, styles.avatarWrap]}><Text style={styles.avatarText}>{initialsOf(user)}</Text></View>
+        <Text style={styles.name}>{user.name} {user.surname}</Text>
+        <Text style={styles.blockedText}>{t('block.blocked_profile')}</Text>
+        <TouchableOpacity style={[styles.followBtn, styles.followingBtn]} onPress={() => { unblockUser(user.id); setProfile(p => (p ? { ...p, blocked_by_me: false } : p)); }} activeOpacity={0.8}>
+          <Text style={[styles.followBtnText, styles.followingBtnText]}>{t('block.unblock')}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
   const avatarUri = user.image ? imgUri(IMG_BASES.userProfile, user.image, user.updated_at) : null;
   const socialEntries = Object.entries(user.social_links || {}).filter(([, v]) => !!v);
 
@@ -186,7 +204,14 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
         )}
 
         {!isSelf && (
-          <ReportButton type="user" id={user.id} label={`${user.name} ${user.surname}`} style={styles.reportBtn} />
+          <ModerationActions
+            type="user"
+            id={user.id}
+            label={`${user.name} ${user.surname}`}
+            author={user}
+            onBlocked={following ? () => { setFollowing(false); api.delete(`${API}/set_user_follow/unfollow/${userId}`).catch(() => {}); } : undefined}
+            style={styles.reportBtn}
+          />
         )}
       </View>
 
@@ -278,7 +303,8 @@ export default function ClimberProfileContent({ userId, compact, hideActivity, o
 }
 
 const styles = StyleSheet.create({
-  reportBtn: { marginTop: 10 },
+  reportBtn: { marginTop: 12 },
+  blockedText: { fontSize: 13, fontFamily: FONTS.body, color: COLORS.stone, textAlign: 'center', marginVertical: 10, lineHeight: 18 },
   center: { padding: 40, alignItems: 'center', justifyContent: 'center' },
   emptyText: { color: COLORS.muted, fontSize: 14, fontFamily: FONTS.body },
   header: { alignItems: 'center', paddingHorizontal: 20, paddingTop: 8 },

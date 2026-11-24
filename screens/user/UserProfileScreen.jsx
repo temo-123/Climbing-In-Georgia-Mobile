@@ -12,6 +12,7 @@ import ClimberProfileContent from '../../components/user/ClimberProfileContent';
 import ClimberProfileModal from '../../components/user/ClimberProfileModal';
 import AccountAlertsCard from '../../components/user/AccountAlertsCard';
 import { accountAlerts } from '../../utils/accountAlerts';
+import { DONATIONS_ENABLED } from '../../utils/storeRules';
 
 function MenuItem({ icon, label, onPress, danger, badge }) {
   return (
@@ -103,12 +104,16 @@ export default function UserProfileScreen({ navigation }) {
           onPress={() => navigation.navigate('user_ascents')}
         />
 
-        <SectionHeader title={t('user.section_shop')} />
-        <MenuItem
-          icon={faHandHoldingHeart}
-          label={t('user.my_donations')}
-          onPress={() => navigation.navigate('user_donations')}
-        />
+        {DONATIONS_ENABLED && (
+          <>
+            <SectionHeader title={t('user.section_shop')} />
+            <MenuItem
+              icon={faHandHoldingHeart}
+              label={t('user.my_donations')}
+              onPress={() => navigation.navigate('user_donations')}
+            />
+          </>
+        )}
 
         <SectionHeader title={t('user.section_favorites')} />
         <MenuItem

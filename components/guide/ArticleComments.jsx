@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } fr
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import {
-  faComments, faPaperPlane, faReply, faXmark, faRotateRight, faFlag, faTrashCan, faRightToBracket, faUserPen,
+  faComments, faPaperPlane, faReply, faXmark, faRotateRight, faFlag, faTrashCan, faRightToBracket, faUserPen, faBan,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import api, { API_BASE_URL } from '../../utils/api';
@@ -23,13 +23,15 @@ import Chip from '../ui/Chip';
 import { SkeletonBlock } from '../ui/Skeleton';
 import { useToast } from '../ui/Toast';
 import AgeLockedNote from '../account/AgeLockedNote';
+import { useConfirmBlock } from '../moderation/ModerationActions';
+import { useBlockedUsers } from '../../utils/blockedUsers';
 import { COLORS, FONTS, RADII } from '../../assets/styles/styles';
 
 // Article comments — the website's CommentFormComponent.vue:
 // - signed in: "Commenting as <avatar> Name", name / surname / email sent
 //   from the profile (a rejection links to Options); Reply one level deep
-// - guest: a "log in" strip, then name / surname / email (guest comments stay
-//   unpublished until confirmed from the e-mail link)
+// - guest: only a "log in" strip — commenting needs an account (moderation:
+//   every comment has an author who can be reported / blocked)
 // - live n / 500 counter; errors inline under their field (`data.*` keys)
 // - thread header with the total (comments + replies) and refresh
 // - Delete own · Report others (reason radio cards)
@@ -46,14 +48,14 @@ const REASONS = [
   ['conflict', 'Conflict with other members of the site'],
   ['language', 'The language of the comments does not match the requirements of the site'],
 ];
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 
 function displayName(row, user) {
   if (user) return `${user.name ?? ''} ${user.surname ?? ''}`.trim();
   return `${row?.name ?? ''} ${row?.surname ?? ''}`.trim() || '—';
 }
 
-function CommentRow({ row, user, nested, parentName, mine, onReply, onDelete, onReport, onOpenClimber, t, locale }) {
+function CommentRow({ row, user, nested, parentName, mine, onReply, onDelete, onReport, onBlock, onOpenClimber, t, locale }) {
   return (
     <View style={[styles.row, nested && styles.nested]}>
       <TouchableOpacity disabled={!user} onPress={() => user && onOpenClimber(user.id)}>
@@ -85,6 +87,12 @@ function CommentRow({ row, user, nested, parentName, mine, onReply, onDelete, on
               <Text style={[styles.actionText, styles.actionMuted]}>{t('site.guide.comments.report')}</Text>
             </TouchableOpacity>
           )}
+          {!mine && !!user && !!onBlock && (
+            <TouchableOpacity onPress={() => onBlock(user)} style={styles.action} hitSlop={6}>
+              <FontAwesomeIcon icon={faBan} size={10} color={COLORS.stone} />
+              <Text style={[styles.actionText, styles.actionMuted]}>{t('block.button')}</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </View>
@@ -100,7 +108,6 @@ export default function ArticleComments({ articleId }) {
   const toast = useToast();
   const [list, setList] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [guest, setGuest] = useState({ name: '', surname: '', email: '' });
   const [text, setText] = useState('');
   const [replyTo, setReplyTo] = useState(null);
   const [sending, setSending] = useState(false);
@@ -108,6 +115,8 @@ export default function ArticleComments({ articleId }) {
   const [notice, setNotice] = useState(null); // { tone, text, profileLink? }
   const [report, setReport] = useState(null); // { id, reason, error, sending }
   const textRef = useRef(null);
+  const { isBlocked } = useBlockedUsers();
+  const confirmBlock = useConfirmBlock();
 
   const load = useCallback(() => {
     if (!articleId) return;
@@ -125,24 +134,16 @@ export default function ArticleComments({ articleId }) {
   function validate() {
     const e = {};
     if (!text.trim()) e['data.text'] = t('site.guide.comments.required');
-    if (!user) {
-      if (!guest.name.trim()) e['data.name'] = t('site.guide.comments.required');
-      if (!guest.surname.trim()) e['data.surname'] = t('site.guide.comments.required');
-      if (!guest.email.trim()) e['data.email'] = t('site.guide.comments.required');
-      else if (!EMAIL_RE.test(guest.email.trim())) e['data.email'] = t('site.guide.comments.email_invalid');
-    }
     setErrors(e);
     return !Object.keys(e).length;
   }
 
   async function send() {
     setNotice(null);
-    if (!validate()) return;
+    if (!user || !validate()) return;
     setSending(true);
     try {
-      const who = user
-        ? { name: (user.name || '').slice(0, LIMITS.name), surname: (user.surname || '').slice(0, LIMITS.surname), email: user.email }
-        : { name: guest.name.trim(), surname: guest.surname.trim(), email: guest.email.trim() };
+      const who = { name: (user.name || '').slice(0, LIMITS.name), surname: (user.surname || '').slice(0, LIMITS.surname), email: user.email };
       const body = {
         data: { ...who, text: text.trim() },
         answer_array: replyTo ? { answer: true, comment_id: replyTo.id } : { answer: false, comment_id: 0 },
@@ -152,8 +153,8 @@ export default function ArticleComments({ articleId }) {
       setText('');
       setReplyTo(null);
       setErrors({});
-      setNotice({ tone: 'ok', text: user ? t('site.guide.comments.sent') : t('site.guide.comments.sent_guest') });
-      if (user) bumpStats();
+      setNotice({ tone: 'ok', text: t('site.guide.comments.sent') });
+      bumpStats();
       load();
     } catch (err) {
       if (isGateHandled(err)) return; // age / e-mail sheet explains it
@@ -164,7 +165,7 @@ export default function ArticleComments({ articleId }) {
       const fe = fieldErrors(err);
       if (Object.keys(fe).length) {
         // Signed in: the server rejected the profile's name / surname / e-mail.
-        if (user && (fe['data.name'] || fe['data.surname'] || fe['data.email'])) {
+        if ((fe['data.name'] || fe['data.surname'] || fe['data.email'])) {
           setNotice({ tone: 'warn', text: t('site.guide.comments.profile_incomplete'), profileLink: true });
         }
         setErrors(fe);
@@ -230,9 +231,12 @@ export default function ArticleComments({ articleId }) {
   }
 
   const openClimber = (userId) => navigation.navigate('climber_profile', { userId });
-  const count = (list || []).reduce((n, c) => n + 1 + (c.answers?.length || 0), 0);
+  // Blocked climbers' comments (and their replies) are hidden.
+  const shown = (list || [])
+    .filter((c) => !isBlocked(c.user?.id))
+    .map((c) => ({ ...c, answers: (c.answers || []).filter((a) => !isBlocked(a.user?.id)) }));
+  const count = shown.reduce((n, c) => n + 1 + (c.answers?.length || 0), 0);
   const canReply = !!user && canAct;
-  const setG = (k) => (v) => { setGuest((g) => ({ ...g, [k]: v })); setErrors((e) => ({ ...e, [`data.${k}`]: undefined })); };
   const err = (k) => errors[`data.${k}`];
 
   return (
@@ -252,10 +256,10 @@ export default function ArticleComments({ articleId }) {
     >
       {list === null ? (
         <SkeletonBlock height={60} radius={RADII.md} />
-      ) : list.length === 0 ? (
+      ) : shown.length === 0 ? (
         <Text style={styles.empty}>{t('site.guide.comments.empty')}</Text>
       ) : (
-        list.map((c) => {
+        shown.map((c) => {
           const parentName = displayName(c.comment, c.user);
           return (
             <View key={c.comment.id} style={styles.thread}>
@@ -269,6 +273,7 @@ export default function ArticleComments({ articleId }) {
                 onReply={canReply ? () => startReply(c.comment.id, parentName) : null}
                 onDelete={() => confirmDelete(c.comment.id)}
                 onReport={isUnderage ? null : () => openReport(c.comment.id)}
+                onBlock={confirmBlock}
               />
               {(c.answers || []).map((a) => (
                 <CommentRow
@@ -283,6 +288,7 @@ export default function ArticleComments({ articleId }) {
                   onOpenClimber={openClimber}
                   onDelete={() => confirmDelete(a.answer.id)}
                   onReport={isUnderage ? null : () => openReport(a.answer.id)}
+                  onBlock={confirmBlock}
                 />
               ))}
             </View>
@@ -293,37 +299,18 @@ export default function ArticleComments({ articleId }) {
       <View style={styles.formWrap}>
         {isUnderage ? (
           <AgeLockedNote />
+        ) : !user ? (
+          <View style={styles.guestStrip}>
+            <Text style={styles.guestText}>{t('comments_app.login_to_comment')}</Text>
+            <Button small block={false} variant="hold" icon={faRightToBracket} title={t('auth.login')} onPress={() => navigation.navigate('login')} />
+          </View>
         ) : (
           <>
-            {user ? (
-              <View style={styles.as}>
-                <Text style={styles.asText}>{t('site.guide.comments.commenting_as')}</Text>
-                <Avatar user={user} size={22} />
-                <Text style={styles.asName} numberOfLines={1}>{`${user.name ?? ''} ${user.surname ?? ''}`.trim()}</Text>
-              </View>
-            ) : (
-              <>
-                <View style={styles.guestStrip}>
-                  <Text style={styles.guestText}>{t('site.guide.comments.guest_hint')}</Text>
-                  <Button small block={false} variant="hold" icon={faRightToBracket} title={t('auth.login')} onPress={() => navigation.navigate('login')} />
-                </View>
-                <Field label={t('auth.name')} required value={guest.name} onChangeText={setG('name')} maxLength={LIMITS.name} autoCapitalize="words" />
-                {!!err('name') && <Text style={styles.fieldError}>{err('name')}</Text>}
-                <Field label={t('auth.surname')} required value={guest.surname} onChangeText={setG('surname')} maxLength={LIMITS.surname} autoCapitalize="words" />
-                {!!err('surname') && <Text style={styles.fieldError}>{err('surname')}</Text>}
-                <Field
-                  label={t('auth.email')}
-                  required
-                  hint={t('site.guide.comments.email_hint')}
-                  value={guest.email}
-                  onChangeText={setG('email')}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                {!!err('email') && <Text style={styles.fieldError}>{err('email')}</Text>}
-              </>
-            )}
+            <View style={styles.as}>
+              <Text style={styles.asText}>{t('site.guide.comments.commenting_as')}</Text>
+              <Avatar user={user} size={22} />
+              <Text style={styles.asName} numberOfLines={1}>{`${user.name ?? ''} ${user.surname ?? ''}`.trim()}</Text>
+            </View>
 
             {!!replyTo && (
               <View style={styles.replying}>
@@ -347,7 +334,7 @@ export default function ArticleComments({ articleId }) {
               <Text style={[styles.counter, text.length > MAX - 50 && styles.counterNear]}>{text.length} / {MAX}</Text>
             </View>
             {!!err('text') && <Text style={styles.fieldError}>{err('text')}</Text>}
-            {user && (err('name') || err('surname') || err('email')) && !notice?.profileLink && (
+            {(err('name') || err('surname') || err('email')) && !notice?.profileLink && (
               <Text style={styles.fieldError}>{[err('name'), err('surname'), err('email')].filter(Boolean).join('\n')}</Text>
             )}
 

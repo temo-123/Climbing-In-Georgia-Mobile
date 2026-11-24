@@ -15,6 +15,7 @@ import { COLORS, FONTS } from '../../assets/styles/styles';
 import EditProfileModal from '../../components/user/EditProfileModal';
 import ChangePasswordModal from '../../components/user/ChangePasswordModal';
 import UserLinksManager from '../../components/user/UserLinksManager';
+import BlockedUsersManager from '../../components/user/BlockedUsersManager';
 import LegalLinks from '../../components/LegalLinks';
 import DeleteAccountModal from '../../components/user/DeleteAccountModal';
 import OfflineDataStatus from '../../components/user/OfflineDataStatus';
@@ -198,6 +199,12 @@ export default function UserOptionsScreen() {
           <Text style={styles.sectionTitle}>{t('user.extra_links')}</Text>
           <Text style={styles.hint}>{t('user.extra_links_hint')}</Text>
           <UserLinksManager />
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>{t('block.list_title')}</Text>
+          <Text style={styles.hint}>{t('block.list_hint')}</Text>
+          <BlockedUsersManager />
         </View>
 
         <View style={styles.card}>

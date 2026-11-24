@@ -5,6 +5,7 @@ import { useAuth } from '../../utils/AuthContext';
 import { getSocialLoginStatus, startSocialLogin, SocialLoginError } from '../../utils/socialAuth';
 import { isGateHandled } from '../../utils/accountGate';
 import { GoogleIcon, FacebookIcon } from './ProviderIcons';
+import { SOCIAL_LOGIN_ENABLED } from '../../utils/storeRules';
 import { COLORS, FONTS } from '../../assets/styles/styles';
 
 // Google / Facebook buttons (browser flow, utils/socialAuth.js). A provider is
@@ -12,6 +13,9 @@ import { COLORS, FONTS } from '../../assets/styles/styles';
 // — the backend's app-redirect flow. Without that flag the plain web flow
 // would end on the website's login form, so no button is better than a
 // broken one.
+// iOS: hidden for now (utils/storeRules.js) — App Store guideline 4.8
+// requires Sign in with Apple next to any third-party login.
+
 function visibleProviders(data) {
   const mobile = !!data?.mobile;
   return { google: mobile && !!data?.google, facebook: mobile && !!data?.facebook };
@@ -28,6 +32,7 @@ export default function SocialLoginButtons({ onLoggedIn, onNeedsPassword, birthd
   const [detail, setDetail] = useState('');
 
   useEffect(() => {
+    if (!SOCIAL_LOGIN_ENABLED) return undefined;
     let cancelled = false;
     getSocialLoginStatus()
       .then((data) => { if (!cancelled) setStatus(visibleProviders(data)); })
@@ -81,7 +86,7 @@ export default function SocialLoginButtons({ onLoggedIn, onNeedsPassword, birthd
     }
   }
 
-  if (!status || (!status.google && !status.facebook)) {
+  if (!SOCIAL_LOGIN_ENABLED || !status || (!status.google && !status.facebook)) {
     return null;
   }
 

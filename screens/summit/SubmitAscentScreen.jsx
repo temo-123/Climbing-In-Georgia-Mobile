@@ -9,6 +9,7 @@ import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth, useAccount } from '../../utils/AuthContext';
 import AgeLockedNote from '../../components/account/AgeLockedNote';
+import LoginPrompt from '../../components/auth/LoginPrompt';
 import { useNetwork } from '../../utils/NetworkContext';
 import api, { corsUrl, API_BASE_URL } from '../../utils/api';
 import { queueAscent, describeError } from '../../utils/ascentQueue';
@@ -37,9 +38,20 @@ function haversineMeters(a, b) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-// Under-age accounts can't log ascents (QR codes still land here).
+// Logging an ascent needs an account (guests get the log-in card; QR codes
+// still land here). Under-age accounts can't log ascents.
 export default function SubmitAscentScreen(props) {
+  const { t } = useTranslation();
+  const { user, isLoading } = useAuth();
   const { isUnderage } = useAccount();
+  if (isLoading) return <View style={{ flex: 1, backgroundColor: COLORS.chalk }} />;
+  if (!user) {
+    return (
+      <View style={{ flex: 1, padding: 20, backgroundColor: COLORS.chalk }}>
+        <LoginPrompt message={t('summit.login_required')} onLogin={() => props.navigation.navigate('login')} />
+      </View>
+    );
+  }
   if (isUnderage) {
     return (
       <View style={{ flex: 1, padding: 20, backgroundColor: COLORS.chalk }}>

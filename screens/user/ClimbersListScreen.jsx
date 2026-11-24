@@ -16,6 +16,7 @@ import { faTrophy } from '@fortawesome/free-solid-svg-icons';
 import IconText from '../../components/ui/IconText';
 import MyStatsCard from '../../components/user/MyStatsCard';
 import { useAuth } from '../../utils/AuthContext';
+import { useBlockedUsers } from '../../utils/blockedUsers';
 
 const API = API_BASE_URL;
 const CACHE_KEY = '@climbers_list_cache';
@@ -37,6 +38,7 @@ export default function ClimbersListScreen() {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const debounceRef = useRef(null);
   const { user } = useAuth();
+  const { isBlocked } = useBlockedUsers();
 
   const fetchPage = useCallback((targetPage, { append } = {}) => {
     const setLoadingFlag = append ? setLoadingMore : setLoading;
@@ -123,7 +125,7 @@ export default function ClimbersListScreen() {
 
       {(
         <FlatList
-          data={loading ? [] : data}
+          data={loading ? [] : data.filter((c) => !isBlocked(c.id))}
           ListHeaderComponent={(
             <MyStatsCard
               onLogin={() => navigation.navigate('login')}

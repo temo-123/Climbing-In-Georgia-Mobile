@@ -24,6 +24,8 @@ import PageFooter from '../components/PageFooter';
 import { SkeletonList } from '../components/ui/Skeleton';
 import { useToast } from '../components/ui/Toast';
 import PartnerPostForm from '../components/partners/PartnerPostForm';
+import ModerationActions from '../components/moderation/ModerationActions';
+import { useBlockedUsers, authorIdOf } from '../utils/blockedUsers';
 import { DISCIPLINES, LANGUAGES, tripDays, isOngoing } from '../components/partners/partnerRules';
 import { COLORS, FONTS, RADII, SHADOWS } from '../assets/styles/styles';
 
@@ -45,6 +47,7 @@ export default function PartnersScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [creating, setCreating] = useState(false);
   const [open, setOpen] = useState(null);
+  const { isBlocked, users: blocked } = useBlockedUsers();
 
   const load = useCallback((isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -80,6 +83,7 @@ export default function PartnersScreen({ navigation }) {
 
   const sections = useMemo(() => {
     const list = (posts || [])
+      .filter((p) => !isBlocked(authorIdOf(p)))
       .filter((p) => !discipline || p.discipline === discipline)
       .filter((p) => !language || (p.languages || []).includes(language));
     const now = list.filter((p) => isOngoing(p));
@@ -97,7 +101,7 @@ export default function PartnersScreen({ navigation }) {
       out.push({ key: k, title: d ? dayMonthYear(d, locale) : k, data: byDay.get(k) });
     });
     return out;
-  }, [posts, discipline, language, locale, t]);
+  }, [posts, discipline, language, locale, t, blocked]);
 
   const languagesPresent = useMemo(() => {
     const set = new Set((posts || []).flatMap((p) => p.languages || []));
@@ -262,6 +266,14 @@ export default function PartnersScreen({ navigation }) {
                 <Button small variant="outline" icon={faArrowUpRightFromSquare} style={styles.flex} title={t('site.guide.partners.open_area')} onPress={() => { const a = open.article; setOpen(null); openArticle(navigation, a.category, a.url_title); }} />
               )}
             </View>
+            <ModerationActions
+              type="partner_post"
+              id={open.id}
+              author={open.user}
+              label={open.user ? `${open.user.name} ${open.user.surname ?? ''}`.trim() : null}
+              onBlocked={() => setOpen(null)}
+              style={styles.moderation}
+            />
             {mine.includes(open.id) && (
               <Button small variant="danger" icon={faTrashCan} title={t('site.common.delete')} onPress={() => remove(open)} />
             )}
@@ -347,4 +359,5 @@ const styles = StyleSheet.create({
   contactText: { flex: 1, fontFamily: FONTS.bodyBold, fontSize: 14, color: COLORS.primaryDark },
   hint: { fontFamily: FONTS.body, fontSize: 12, lineHeight: 17, color: COLORS.muted },
   detailActions: { flexDirection: 'row', gap: 10 },
+  moderation: { justifyContent: 'center', paddingVertical: 4 },
 });

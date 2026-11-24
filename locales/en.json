@@ -209,7 +209,7 @@
     "delete_account": "Delete account",
     "delete_account_hint": "Permanently delete your account and all data linked to it.",
     "delete_account_warning": "This is permanent and cannot be undone. Your profile, ascents, comments, reviews and all other data linked to your account will be deleted.",
-    "delete_account_password_hint": "Leave empty if you signed up with Google or Facebook.",
+    "delete_account_password_hint": "Enter your account password. Signed up with Google or Facebook and never set a password? Leave it empty.",
     "delete_account_type_confirm": "Type DELETE to confirm",
     "delete_account_confirm_btn": "Delete my account permanently",
     "delete_account_web": "Delete account on the web instead",
@@ -374,7 +374,8 @@
     "remove_from_queue": "Remove",
     "discard_confirm_title": "Discard this ascent?",
     "discard_confirm_message": "This ascent hasn't been uploaded yet. Removing it here deletes it from your device permanently — it will not be saved on the server.",
-    "queued_on": "Queued {{date}}"
+    "queued_on": "Queued {{date}}",
+    "login_required": "Log in to record your summit ascent."
   },
   "donation": {
     "support_button": "Support Us",
@@ -419,7 +420,12 @@
     "title": "Report content",
     "email_intro": "I want to report the following content on Climb Georgia:",
     "email_reason": "Reason:",
-    "no_email_app": "No email app found. Please send your report to {{email}}"
+    "no_email_app": "No email app found. Please send your report to {{email}}",
+    "intro": "Tell us what is wrong with this content. Moderators review every report within 24 hours and remove content that breaks the rules.",
+    "details": "Details (optional)",
+    "sent": "Thanks — the report was sent to the moderators.",
+    "too_many": "Too many reports in a short time. Please try again later.",
+    "response_time": "Reports are reviewed within 24 hours. You can also write to info@climbing.ge."
   },
   "legal": {
     "section_title": "Legal",
@@ -589,5 +595,21 @@
     "update_title": "Update your offline guidebook",
     "update_text": "Your offline data is {{days}} days old — new routes and changes are missing.",
     "update_btn": "Update now"
+  },
+  "block": {
+    "button": "Block",
+    "button_user": "Block climber",
+    "confirm_title": "Block {{name}}?",
+    "confirm_text": "You won't see their comments, reviews, ascents or partner posts any more. You can unblock them in Options.",
+    "done": "{{name}} is blocked.",
+    "unblock": "Unblock",
+    "unblock_confirm": "Unblock {{name}}?",
+    "blocked_profile": "You blocked this climber. Their profile and activity are hidden.",
+    "list_title": "Blocked climbers",
+    "list_hint": "Content from these climbers is hidden from you.",
+    "none": "You haven't blocked anyone."
+  },
+  "comments_app": {
+    "login_to_comment": "Log in to join the discussion."
   }
 }

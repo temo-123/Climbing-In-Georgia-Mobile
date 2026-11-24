@@ -8,6 +8,8 @@ import Avatar from '../ui/Avatar';
 import Chip from '../ui/Chip';
 import CachedImage from '../CachedImage';
 import { SkeletonBlock } from '../ui/Skeleton';
+import ModerationActions from '../moderation/ModerationActions';
+import { useBlockedUsers, authorIdOf } from '../../utils/blockedUsers';
 import { KINDS } from './kinds';
 import { COLORS, FONTS, RADII } from '../../assets/styles/styles';
 
@@ -18,7 +20,9 @@ export default function AscentList({ kind, item, onOpenClimber, onOpenPhoto }) {
   const { t } = useTranslation();
   const { locale } = useLocale();
   const cfg = KINDS[kind];
-  const [list, setList] = useState(null);
+  const [raw, setList] = useState(null);
+  const { isBlocked } = useBlockedUsers();
+  const list = raw ? raw.filter((a) => !isBlocked(authorIdOf(a))) : raw;
 
   useEffect(() => {
     let alive = true;
@@ -81,6 +85,13 @@ export default function AscentList({ kind, item, onOpenClimber, onOpenPhoto }) {
                 <Text style={s.date}>{d ? dayMonthYear(d, locale) : ''}{a.ascent_time ? ` · ${String(a.ascent_time).slice(0, 5)}` : ''}</Text>
               </View>
               {!!a.comment && <Text style={s.comment}>{a.comment}</Text>}
+              <ModerationActions
+                type={kind === 'route' ? 'route_ascent' : 'mtp_ascent'}
+                id={a.id}
+                author={a.user}
+                label={a.user ? `${a.user.name ?? ''} ${a.user.surname ?? ''}`.trim() : null}
+                compact
+              />
             </View>
             {!!photo && (
               <TouchableOpacity onPress={() => onOpenPhoto?.(photo)}>
