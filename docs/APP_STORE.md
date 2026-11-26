@@ -66,8 +66,9 @@ disappears, unblock in Options, send a report.
   check that this iOS app is registered there and that the plist was
   downloaded from *that* app (same `GOOGLE_APP_ID`). If not, register
   `ge.climbing.app`, download a fresh plist, replace the file.
-- **Expo:** expo.dev → project `climbing-in-georgia-mobile` (owner
-  `temo-123`) → Settings → Members → invite the iOS developer (role
+- **Expo:** the project `climbing-in-georgia-mobile` belongs to the
+  organization **`climbing-ge`** (`expo.owner` in `app.json`) → expo.dev →
+  organization Settings → Members → invite the iOS developer (role
   *Developer* or *Admin* — Admin is needed to manage iOS credentials).
 
 ## 3. For App Review

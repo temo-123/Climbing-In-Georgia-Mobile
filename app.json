@@ -3,7 +3,7 @@
     "name": "Climb Georgia",
     "slug": "climbing-in-georgia-mobile",
     "scheme": "climbinggeorgia",
-    "version": "2.0.33",
+    "version": "2.0.34",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,7 +17,7 @@
       "supportsTablet": false,
       "icon": "./assets/icon-ios-1024.png",
       "bundleIdentifier": "ge.climbing.app",
-      "buildNumber": "33",
+      "buildNumber": "34",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Used to choose a photo for your ascent or your profile picture.",
@@ -38,7 +38,7 @@
       },
       "package": "ge.climbing.app",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 33,
+      "versionCode": 34,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
@@ -130,6 +130,6 @@
         "projectId": "9d7c01bc-2fbf-4bdd-aa63-fd7af5536760"
       }
     },
-    "owner": "temo-123"
+    "owner": "climbing-ge"
   }
 }
